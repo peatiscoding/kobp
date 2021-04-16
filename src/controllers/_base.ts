@@ -27,7 +27,6 @@ export class BaseRoutedController {
   }
 
   async handleSuccess(ctx: KobpServiceContext, data: any): Promise<void> {
-    console.log('HANDLE SUCCESS', data)
     ctx.status = 200
     ctx.body = {
       success: true,

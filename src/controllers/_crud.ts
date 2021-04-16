@@ -321,7 +321,7 @@ export class CrudController<E> extends BaseRoutedController {
         // Actually delete it
         let count = 0
         for (const e of deleteEntries) {
-          console.log('DELETING', e)
+          context.logger?.log('DELETING', e)
           count += 1
           await t.removeAndFlush(e)
         }
@@ -593,7 +593,6 @@ export class CrudController<E> extends BaseRoutedController {
         const fromPayload = payload[key] as Array<any>
         // Go through each existing objects.
         const toRemove = fromPairs(map(fromDb, (o) => [Utils.getCompositeKeyHash(o, elementMeta), o]))
-        console.log('Computing changes', JSON.stringify(fromPayload, null, ' '), 'against', JSON.stringify(fromDb))
         for (let i = 0; i < fromPayload.length; i++) {
           // Creation case
           const found = em.getUnitOfWork().tryGetById(relationshipForThisKey.type, {
@@ -602,17 +601,14 @@ export class CrudController<E> extends BaseRoutedController {
           })
           if (found) {
             // mark dirty
-            console.log('UPDATE CASE -- FOUND', found, 'marking dirty with =>', fromPayload[i])
             wrap(found).assign(fromPayload[i], { em })
             delete toRemove[Utils.getCompositeKeyHash(found, elementMeta)]
           } else {
-            console.log('CREATION CASE -- NOT FOUND > add new one =>', fromPayload[i])
             // Add new ones
             const unmanaged = em.create(relationshipForThisKey.type, fromPayload[i])
             fromDb.add(unmanaged)
           }
         }
-        console.log('FINALLY -- DELETE THE REST', toRemove)
         // Removals
         fromDb.remove(...values(toRemove))
         // remove this from payload to assign to object.
