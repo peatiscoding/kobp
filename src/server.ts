@@ -5,7 +5,6 @@ import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import { DI, createDI } from './di'
 import { withJson } from './middlewares'
-import { KobpServiceContext } from './context'
 
 export const makeServer = async (initOrmOrConfig: MikroORMOptions | (() => Promise<MikroORM>), serviceRoutes: Router, port: number = undefined): Promise<Koa> => {
   const orm = isFunction(initOrmOrConfig)
@@ -18,11 +17,12 @@ export const makeServer = async (initOrmOrConfig: MikroORMOptions | (() => Promi
   
   app.use(withJson(console))
   app.use(bodyParser())
-  app.use((ctx: KobpServiceContext, next) => RequestContext.createAsync(DI.orm.em, async () => {
+  app.use((ctx, next) => RequestContext.createAsync(DI.orm.em, next))
+  app.use(async (ctx, next) => {
     ctx.orm = DI.orm
     ctx.em = DI.orm.em as any
     await next()
-  }))
+  })
   app.use(serviceRoutes.routes())
   app.use(serviceRoutes.allowedMethods())
 

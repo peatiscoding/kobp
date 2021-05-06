@@ -18,6 +18,6 @@ export const DI = {} as ORMDepdencyInjection
  */
 export const createDI = (orm: MikroORM): ORMDepdencyInjection => {
   DI.orm = orm
-  DI.orm.em = orm.em
+  DI.em = DI.orm.em
   return DI
 }
