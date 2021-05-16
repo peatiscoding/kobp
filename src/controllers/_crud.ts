@@ -13,6 +13,7 @@ import isFunction from 'lodash/isFunction'
 
 import { BaseRoutedController } from '.'
 import { ClientErrorCode, KobpError, ServerErrorCode } from '../utils'
+import { DI } from '../di'
 
 
 export class CrudError extends Error {
@@ -159,7 +160,7 @@ export class CrudController<E> extends BaseRoutedController {
     }
   }
 
-  protected getEntityManager(context: KobpServiceContext): EntityManager { return context.em as EntityManager }
+  protected getEntityManager(context: KobpServiceContext): EntityManager { return DI.em as EntityManager }
 
   public getRouteMaps(): RouteMap {
     return {
