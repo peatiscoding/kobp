@@ -5,18 +5,41 @@ import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import { DI, createDI } from './di'
 import { withJson } from './middlewares'
+import { isNumber } from 'lodash'
 
-export const makeServer = async (initOrmOrConfig: MikroORMOptions | (() => Promise<MikroORM>), serviceRoutes: Router, port: number = undefined): Promise<Koa> => {
+interface MakeServerOptions {
+  port: number
+  middlewareBeforeFork: (app: Koa) => void
+}
+
+export const makeServer = async (initOrmOrConfig: MikroORMOptions | (() => Promise<MikroORM>), serviceRoutes: Router, portOrOptions: number | Partial<MakeServerOptions> = undefined): Promise<Koa> => {
   const orm = isFunction(initOrmOrConfig)
     ? await initOrmOrConfig()
     : await MikroORM.init(initOrmOrConfig)
 
   createDI(orm)
 
+  let opts: MakeServerOptions = {
+    port: +(process.env.PORT) || 3000,
+    middlewareBeforeFork: (koa) => {
+      koa.use(withJson(console))
+      koa.use(bodyParser())
+    },
+  }
+  if (!isNumber(portOrOptions)) {
+    opts = {
+      ...opts,
+      ...portOrOptions,
+    }
+  } else {
+    opts.port = portOrOptions
+  }
+
   const app = new Koa()
   
-  app.use(withJson(console))
-  app.use(bodyParser())
+  if (opts.middlewareBeforeFork) {
+    opts.middlewareBeforeFork(app)
+  }
   app.use((ctx, next) => RequestContext.createAsync(DI.orm.em, next))
   app.use(async (ctx, next) => {
     ctx.orm = DI.orm
@@ -27,9 +50,8 @@ export const makeServer = async (initOrmOrConfig: MikroORMOptions | (() => Promi
   app.use(serviceRoutes.allowedMethods())
 
   // Completed
-  const finalPort = +(port || process.env.PORT) || 3000
-  app.listen(finalPort, '0.0.0.0', () => {
-    console.log('Service is now listening for requests on port', finalPort)
+  app.listen(opts.port, '0.0.0.0', () => {
+    console.log('Service is now listening for requests on port', opts.port)
   })
 
   return app
