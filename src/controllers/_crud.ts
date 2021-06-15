@@ -14,6 +14,7 @@ import isFunction from 'lodash/isFunction'
 import { BaseRoutedController } from '.'
 import { ClientErrorCode, KobpError, ServerErrorCode } from '../utils'
 import { DI } from '../di'
+import { Middleware } from 'koa'
 
 
 export class CrudError extends Error {
@@ -128,6 +129,11 @@ export interface CrudControllerOption<E> {
    * Use this option to avoid empty value in key path.
    */
   replaceUnderscrollWithEmptyKeyPath: boolean
+
+  /**
+   * All route middlewares
+   */
+  middlewares: Middleware[]
 }
 
 export class CrudController<E> extends BaseRoutedController {
@@ -140,6 +146,7 @@ export class CrudController<E> extends BaseRoutedController {
     super()
     this.resolvedResourcePath = (options.resourceKeyPath || ':id').replace(/^\/?/, '/') // attach leading '/' if not provided.
     this.options = {
+      middlewares: [],
       forAllResources: () => ({}),
       loadResourceToCreate: () => undefined,
       defaultFilters: async () => ({}),
@@ -158,6 +165,7 @@ export class CrudController<E> extends BaseRoutedController {
       ...options,
       resourceKeyPath: this.resolvedResourcePath.replace(/<\w+>/g, ''), // removed <columnName> component
     }
+    this.allRoutesMiddlewares = this.options.middlewares
   }
 
   protected getEntityManager(context: KobpServiceContext): EntityManager { return DI.em as EntityManager }
