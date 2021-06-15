@@ -20,6 +20,9 @@ export class KobpRouter extends Router<KobpServiceState, KobpServiceContext> {
 
 export class BaseRoutedController {
 
+  constructor(protected allRoutesMiddlewares: Middleware[] = []) {
+  }
+
   getRouteMaps(): RouteMap {
     return {
       ...((<any>this).__drm || {}), /* will be injected from decorators package */
@@ -56,8 +59,9 @@ export class BaseRoutedController {
         method = [method]
       }
       for(const _m of method) {
-        for(let i = 0; i < (middlewares || []).length; i += 1) {
-          router[_m](path, middlewares[i])
+        const mw = [...this.allRoutesMiddlewares, ...(middlewares || [])]
+        for(let i = 0; i < mw.length; i += 1) {
+          router[_m](path, mw[i])
         }
         router[_m](path, async (ctx, next): Promise<void> => {
           try {

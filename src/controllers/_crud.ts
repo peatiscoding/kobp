@@ -471,10 +471,11 @@ export class CrudController<E> extends BaseRoutedController {
       } else if (/\$like\(([^)]*)\)/i.test(v)) {
         const m = v.match(/\$like\(([^)]*)\)/i)
         if (!m) throw CrudError.coded('RES-004 QUERY_MALFORM', this.resourceName, 'failed to evalQuery $like')
-        // return [`LIKE (:${_pk})`, {
-        //   [_pk]: m[1]
-        // }]
         return { $like: m[1] }
+      } else if (/\$ilike\(([^)]*)\)/i.test(v)) {
+        const m = v.match(/\$ilike\(([^)]*)\)/i)
+        if (!m) throw CrudError.coded('RES-004 QUERY_MALFORM', this.resourceName, 'failed to evalQuery $ilike')
+        return { $ilike: m[1] }
       } else if (/\$between\(([^,]+),(.+)\)/i.test(v)) {
         const m = v.match(/\$between\(([^,]+),(.+)\)/i)
         if (!m) throw CrudError.coded('RES-004 QUERY_MALFORM', this.resourceName, 'failed to evalQuery $between')
