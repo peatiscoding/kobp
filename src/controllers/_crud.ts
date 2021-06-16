@@ -605,10 +605,12 @@ export class CrudController<E> extends BaseRoutedController {
         const toRemove = fromPairs(map(fromDb, (o) => [Utils.getCompositeKeyHash(o, elementMeta), o]))
         for (let i = 0; i < fromPayload.length; i++) {
           // Creation case
-          const found = em.getUnitOfWork().tryGetById(relationshipForThisKey.type, {
+          const query = {
             ...pick(fromPayload[i], ...primaryKeysForCollectionElement),
             [parentKey]: parentEntity,
-          })
+          }
+          // Retry by fallback to default's session em.
+          const found = em.getUnitOfWork().tryGetById(relationshipForThisKey.type, query) || DI.em.getUnitOfWork().tryGetById(relationshipForThisKey.type, query)
           if (found) {
             // mark dirty
             wrap(found).assign(fromPayload[i], { em })
