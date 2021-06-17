@@ -234,7 +234,7 @@ export class CrudController<E> extends BaseRoutedController {
   public async getOne(context: KobpServiceContext, manager?: EntityManager, _supressFilters: boolean = false): Promise<E> {
     const query = context.request.query
     const hasPopulate = Boolean(query.populate)
-    const populatedByQuery = query['populate']?.split(',').filter(Boolean)
+    const populatedByQuery = (typeof query.populate === 'string' ? query.populate.split(',') : (query.populate || [])).filter(Boolean)
 
     const em = manager || this.getEntityManager(context)
     const _filterQueries = await this._filtersQuery(context, em)
@@ -381,7 +381,7 @@ export class CrudController<E> extends BaseRoutedController {
     const offset = +(query['offset'] || 0)
     const pageSize = +(query['pagesize'] || 20)
     const hasPopulate = Boolean(query.populate)
-    const populatedByQuery = query['populate']?.split(',').filter(Boolean)
+    const populatedByQuery = (typeof query.populate === 'string' ? query.populate.split(',') : (query.populate || [])).filter(Boolean)
 
     const em = this.getEntityManager(context)
 
@@ -448,7 +448,7 @@ export class CrudController<E> extends BaseRoutedController {
     //   throw ServiceError.coded('RES-003 INVALID_RESOURCE_SCOPE', { resource: this.resourceName, scopeName, scopes })
     // }
     // q = { key: value }
-    const q: { [key: string]: string | Function } = {
+    const q: { [key: string]: string | string[] | Function } = {
       // ...pick(scopes, scopeName, {} as any),
       ...pick(req.query, this.options.searchableFields),
     }
@@ -596,7 +596,7 @@ export class CrudController<E> extends BaseRoutedController {
       const meta = em.getMetadata().find(cnstr.name)
       const relationshipForThisKey = meta.relations.find((o) => o.name === key)
       const primaryKeysForCollectionElement = relationshipForThisKey?.targetMeta?.primaryKeys
-      if (parentEntity[key] instanceof Collection && payload[key] instanceof Array && relationshipForThisKey && primaryKeysForCollectionElement) {
+      if (parentEntity[key].loadItems && payload[key] instanceof Array && relationshipForThisKey && primaryKeysForCollectionElement) {
         const parentKey = relationshipForThisKey.mappedBy
         const elementMeta = em.getMetadata().find(relationshipForThisKey.type)
         const fromDb = parentEntity[key] as Collection<any>
@@ -610,7 +610,7 @@ export class CrudController<E> extends BaseRoutedController {
             [parentKey]: parentEntity,
           }
           // Retry by fallback to default's session em.
-          const found = em.getUnitOfWork().tryGetById(relationshipForThisKey.type, query) || DI.em.getUnitOfWork().tryGetById(relationshipForThisKey.type, query)
+          const found = em.getUnitOfWork().tryGetById(relationshipForThisKey.type, query) // || DI.em.getUnitOfWork().tryGetById(relationshipForThisKey.type, query)
           if (found) {
             // mark dirty
             wrap(found).assign(fromPayload[i], { em })

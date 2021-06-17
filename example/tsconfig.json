@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "lib": ["es2017"],
+    "moduleResolution": "node",
+    "noUnusedLocals": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "declaration": true,
+    "target": "es2017",
+    "outDir": "./lib/esm"
+  },
+  "include": ["src", "../src"],
+  "exclude": ["node_modules"]
+}

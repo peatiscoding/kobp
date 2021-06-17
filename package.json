@@ -1,6 +1,6 @@
 {
   "name": "kobp",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Koa Boilerplate with MikroORM",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
@@ -29,9 +29,9 @@
     "lodash": "^4.17.21"
   },
   "peerDependencies": {
-    "koa": "^2.9.0",
     "@mikro-orm/core": "^4.5.3",
-    "@mikro-orm/mysql-base": "^4.5.3"
+    "@mikro-orm/mysql-base": "^4.5.3",
+    "koa": "^2.9.0"
   },
   "devDependencies": {
     "@mikro-orm/core": "^4.5.3",
@@ -41,6 +41,7 @@
     "@types/koa-router": "^7.4.1",
     "@types/lodash": "^4.14.168",
     "@types/node": "^14.14.6",
+    "ts-node-dev": "^1.1.6",
     "typescript": "^4"
   }
 }

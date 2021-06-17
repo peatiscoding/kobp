@@ -1,0 +1,53 @@
+{
+  "name": "kobp",
+  "version": "0.0.8",
+  "description": "Kobp on Test",
+  "main": "lib/cjs/index.js",
+  "module": "lib/esm/index.js",
+  "scripts": {
+    "clean": "rm -rf node_modules/ && rm -rf libs/",
+    "migrate:create": "./node_modules/.bin/mikro-orm migration:create",
+    "migrate:up": "./node_modules/.bin/mikro-orm migration:up",
+    "migrate:down": "./node_modules/.bin/mikro-orm migration:down",
+    "example": "docker-compose up -d && ts-node-dev --respawn -T src/server.ts",
+    "test": "./node_modules/.bin/jest src/__tests__/e2e/"
+  },
+  "mikro-orm": {
+    "useTsNode": true,
+    "configPaths": [
+      "./src/orm.config.ts"
+    ]
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    }
+  },
+  "author": "Kittiphat S.",
+  "dependencies": {
+    "@mikro-orm/core": "^4.5.3",
+    "@mikro-orm/mysql-base": "^4.5.3",
+    "@mikro-orm/postgresql": "^4.3.4",
+    "koa": "^2.13.1",
+    "koa-bodyparser": "^4.3.0",
+    "koa-router": "^9.4.0",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@mikro-orm/cli": "^4.3.3",
+    "@mikro-orm/core": "^4.5.3",
+    "@mikro-orm/mysql-base": "^4.5.3",
+    "@types/jest": "^26.0.23",
+    "@types/koa": "^2.11.6",
+    "@types/koa-bodyparser": "^4.3.0",
+    "@types/koa-router": "^7.4.1",
+    "@types/lodash": "^4.14.168",
+    "@types/node": "^14.14.6",
+    "axios": "^0.21.1",
+    "jest": "^27.0.4",
+    "ts-jest": "^27.0.3",
+    "ts-node-dev": "^1.1.6",
+    "typescript": "^4"
+  }
+}
