@@ -13,6 +13,6 @@ yarn example
 To test:
 
 ```sh
+// Run test against running server!
 yarn test
-
 ```
