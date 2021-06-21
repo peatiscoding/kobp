@@ -286,7 +286,7 @@ export class CrudController<E> extends BaseRoutedController {
 
         let sanitizedBody = await this.options.sanitizeInputBody(context, t, body, false)
         sanitizedBody = await this.options.computeUpdatePayload(context, t, raw, sanitizedBody)
-        raw = this.__processUpdatePayload(t, raw, sanitizedBody)
+        raw = this.persistNestedCollection(t, raw, sanitizedBody)
 
         // Apply preSave hook
         for (const h of this.options.preSave) {
@@ -585,7 +585,14 @@ export class CrudController<E> extends BaseRoutedController {
     }, {})
   }
 
-  private __processUpdatePayload(em: EntityManager, obj: E, payload: any): E {
+  /**
+   * Advance method for assigning complex object.
+   * @param em 
+   * @param obj 
+   * @param payload 
+   * @returns 
+   */
+  protected persistNestedCollection(em: EntityManager, obj: E, payload: any): E {
     const parentEntity: any = obj
     const cnstr = this.cnstr
     for (const key in parentEntity) {
@@ -596,7 +603,7 @@ export class CrudController<E> extends BaseRoutedController {
       const meta = em.getMetadata().find(cnstr.name)
       const relationshipForThisKey = meta.relations.find((o) => o.name === key)
       const primaryKeysForCollectionElement = relationshipForThisKey?.targetMeta?.primaryKeys
-      if (parentEntity[key].loadItems && payload[key] instanceof Array && relationshipForThisKey && primaryKeysForCollectionElement) {
+      if (payload[key] instanceof Array && parentEntity[key] && parentEntity[key].loadItems && relationshipForThisKey && primaryKeysForCollectionElement) {
         const parentKey = relationshipForThisKey.mappedBy
         const elementMeta = em.getMetadata().find(relationshipForThisKey.type)
         const fromDb = parentEntity[key] as Collection<any>
