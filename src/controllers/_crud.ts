@@ -617,7 +617,7 @@ export class CrudController<E> extends BaseRoutedController {
             [parentKey]: parentEntity,
           }
           // Retry by fallback to default's session em.
-          const found = em.getUnitOfWork().tryGetById(relationshipForThisKey.type, query) // || DI.em.getUnitOfWork().tryGetById(relationshipForThisKey.type, query)
+          const found = em.getUnitOfWork().tryGetById(relationshipForThisKey.type, query) || DI.em.getUnitOfWork().tryGetById(relationshipForThisKey.type, query)
           if (found) {
             // mark dirty
             wrap(found).assign(fromPayload[i], { em })
