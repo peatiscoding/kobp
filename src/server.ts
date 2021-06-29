@@ -43,7 +43,7 @@ export const makeServer = async (initOrmOrConfig: MikroORMOptions | (() => Promi
   app.use((ctx, next) => RequestContext.createAsync(DI.orm.em, next))
   app.use(async (ctx, next) => {
     ctx.orm = DI.orm
-    ctx.em = DI.orm.em.fork() as any
+    ctx.em = DI.orm.em
     await next()
   })
   app.use(serviceRoutes.routes())
