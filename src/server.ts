@@ -6,9 +6,11 @@ import bodyParser from 'koa-bodyparser'
 import { DI, createDI } from './di'
 import { withJson } from './middlewares'
 import { isNumber } from 'lodash'
+import { Server } from 'http'
 
 interface MakeServerOptions {
   port: number
+  onServerCreated?: (sv: Server) => void
   middlewareBeforeFork: (app: Koa) => void
 }
 
@@ -50,9 +52,12 @@ export const makeServer = async (initOrmOrConfig: MikroORMOptions | (() => Promi
   app.use(serviceRoutes.allowedMethods())
 
   // Completed
-  app.listen(opts.port, '0.0.0.0', () => {
+  const sv = app.listen(opts.port, '0.0.0.0', () => {
     console.log('Service is now listening for requests on port', opts.port)
   })
+
+  // Server creation hook
+  opts.onServerCreated && opts.onServerCreated(sv)
 
   return app
 }

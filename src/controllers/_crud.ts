@@ -400,6 +400,7 @@ export class CrudController<E> extends BaseRoutedController {
         limit: pageSize,
         offset: offset,
         orderBy: this._orderBy(context),
+        filters: await this.options.defaultFilters(context, em),
         populate: hasPopulate
           ? populatedByQuery
           : this.options.defaultPopulate(context, true),
