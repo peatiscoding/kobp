@@ -75,9 +75,10 @@ export class Loggy {
    * @param context 
    */
   static trap(): Middleware {
-    return async function (ctx: KobpServiceContext, next) {
+    return async function (ctx, next) {
+      console.log('CTX', ctx)
       const crc = <any>RequestContext.currentRequestContext()
-      crc.loggy = new Loggy(ctx)
+      crc.loggy = new Loggy(ctx as any)
       await next()
     }
   }

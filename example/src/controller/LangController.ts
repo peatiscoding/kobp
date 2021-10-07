@@ -1,5 +1,5 @@
-import { RequestContext } from '@mikro-orm/core'
-import { BaseRoutedController, KobpServiceContext, RouteMap } from '../../../src'
+import { Logger, RequestContext } from '@mikro-orm/core'
+import { BaseRoutedController, KobpServiceContext, Loggy, RouteMap } from '../../../src'
 import { withLanguage } from '../middlewares/withLanguage'
 
 export class LangController extends BaseRoutedController {
@@ -28,6 +28,7 @@ export class LangController extends BaseRoutedController {
     await new Promise((resolve) => setTimeout(resolve, +context.params.seconds * 1000))
     const after = dt.lang
     const afterCtx = context.lang
+    Loggy.log('Hello')
     return {
       di: {
         before,

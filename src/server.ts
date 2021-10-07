@@ -53,11 +53,11 @@ export const makeServer = async (initOrmOrConfig: MikroORMOptions | (() => Promi
     ctx.em = DI.orm.em
     await next()
   })
-  app.use(serviceRoutes.routes())
-  app.use(serviceRoutes.allowedMethods())
   if (opts.middlewareAfterFork) {
     opts.middlewareAfterFork(app)
   }
+  app.use(serviceRoutes.routes())
+  app.use(serviceRoutes.allowedMethods())
 
   // Completed
   const sv = app.listen(opts.port, '0.0.0.0', () => {
