@@ -3,6 +3,8 @@ import { randomBytes } from 'crypto'
 import { Middleware } from 'koa'
 import { KobpServiceContext } from '..'
 
+const _stringify = (o: any) => (typeof o === 'string' || typeof o === 'number') ? `${o}` : JSON.stringify(o)
+
 export class Loggy {
 
   public static requestIdContextKey = 'traceId'
@@ -13,8 +15,8 @@ export class Loggy {
     this.requestId = ctx[Loggy.requestIdContextKey] || `${new Date().getTime().toString(32)}.${randomBytes(4).toString('hex').substr(0, 4)}`
   }
 
-  private log(...messageParts: string[]) {
-    this._print({ message: messageParts.map((o) => o).join(' ') })
+  private log(...messageParts: any[]) {
+    this._print({ message: messageParts.map((o) => _stringify(o)).join(' ') })
   }
 
   private error(message: string, error?: string | Error) {
@@ -43,7 +45,7 @@ export class Loggy {
   }
 
   // Usage
-  static log(...messageParts: string[]) {
+  static log(...messageParts: any[]) {
     const crc = <any>RequestContext.currentRequestContext()
     const loggy: Loggy = crc?.loggy
     if (!loggy) {
@@ -76,7 +78,6 @@ export class Loggy {
    */
   static trap(): Middleware {
     return async function (ctx, next) {
-      console.log('CTX', ctx)
       const crc = <any>RequestContext.currentRequestContext()
       crc.loggy = new Loggy(ctx as any)
       await next()
