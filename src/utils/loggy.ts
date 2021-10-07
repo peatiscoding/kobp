@@ -5,9 +5,12 @@ import { KobpServiceContext } from '..'
 
 export class Loggy {
 
-  public readonly requestId: string = `${new Date().getTime().toString(32)}.${randomBytes(4).toString('hex').substr(0, 4)}`
+  public static requestIdContextKey = 'traceId'
+
+  public readonly requestId!: string
 
   constructor(private ctx: KobpServiceContext) {
+    this.requestId = ctx[Loggy.requestIdContextKey] || `${new Date().getTime().toString(32)}.${randomBytes(4).toString('hex').substr(0, 4)}`
   }
 
   private log(...messageParts: string[]) {

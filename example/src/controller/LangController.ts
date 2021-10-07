@@ -1,5 +1,5 @@
 import { RequestContext } from '@mikro-orm/core'
-import { BaseRoutedController, DI, KobpServiceContext, RouteMap } from '../../../src'
+import { BaseRoutedController, KobpServiceContext, RouteMap } from '../../../src'
 import { withLanguage } from '../middlewares/withLanguage'
 
 export class LangController extends BaseRoutedController {
