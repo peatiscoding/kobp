@@ -36,6 +36,15 @@ export class Client {
     })
   }
 
+  public async readLangFromHeader(waitForSeconds: number, injection: string): Promise<APIObjectResponse> {
+    const resp = await this.axios.get(`/lang/delay/${waitForSeconds}`, {
+      headers: {
+        'x-lang': injection
+      }
+    })
+    return { httpStatusCode: resp.status, data: resp.data.data }
+  }
+
   public async listShelves(limit: number = 0, offset: number = 0): Promise<APIArrayResponse> {
     const resp = await this.axios.get('/shelf', {
       params: {

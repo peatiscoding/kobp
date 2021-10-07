@@ -1,6 +1,9 @@
 import type { MikroORM, EntityManager } from '@mikro-orm/core'
 
-interface ORMDepdencyInjection {
+/**
+ * Exported so that it can be augmented.
+ */
+export interface ORMDepdencyInjection {
   orm: MikroORM
   em: EntityManager
 }
