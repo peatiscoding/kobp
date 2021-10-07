@@ -7,7 +7,7 @@ import { DI, createDI } from './di'
 import { withJson } from './middlewares'
 import { isNumber } from 'lodash'
 import { Server } from 'http'
-import { Loggy } from './utils/loggy'
+import { Loggy, Lang } from '.'
 
 interface MakeServerOptions {
   port: number
@@ -31,6 +31,7 @@ export const makeServer = async (initOrmOrConfig: MikroORMOptions | (() => Promi
     },
     middlewareAfterFork: (koa) => {
       koa.use(Loggy.trap())
+      koa.use(Lang.trap())
     },
   }
   if (!isNumber(portOrOptions)) {
