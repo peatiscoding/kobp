@@ -3,15 +3,15 @@ import { Middleware } from 'koa'
 
 export class Lang {
 
-  static requestHeaderLanguageKey = 'x-lang'
-  static defaultLangSymbol = 'en'
+  public static requestHeaderLanguageKey = 'x-lang'
+  public static defaultLangSymbol = 'en'
 
-  current(): string {
+  public static current(fallback: string = ''): string {
     const crc = <any>RequestContext.currentRequestContext()
-    return crc?.lang || Lang.defaultLangSymbol
+    return crc?.lang || fallback || Lang.defaultLangSymbol
   }
 
-  static trap(): Middleware {
+  public static trap(): Middleware {
     return async function(ctx, next) {
       const lang = `${ctx.request.headers[Lang.requestHeaderLanguageKey] || ''}` || Lang.defaultLangSymbol
       const crc = <any>RequestContext.currentRequestContext()
