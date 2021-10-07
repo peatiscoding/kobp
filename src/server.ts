@@ -7,11 +7,13 @@ import { DI, createDI } from './di'
 import { withJson } from './middlewares'
 import { isNumber } from 'lodash'
 import { Server } from 'http'
+import { Loggy } from './utils/loggy'
 
 interface MakeServerOptions {
   port: number
   onServerCreated?: (sv: Server) => void
   middlewareBeforeFork: (app: Koa) => void
+  middlewareAfterFork?: (app: Koa) => void
 }
 
 export const makeServer = async (initOrmOrConfig: MikroORMOptions | (() => Promise<MikroORM>), serviceRoutes: Router, portOrOptions: number | Partial<MakeServerOptions> = undefined): Promise<Koa> => {
@@ -26,6 +28,9 @@ export const makeServer = async (initOrmOrConfig: MikroORMOptions | (() => Promi
     middlewareBeforeFork: (koa) => {
       koa.use(withJson(console))
       koa.use(bodyParser())
+    },
+    middlewareAfterFork: (koa) => {
+      koa.use(Loggy.trap())
     },
   }
   if (!isNumber(portOrOptions)) {
@@ -50,6 +55,9 @@ export const makeServer = async (initOrmOrConfig: MikroORMOptions | (() => Promi
   })
   app.use(serviceRoutes.routes())
   app.use(serviceRoutes.allowedMethods())
+  if (opts.middlewareAfterFork) {
+    opts.middlewareAfterFork(app)
+  }
 
   // Completed
   const sv = app.listen(opts.port, '0.0.0.0', () => {
