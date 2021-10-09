@@ -1,4 +1,4 @@
-import { Logger, RequestContext } from '@mikro-orm/core'
+import { RequestContext } from '@mikro-orm/core'
 import { BaseRoutedController, KobpServiceContext, Loggy, RouteMap } from '../../../src'
 import { withLanguage } from '../middlewares/withLanguage'
 
