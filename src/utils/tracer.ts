@@ -84,7 +84,7 @@ export class Tracer {
    */
   public static current<T extends Tracer>(): T | undefined {
     const crc = <any>RequestContext.currentRequestContext()
-    return crc.__trc__
+    return crc?.__trc__
   }
 
   /**
