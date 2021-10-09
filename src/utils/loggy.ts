@@ -20,7 +20,7 @@ interface PrintContent {
 
 export class Loggy extends Tracer implements Logger {
 
-  public static format: 'JSN' | 'TXT' = 'JSN'
+  public static format: 'JSN' | 'TXT' = /JSO?N/i.test(`${process.env.LOGGY_FORMAT || 'JSN'}`) ? 'JSN' : 'TXT'
 
   private _printLn: (content: PrintContent) => void
 
