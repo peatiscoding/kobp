@@ -39,7 +39,8 @@ export class Client {
   public async readLangFromHeader(waitForSeconds: number, injection: string): Promise<APIObjectResponse> {
     const resp = await this.axios.get(`/lang/delay/${waitForSeconds}`, {
       headers: {
-        'x-lang': injection
+        'x-lang': injection,
+        'x-trace-id': 'ABC',
       }
     })
     return { httpStatusCode: resp.status, data: resp.data.data }

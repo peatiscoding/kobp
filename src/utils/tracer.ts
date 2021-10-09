@@ -17,7 +17,7 @@ export interface TracerConfig {
   /**
    * Default to `<timestamp(radix:32)> + '.' + <random(4bytes).hex>.substr(4)`
    */
-  traceIdMaker: () => string
+  traceIdMaker: (currentKey: string) => string
 }
 
 /**
@@ -51,8 +51,14 @@ export interface TracerConfig {
 export class Tracer {
 
   public static _config: TracerConfig = {
-    requestTraceHeaderKey: 'x-traceId',
-    traceIdMaker: () => `${new Date().getTime().toString(32)}.${randomBytes(4).toString('hex').substr(0, 4)}`
+    requestTraceHeaderKey: 'x-trace-id',
+    traceIdMaker: (currentKey: string) => {
+      // Stack key when current ray run through multiple services.
+      if (!currentKey) {
+        return `${new Date().getTime().toString(32)}.${randomBytes(4).toString('hex').substr(0, 4)}`
+      }
+      return `${currentKey}>${randomBytes(4).toString('hex').substr(0, 4)}`
+    }
   }
 
   /**
@@ -72,7 +78,7 @@ export class Tracer {
 
   constructor(ctx: KobpServiceContext) {
     const config = Tracer._config
-    this.traceId = ctx.request.headers[config.requestTraceHeaderKey] || config.traceIdMaker()
+    this.traceId = config.traceIdMaker(ctx.request.headers[config.requestTraceHeaderKey] || '')
     this.context = ctx
     this.context.traceId = this.traceId
   }
