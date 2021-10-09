@@ -1,25 +1,11 @@
-import type { KobpServiceContext, Middleware } from '../context'
-import { randomBytes } from 'crypto'
-import { Logger } from '../utils/logger'
+import type { Middleware } from '../context'
 
-const wrapLogger = (prefix: string, logger: Logger): Logger | undefined => {
-  if (!logger) {
-    return undefined
-  }
-  return {
-    log: (...args) => { logger.log(prefix, ...args) },
-    error: (...args) => { logger.log(prefix, ...args) },
-  }
-}
-
-export const withJson = (logger?: Logger, trace?: (ctx: KobpServiceContext) => string): Middleware => async (ctx, next) => {
+export const withJson = (): Middleware => async (ctx, next) => {
   // Assign logger if needed.
   try {
-    let traceId = trace && trace(ctx) || `${new Date().getTime().toString(32)}.${randomBytes(4).toString('hex').substr(0, 4)}`
-    ctx.logger = wrapLogger(traceId, logger)
-    ctx.logger?.log(`[<<] ${ctx.request.url}`)
+    ctx._loggy?.log(`[<<] ${ctx.request.url}`)
     await next()
-    ctx.logger?.log(`[>>] ${ctx.request.url} ${ctx.res.statusCode}`)
+    ctx._loggy?.success(`[>>] ${ctx.request.url}`)
   } catch (err) {
     // will only respond with JSON
     ctx.status = err.statusCode || err.status || 500;
@@ -29,7 +15,6 @@ export const withJson = (logger?: Logger, trace?: (ctx: KobpServiceContext) => s
       error: err.message,
       data: err.data,
     };
-    ctx.logger?.error(`[>>] E code=${err.code && err.code || ''} message=${err.message || ''} data=${err.data && JSON.stringify(err.data) || ''}`)
-    ctx.logger?.error(`[>>] ${ctx.request.url} ${ctx.res.statusCode}`)
+    ctx._loggy?.failed(`[>>] ${ctx.request.url}`, err)
   }
 }

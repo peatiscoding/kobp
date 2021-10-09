@@ -1,53 +1,78 @@
-import { RequestContext } from '@mikro-orm/core'
-import { randomBytes } from 'crypto'
 import { Middleware } from 'koa'
+import type { Logger } from '.'
 import { KobpServiceContext } from '..'
+import { Tracer } from './tracer'
 
 const _stringify = (o: any) => (typeof o === 'string' || typeof o === 'number') ? `${o}` : JSON.stringify(o)
 
-export class Loggy {
+interface PrintContent {
+  requestId: string
+  user: any
+  ip: string[]
+  path: string
+  method: string
+  statusCode: string | number
+  message?: string
+  error?: string
+  // OK, ERROR, IN-PROGRESS
+  verdict: 'OK' | 'ER' | 'PG'
+}
 
-  public static requestIdContextKey = 'traceId'
+export class Loggy extends Tracer implements Logger {
 
-  public readonly requestId!: string
+  public static format: 'JSN' | 'TXT' = 'JSN'
 
-  constructor(private ctx: KobpServiceContext) {
-    this.requestId = ctx[Loggy.requestIdContextKey] || `${new Date().getTime().toString(32)}.${randomBytes(4).toString('hex').substr(0, 4)}`
+  private _printLn: (content: PrintContent) => void
+
+  constructor(ctx: KobpServiceContext) {
+    super(ctx)
+    this._printLn = Loggy.format === 'JSN'
+      ? (c) => console.log(JSON.stringify(c))
+      : (c) => console.log(`${c.requestId} [${c.verdict} ${c.statusCode}] ${c.method} ${c.path}`, [c.message, c.error].filter(Boolean).join(' '))
   }
 
-  private log(...messageParts: any[]) {
-    this._print({ message: messageParts.map((o) => _stringify(o)).join(' ') })
+  success(...messageParts: any[]): void {
+    this._print({ finalized: true, message: messageParts.map((o) => _stringify(o)).join(' ') })
   }
 
-  private error(message: string, error?: string | Error) {
-    this._print({ message, error: error || '(no-error-message)' })
+  failed(message: string, error?: string | Error): void {
+    this._print({ finalized: true, message, error: error || '(no-error-message)' })
   }
 
-  private _print(msg: { message?: string, error?: string | Error }) {
-    const { error, message } = msg
+  log(...messageParts: any[]): void {
+    this._print({ finalized: false, message: messageParts.map((o) => _stringify(o)).join(' ') })
+  }
+
+  error(message: string, error?: string | Error): void {
+    this._print({ finalized: false, message, error: error || '(no-error-message)' })
+  }
+
+  private _print(msg: { finalized: boolean, message?: string, error?: string | Error }) {
+    const { error, message, finalized } = msg
+    const ctx = this.context
     const errorMessage = (typeof error === 'string' && error) || (typeof error === 'object' && error.message) || ''
-    const ip = [...this.ctx.ips, this.ctx.ip]
-    const path = this.ctx.request.url
-    const method = this.ctx.request.method
-    const user = this.ctx.user?.id
-    const statusCode = this.ctx.res.statusCode
-    const payload = {
-      requestId: this.requestId,
+    const ip = [...ctx.ips, ctx.ip]
+    const path = ctx.request.url
+    const method = ctx.request.method
+    const user = ctx.user?.id
+    const statusCode = ctx.res.statusCode
+    const payload: PrintContent = {
+      requestId: this.traceId,
       user: user || null,
       ip,
       path,
       method,
-      statusCode,
+      statusCode: finalized ? statusCode : '000', // pending
       message: message || undefined,
       error: errorMessage || undefined,
+      verdict: finalized ? (!error ? 'OK' : 'ER') : 'PG',
     }
-    console.log(JSON.stringify(payload))
+    this._printLn(payload)
   }
 
   // Usage
   static log(...messageParts: any[]) {
-    const crc = <any>RequestContext.currentRequestContext()
-    const loggy: Loggy = crc?.loggy
+    const loggy = Tracer.current<Loggy>()
     if (!loggy) {
       console.log(...messageParts)
     } else {
@@ -57,8 +82,7 @@ export class Loggy {
 
   // Usage
   static error(message: string, error?: string | Error) {
-    const crc = <any>RequestContext.currentRequestContext()
-    const loggy: Loggy = crc?.loggy
+    const loggy = Tracer.current<Loggy>()
     if (!loggy) {
       console.error(message, error)
     } else {
@@ -66,20 +90,9 @@ export class Loggy {
     }
   }
 
-  /**
-   * Middleware for trapping
-   * 
-   * Silently initiate current request context association.
-   * Allow current request context to holds single loggy instead.
-   * 
-   * Therefore author can just use Loggy.log() through out the app without worrying about the instance of current request.
-   * 
-   * @param context 
-   */
-  static trap(): Middleware {
+  static autoCreate(attachToContextKey: string): Middleware {
     return async function (ctx, next) {
-      const crc = <any>RequestContext.currentRequestContext()
-      crc.loggy = new Loggy(ctx as any)
+      ctx[attachToContextKey] = new Loggy(ctx as any)
       await next()
     }
   }

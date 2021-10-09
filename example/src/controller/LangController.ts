@@ -28,7 +28,7 @@ export class LangController extends BaseRoutedController {
     await new Promise((resolve) => setTimeout(resolve, +context.params.seconds * 1000))
     const after = dt.lang
     const afterCtx = context.lang
-    Loggy.log('Hello')
+    Loggy.log(`Hello ${before} ~> ${after}`)
     return {
       di: {
         before,

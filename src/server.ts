@@ -4,15 +4,14 @@ import isFunction from 'lodash/isFunction'
 import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import { DI, createDI } from './di'
-import { withJson } from './middlewares'
 import { isNumber } from 'lodash'
 import { Server } from 'http'
-import { Loggy, Lang } from '.'
+import { Loggy, Lang, withJson } from '.'
 
 interface MakeServerOptions {
   port: number
   onServerCreated?: (sv: Server) => void
-  middlewareBeforeFork: (app: Koa) => void
+  middlewareBeforeFork?: (app: Koa) => void
   middlewareAfterFork?: (app: Koa) => void
 }
 
@@ -26,12 +25,13 @@ export const makeServer = async (initOrmOrConfig: MikroORMOptions | (() => Promi
   let opts: MakeServerOptions = {
     port: +(process.env.PORT) || 3000,
     middlewareBeforeFork: (koa) => {
-      koa.use(withJson(console))
+      koa.use(Loggy.autoCreate('_loggy'))
+      koa.use(withJson())
       koa.use(bodyParser())
     },
     middlewareAfterFork: (koa) => {
-      koa.use(Loggy.trap())
-      koa.use(Lang.trap())
+      koa.use(Loggy.attach('_loggy'))
+      koa.use(Lang.attach())
     },
   }
   if (!isNumber(portOrOptions)) {

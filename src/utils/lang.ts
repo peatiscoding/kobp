@@ -11,7 +11,7 @@ export class Lang {
     return crc?.lang || fallback || Lang.defaultLangSymbol
   }
 
-  public static trap(): Middleware {
+  public static attach(): Middleware {
     return async function(ctx, next) {
       const lang = `${ctx.request.headers[Lang.requestHeaderLanguageKey] || ''}` || Lang.defaultLangSymbol
       const crc = <any>RequestContext.currentRequestContext()
