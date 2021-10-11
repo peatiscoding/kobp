@@ -1,20 +1,27 @@
 import type { Middleware } from '../context'
 
-export const withJson = (): Middleware => async (ctx, next) => {
+export const withJson = (): Middleware => {
   // Assign logger if needed.
-  try {
-    ctx._loggy?.log(`[<<] ${ctx.request.url}`)
-    await next()
-    ctx._loggy?.success(`[>>] ${ctx.request.url}`)
-  } catch (err) {
-    // will only respond with JSON
-    ctx.status = err.statusCode || err.status || 500;
-    ctx.body = {
-      success: false,
-      code: err.code && err.code,
-      error: err.message,
-      data: err.data,
-    };
-    ctx._loggy?.failed(`[>>] ${ctx.request.url}`, err)
+  const suppressPath = process.env.KOBP_JSON_SILENT_PATH || '/healthcheck'
+  const suppressPathPattern = new RegExp(suppressPath, 'i')
+  return async function(ctx, next) {
+    const url = ctx.request.url
+    const loggy = suppressPathPattern.test(url) ? null : ctx._loggy
+    try {
+      loggy?.log(`[<<] ${url}`)
+      await next()
+      loggy?.success(`[>>] ${url}`)
+    } catch (err) {
+      // will only respond with JSON
+      ctx.status = err.statusCode || err.status || 500;
+      ctx.body = {
+        success: false,
+        code: err.code && err.code,
+        error: err.message,
+        data: err.data,
+      };
+      // Always logs error case
+      ctx._loggy?.failed(`[>>] ${url}`, err)
+    }
   }
 }
