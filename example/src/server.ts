@@ -1,7 +1,22 @@
 import { makeDbConfig } from "./orm.config"
 import { makeRoutes } from "./routes"
 
-import { makeServer } from "../../src"
+import { KobpError, KobpServiceContext, Loggy, makeServer, ServerErrorCode, withJsonConfig } from "../../src"
+
+// Override withJsonError handling
+withJsonConfig.errorPipeline.push(
+  (ctx: KobpServiceContext, err: any): Error => {
+    if (err instanceof KobpError) {
+      return err
+    }
+    // for any Non-Kobp error wrap it.
+    Loggy.error('*Wrapped* Internal Server Error: ', err)
+    // Produce simple error message;
+    return KobpError.fromServer(ServerErrorCode.internalServerError, 'Internal Server Error', {
+      traceId: ctx.tracer?.traceId
+    })
+  }
+)
 
 // Finally
 makeServer(

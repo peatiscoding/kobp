@@ -43,6 +43,14 @@ describe('ShelfController Endpoint', () => {
     expect(afterCreated.data.map((o) => o.slug)).toEqual([targetSlug])
   })
 
+  it('will throw wrapped error when insert existing object', async () => {
+    const existingSlug = 'test'
+    const createNewResp = await client.createNewShelf(existingSlug, [])
+    expect(createNewResp.httpStatusCode).toEqual(500)
+    expect(createNewResp.error).toBeTruthy()
+    expect(createNewResp.error).toMatch(/Internal Server Error/)  // Error should have been wrapped.
+  })
+
   it('Can update items from CrudController', async () => {
     // Create new one
     const targetSlug = 'history'
@@ -80,7 +88,7 @@ describe('ShelfController Endpoint', () => {
     const afterCreated = await client.getShelf(targetSlug)
     expect(afterCreated.httpStatusCode).toEqual(200)
     expect(afterCreated.data.slug).toEqual(targetSlug)
-    expect(afterCreated.data.books.map((o) => o.isbn)).toEqual(books.map((o) => o.isbn))
+    expect(afterCreated.data.books.map((o) => o.isbn).sort()).toEqual(books.map((o) => o.isbn).sort())
   })
 
   it('Can update nested item in Crud Controller', async () => {
@@ -99,7 +107,7 @@ describe('ShelfController Endpoint', () => {
     const afterCreated = await client.getShelf(targetSlug)
     expect(afterCreated.httpStatusCode).toEqual(200)
     expect(afterCreated.data.slug).toEqual(targetSlug)
-    expect(afterCreated.data.books.map((o) => o.isbn)).toEqual(books.map((o) => o.isbn))
+    expect(afterCreated.data.books.map((o) => o.isbn).sort()).toEqual(books.map((o) => o.isbn).sort())
 
     const additionalBooks = [
       makeBook('8490248567', 'New Xmen 3 Imperial'),
@@ -136,7 +144,7 @@ describe('ShelfController Endpoint', () => {
     const afterCreated = await client.getShelf(targetSlug)
     expect(afterCreated.httpStatusCode).toEqual(200)
     expect(afterCreated.data.slug).toEqual(targetSlug)
-    expect(afterCreated.data.books.map((o) => o.isbn)).toEqual(books.map((o) => o.isbn))
+    expect(afterCreated.data.books.map((o) => o.isbn).sort()).toEqual(books.map((o) => o.isbn).sort())
 
     const removedList = [
       books[0],
@@ -169,7 +177,7 @@ describe('ShelfController Endpoint', () => {
     const afterCreated = await client.getShelf(targetSlug)
     expect(afterCreated.httpStatusCode).toEqual(200)
     expect(afterCreated.data.slug).toEqual(targetSlug)
-    expect(afterCreated.data.books.map((o) => o.isbn)).toEqual(books.map((o) => o.isbn))
+    expect(afterCreated.data.books.map((o) => o.isbn).sort()).toEqual(books.map((o) => o.isbn).sort())
 
     const updatedResp = await client.updateShelf(targetSlug, [])
     expect(updatedResp.httpStatusCode).toEqual(200)
@@ -199,7 +207,7 @@ describe('ShelfController Endpoint', () => {
     const afterCreated = await client.getShelf(targetSlug)
     expect(afterCreated.httpStatusCode).toEqual(200)
     expect(afterCreated.data.slug).toEqual(targetSlug)
-    expect(afterCreated.data.books.map((o) => o.isbn)).toEqual(books.map((o) => o.isbn))
+    expect(afterCreated.data.books.map((o) => o.isbn).sort()).toEqual(books.map((o) => o.isbn).sort())
 
     const updatedItems = [
       books[0],
@@ -236,7 +244,7 @@ describe('ShelfController Endpoint', () => {
     const afterCreated = await client.getShelf(targetSlug)
     expect(afterCreated.httpStatusCode).toEqual(200)
     expect(afterCreated.data.slug).toEqual(targetSlug)
-    expect(afterCreated.data.books.map((o) => o.isbn)).toEqual(books.map((o) => o.isbn))
+    expect(afterCreated.data.books.map((o) => o.isbn).sort()).toEqual(books.map((o) => o.isbn).sort())
 
     const updatedItems = [
       books[0],

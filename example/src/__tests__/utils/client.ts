@@ -4,6 +4,7 @@ import { BookEntity } from '../../entities'
 
 export interface APIResponse {
   httpStatusCode: number
+  error?: any
 }
 
 export interface APIObjectResponse extends APIResponse {
@@ -66,7 +67,7 @@ export class Client {
       slug: shelfSlug,
       books,
     })
-    return { httpStatusCode: resp.status, data: resp.data.data }
+    return { httpStatusCode: resp.status, data: resp.data.data, error: resp.data.error }
   }
 
   public async updateShelf(shelfSlug: string, books: BookEntity[]): Promise<APIObjectResponse> {
