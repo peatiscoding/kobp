@@ -26,7 +26,7 @@ export const makeServer = async (initOrmOrConfig: MikroORMOptions | (() => Promi
     port: +(process.env.PORT) || 3000,
     middlewareBeforeFork: (koa) => {
       koa.use(Loggy.autoCreate('_loggy'))
-      koa.use(withJson())
+      koa.use(withJson('_loggy'))
       koa.use(bodyParser())
     },
     middlewareAfterFork: (koa) => {

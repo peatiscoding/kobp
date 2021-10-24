@@ -1,12 +1,12 @@
-import { KobpServiceContext } from '..'
 import type { Middleware } from '../context'
+import { Loggy } from '..'
 
 const WithJson = () => {
   const config: {
     /**
      * Ideal place to wrap the error before it emit via reponse.json()
      */
-    errorPipeline: ((ctx: KobpServiceContext, err: any) => Error)[]
+    errorPipeline: ((err: any, loggy?: Loggy) => Error)[]
 
     /**
      * 
@@ -17,12 +17,12 @@ const WithJson = () => {
     suppressPath: `${process.env.KOBP_JSON_SILENT_PATH || ''}` || '/healthcheck'
   }
 
-  const middleware = (): Middleware => {
+  const middleware = (loggyContextKey: string): Middleware => {
     // Assign logger if needed.
     const suppressPathPattern = new RegExp(config.suppressPath, 'i')
     return async function(ctx, next) {
       const url = ctx.request.url
-      const loggy = suppressPathPattern.test(url) ? null : ctx._loggy
+      const loggy = suppressPathPattern.test(url) ? null : ctx[loggyContextKey]
       try {
         loggy?.log(`[<<] ${url}`)
         await next()
@@ -32,7 +32,7 @@ const WithJson = () => {
         let _err = err
         if (config.errorPipeline) {
           for(const pipe of config.errorPipeline) {
-            _err = pipe(ctx, _err)
+            _err = pipe(_err, loggy)
           }
         }
         ctx.status = _err.statusCode || _err.status || 500;
