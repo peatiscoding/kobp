@@ -7,6 +7,7 @@ export * from './utils/lang'
 export * from './utils/error.http'
 export * from './utils/response'
 export * from './utils/env'
+export * from './utils/manual.request'
 // Creating Service
 export { DI } from './di'
 export * from './server'
