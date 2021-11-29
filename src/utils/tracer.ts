@@ -112,4 +112,15 @@ export class Tracer {
       await next()
     }
   }
+
+  /**
+   * Auto create the instance with default constructor
+   * and gave such object to specific RequestContext
+   * 
+   * @param requestContext 
+   */
+  public static bind(requestContext?: RequestContext) {
+    const crc = <any>requestContext || RequestContext.currentRequestContext()
+    crc.__trc__ = new this({ request: { headers: {} }} as any)
+  }
 }
