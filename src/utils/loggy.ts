@@ -51,9 +51,9 @@ export class Loggy extends Tracer implements Logger {
     const { error, message, finalized } = msg
     const ctx = this.context
     const errorMessage = (typeof error === 'string' && error) || (typeof error === 'object' && error.message) || ''
-    const ip = [...ctx.ips, ctx.ip]
-    const path = ctx.request.url
-    const method = ctx.request.method
+    const ip = [...ctx.ips || [], ctx.ip].filter(Boolean)
+    const path = ctx.request?.url
+    const method = ctx.request?.method
     const user = ctx.user?.id
     const statusCode = ctx.res.statusCode
     const payload: PrintContent = {

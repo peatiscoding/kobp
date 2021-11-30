@@ -121,6 +121,15 @@ export class Tracer {
    */
   public static bind(requestContext?: RequestContext) {
     const crc = <any>requestContext || RequestContext.currentRequestContext()
-    crc.__trc__ = new this({ request: { headers: {} }} as any)
+    crc.__trc__ = new this({
+      request: {
+        headers: {},
+        method: 'run',
+        url: '',
+      },
+      res: {
+        statusCode: -1
+      }
+    } as any)
   }
 }
