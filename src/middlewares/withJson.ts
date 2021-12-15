@@ -1,5 +1,5 @@
 import type { Middleware } from '../context'
-import { Loggy } from '..'
+import { KobpError, Loggy } from '..'
 
 const WithJson = () => {
   const config: {
@@ -41,6 +41,7 @@ const WithJson = () => {
           code: _err.code && _err.code,
           error: _err.message,
           data: _err.data,
+          type: _err instanceof KobpError ? 'kobp' : undefined,
         };
         // Always logs error case
         ctx._loggy?.failed(`[>>] ${url}`, _err)

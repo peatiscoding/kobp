@@ -1,3 +1,4 @@
+import type { AxiosError } from 'axios'
 import { ErrorCode, ClientErrorCode, ServerErrorCode } from './response'
 
 export class KobpError extends Error {
@@ -26,5 +27,20 @@ export class KobpError extends Error {
    */
   static fromServer(code: ServerErrorCode, message: string, data?: any): KobpError {
     return new KobpError(code, message, data)
+  }
+
+  /**
+   * This axiosError can detect if an Axios Error emitted from `withJson`.
+   * @param anyError 
+   * @returns 
+   */
+  static from(anyError: KobpError | AxiosError): KobpError {
+    if (anyError instanceof KobpError) {
+      return anyError
+    }
+    if (anyError.response) {
+      const errorStatus = anyError.response?.status
+      const errorResponseData = anyError.response?.data
+    }
   }
 }

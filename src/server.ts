@@ -8,8 +8,12 @@ import { isNumber } from 'lodash'
 import { Server } from 'http'
 import { Loggy, Lang, withJson } from '.'
 
+/**
+ * Parameters those would effect how system behave upon creation.
+ */
 interface MakeServerOptions {
   port: number
+  allowedBodyTypes: string[]
   onServerCreated?: (sv: Server) => void
   middlewareBeforeFork?: (app: Koa) => void
   middlewareAfterFork?: (app: Koa) => void
@@ -22,12 +26,27 @@ export const makeServer = async (initOrmOrConfig: MikroORMOptions | (() => Promi
 
   createDI(orm)
 
+  const allowedBodyTypes: string[] = ((): string[] => {
+    if (!isNumber(portOrOptions) && portOrOptions.allowedBodyTypes) {
+      return portOrOptions.allowedBodyTypes
+    }
+    const raw = `${(process.env.KOBP_ALLOWED_BODY_TYPES || 'json,form')}`.trim()
+    if (!raw) {
+      return ['json', 'form']
+    }
+    return raw.split(',').filter(Boolean)
+  })()
+
   let opts: MakeServerOptions = {
     port: +(process.env.PORT) || 3000,
+    // this doesn't do anything just to keep interface intact. consider isolate this into another interface.
+    allowedBodyTypes,
     middlewareBeforeFork: (koa) => {
       koa.use(Loggy.autoCreate('_loggy'))
       koa.use(withJson('_loggy'))
-      koa.use(bodyParser())
+      koa.use(bodyParser({
+        enableTypes: allowedBodyTypes,
+      }))
     },
     middlewareAfterFork: (koa) => {
       koa.use(Loggy.attach('_loggy'))

@@ -36,6 +36,7 @@
   "devDependencies": {
     "@mikro-orm/core": "^4.5.3",
     "@mikro-orm/mysql-base": "^4.5.3",
+    "@types/axios": "^0.14.0",
     "@types/koa": "^2.11.6",
     "@types/koa-bodyparser": "^4.3.0",
     "@types/koa-router": "^7.4.1",
