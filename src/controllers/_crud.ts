@@ -281,7 +281,7 @@ export class CrudController<E> extends BaseRoutedController {
 
     return await this.getEntityManager(context)
       .transactional(async (t): Promise<E> => {
-        let raw = await this.getOne(context, t)
+        let raw: E = await this.getOne(context, t)
 
         let sanitizedBody = await this.options.sanitizeInputBody(context, t, body, false)
         sanitizedBody = await this.options.computeUpdatePayload(context, t, raw, sanitizedBody)
@@ -321,7 +321,7 @@ export class CrudController<E> extends BaseRoutedController {
       .transactional(async (t): Promise<number> => {
         const r = await this.getOne(context, t)
 
-        let deleteEntries = [r]
+        let deleteEntries: E[] = [r]
         for (const h of this.options.preDelete) {
           deleteEntries = await h(context, t, deleteEntries)
         }
