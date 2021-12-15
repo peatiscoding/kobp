@@ -78,7 +78,9 @@ export class Tracer {
 
   constructor(ctx: KobpServiceContext) {
     const config = Tracer._config
-    this.traceId = config.traceIdMaker(ctx.request.headers[config.requestTraceHeaderKey] || '')
+    const fromHeader = ctx.request.headers[config.requestTraceHeaderKey]
+    const sanitized = (typeof fromHeader === 'string' ? fromHeader : (fromHeader && fromHeader.length > 0 && fromHeader[0] || ''))
+    this.traceId = config.traceIdMaker(sanitized)
     this.context = ctx
     this.context.traceId = this.traceId
   }

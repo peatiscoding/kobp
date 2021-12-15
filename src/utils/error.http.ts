@@ -1,4 +1,3 @@
-import type { AxiosError } from 'axios'
 import { ErrorCode, ClientErrorCode, ServerErrorCode } from './response'
 
 export class KobpError extends Error {
@@ -34,13 +33,16 @@ export class KobpError extends Error {
    * @param anyError 
    * @returns 
    */
-  static from(anyError: KobpError | AxiosError): KobpError {
+  static from(anyError: KobpError | any): KobpError {
     if (anyError instanceof KobpError) {
       return anyError
     }
     if (anyError.response) {
       const errorStatus = anyError.response?.status
       const errorResponseData = anyError.response?.data
+      const errorResponseMessage = anyError.response?.data?.message || anyError.message
+      return new KobpError(errorStatus, errorResponseMessage, errorResponseData || {})
     }
+    return KobpError.fromServer(ServerErrorCode.internalServerError, anyError && anyError.message, {})
   }
 }
