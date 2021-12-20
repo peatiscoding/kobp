@@ -10,6 +10,9 @@ interface PrintContent {
   user: any
   ip: string[]
   path: string
+  version: string
+  platform: string
+  app: string
   method: string
   statusCode: string | number
   message?: string
@@ -50,15 +53,22 @@ export class Loggy extends Tracer implements Logger {
   private _print(msg: { finalized: boolean, message?: string, error?: string | Error }) {
     const { error, message, finalized } = msg
     const ctx = this.context
+    const headers = ctx.headers || {}
     const errorMessage = (typeof error === 'string' && error) || (typeof error === 'object' && error.message) || ''
     const ip = [...ctx.ips || [], ctx.ip].filter(Boolean)
     const path = ctx.request?.url
     const method = ctx.request?.method
     const user = ctx.user?.id
     const statusCode = ctx.res.statusCode
+    const version = `${headers['x-version'] || ''}`
+    const app = `${headers['x-app'] || ''}`
+    const platform = `${headers['x-platform'] || ''}`
     const payload: PrintContent = {
       requestId: this.traceId,
       user: user || null,
+      app,
+      version,
+      platform,
       ip,
       path,
       method,
