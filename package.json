@@ -1,5 +1,5 @@
 {
-  "name": "kobp",
+  "name": "spw-kobp",
   "version": "0.0.32",
   "description": "Koa Boilerplate with MikroORM",
   "main": "lib/cjs/index.js",
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/peatiscoding/kobp.git"
+    "url": "git+https://github.com//onesiamsuperapp/spw-kobp.git"
   },
   "keywords": [
     "koa",
@@ -19,9 +19,9 @@
   "author": "Kittiphat S.",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/peatiscoding/kobp/issues"
+    "url": "https://github.com//onesiamsuperapp/spw-kobp/issues"
   },
-  "homepage": "https://github.com/peatiscoding/kobp#readme",
+  "homepage": "https://github.com//onesiamsuperapp/spw-kobp#readme",
   "dependencies": {
     "koa": "^2.9.0",
     "koa-bodyparser": "^4.3.0",
