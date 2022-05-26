@@ -1,6 +1,6 @@
 {
   "name": "spw-kobp",
-  "version": "0.0.32",
+  "version": "0.0.33",
   "description": "Koa Boilerplate with MikroORM",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
