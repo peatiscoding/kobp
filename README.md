@@ -1,15 +1,15 @@
-# Kobp
+# SPW Kobp
 
 Start your Koa project with necessary Boring codes.
 
 ## Install
 
 ```
-npm i --save kobp
+npm i --save spw-kobp
 
 # OR
 
-yarn kobp
+yarn add spw-kobp
 ```
 
 **NOTE** we listed `koa` as our `peerDependencies` so please include the `koa` in your own codebase.
@@ -23,8 +23,8 @@ To expose each method as routes. Use our built-in decorator. `Route` which accep
 `controllers/hello.cotnroller.ts`
 
 ```ts
-import type { KobpServiceContext } from 'kobp'
-import { Route, BaseRoutedController } from 'kobp'
+import type { KobpServiceContext } from 'spw-kobp'
+import { Route, BaseRoutedController } from 'spw-kobp'
 
 export class HelloController extends BaseRoutedController {
 
@@ -47,8 +47,8 @@ Or you can describe your controllers in a classical way. (Avoid using decorators
 `controllers/hello.controller.ts`
 
 ```ts
-import type { KobpServiceContext } from 'kobp'
-import { RouteMap, BaseRoutedController } from 'kobp'
+import type { KobpServiceContext } from 'spw-kobp'
+import { RouteMap, BaseRoutedController } from 'spw-kobp'
 
 export class HelloController extends BasedRouteController {
 

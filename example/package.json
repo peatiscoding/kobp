@@ -1,9 +1,10 @@
 {
-  "name": "kobp",
+  "name": "spw-kobp-test",
   "version": "0.0.8",
   "description": "Kobp on Test",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
+  "private": true,
   "scripts": {
     "clean": "rm -rf node_modules/ && rm -rf libs/",
     "migrate:create": "./node_modules/.bin/mikro-orm migration:create",
