@@ -1,5 +1,7 @@
 # SPW Kobp
 
+![Published](https://github.com/onesiamsuperapp/spw-kobp/actions/workflows/publish.yml/badge.svg)
+
 Start your Koa project with necessary Boring codes.
 
 ## Install
