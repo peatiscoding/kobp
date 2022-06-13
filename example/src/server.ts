@@ -1,7 +1,7 @@
 import { makeDbConfig } from "./orm.config"
 import { makeRoutes } from "./routes"
 
-import { KobpError, Loggy, makeServer, ServerErrorCode, withJsonConfig } from "../../src"
+import { KobpError, Loggy, makeServer, ServerErrorCode, withJsonConfig } from "kobp"
 
 // Override withJsonError handling
 withJsonConfig.errorPipeline.push(

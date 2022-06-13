@@ -1,5 +1,5 @@
+import { DI } from "kobp"
 import { MikroORM } from "@mikro-orm/core"
-import { DI } from "../../../../src"
 import { makeDbConfig } from "../../orm.config"
 
 export const prepareDependencies = async (): Promise<any> => {

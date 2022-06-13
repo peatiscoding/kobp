@@ -1,4 +1,4 @@
-import { KobpServiceContext, KobpServiceState } from '../../../src'
+import { KobpServiceContext, KobpServiceState } from 'kobp'
 
 import Router from 'koa-router'
 import { LangController } from '../controller/LangController'

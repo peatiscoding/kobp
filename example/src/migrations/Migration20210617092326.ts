@@ -1,6 +1,6 @@
 import { Migration } from '@mikro-orm/migrations';
 
-export class Migration20210617092326 extends Migration {
+export class Migration20220613145823 extends Migration {
 
   async up(): Promise<void> {
     this.addSql('create table "shelves" ("slug" VARCHAR(250) not null, "updated_at" timestamp not null);');
@@ -13,7 +13,11 @@ export class Migration20210617092326 extends Migration {
   }
 
   async down(): Promise<void> {
-    this.addSql('drop table "books" cascade;')
-    this.addSql('drop table "shelves" cascade;')
+    this.addSql('alter table "books" drop constraint "books_shelf_slug_foreign";');
+
+    this.addSql('drop table if exists "shelves" cascade;');
+
+    this.addSql('drop table if exists "books" cascade;');
   }
+
 }

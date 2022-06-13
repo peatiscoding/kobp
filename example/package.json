@@ -1,9 +1,8 @@
 {
-  "name": "kobp",
-  "version": "0.0.8",
+  "name": "kobp-example",
+  "version": "0.0.0",
   "description": "Kobp on Test",
   "main": "lib/cjs/index.js",
-  "module": "lib/esm/index.js",
   "scripts": {
     "clean": "rm -rf node_modules/ && rm -rf libs/",
     "migrate:create": "./node_modules/.bin/mikro-orm migration:create",
@@ -27,10 +26,12 @@
   "author": "Kittiphat S.",
   "dependencies": {
     "@mikro-orm/core": "^5.2.0",
+    "@mikro-orm/migrations": "^5.2.0",
     "@mikro-orm/postgresql": "^5.2.0",
     "koa": "^2.13.1",
     "koa-bodyparser": "^4.3.0",
     "koa-router": "^9.4.0",
+    "kobp": "^1.0.0-0",
     "lodash": "^4.17.21"
   },
   "devDependencies": {

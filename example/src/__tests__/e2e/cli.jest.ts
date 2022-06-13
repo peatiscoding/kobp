@@ -1,4 +1,4 @@
-import { fork, Loggy } from "../../../../src"
+import { fork, Loggy } from "kobp"
 import { prepareDependencies } from "../utils/di"
 
 beforeAll(async() => {
