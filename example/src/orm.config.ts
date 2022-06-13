@@ -12,7 +12,7 @@ const ormConfig = <Partial<MikroORMOptions>>{
   forceUtcTimezone: true,
   dbName: 'test_db',
   host: 'localhost',
-  port: 54321,
+  port: 54322,
   user: 'tester',
   password: 'password',
   type: 'postgresql', // one of `mongo` | `mysql` | `mariadb` | `postgresql` | `sqlite`

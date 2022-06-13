@@ -1,4 +1,4 @@
-import type { Populate } from '@mikro-orm/core'
+import type { AutoPath } from '@mikro-orm/core/typings'
 import type { EntityManager } from '@mikro-orm/mysql-base'
 import type { KobpServiceContext, RouteMap } from '..'
 
@@ -47,7 +47,7 @@ export interface CrudControllerOption<E> {
    * - one = use when populate select one
    * - many = use when populate select many
    */
-  defaultPopulate: (ctx: KobpServiceContext, isMany: boolean) => Populate<E>
+  defaultPopulate: (ctx: KobpServiceContext, isMany: boolean) => AutoPath<E, string>[]
 
   /**
    * Injecting filters before any query to be made;
@@ -69,7 +69,7 @@ export interface CrudControllerOption<E> {
   /**
    * Sorting options
    */
-  orderBy: QueryOrderMap
+  orderBy: QueryOrderMap<E>
 
   /**
    * Load a resource for create method.
@@ -152,7 +152,7 @@ export class CrudController<E> extends BaseRoutedController {
       sanitizeInputBody: async (ctx, em, body) => body,
       searchableFields: [],
       searchableFieldValueConverter: {},
-      orderBy: { updatedAt: 'desc' },
+      orderBy: { updatedAt: -1 } as any, // Expected that every entity would have `updatedAt`
       computeUpdatePayload: async (ctx, em, fromDb, body) => body,
       afterLoad: [],
       preSave: [],
@@ -247,7 +247,7 @@ export class CrudController<E> extends BaseRoutedController {
     r = await em.findOne(this.cnstr, where, {
       // filters,
       populate: hasPopulate
-        ? populatedByQuery
+        ? <any>populatedByQuery
         : this.options.defaultPopulate(context, false),
     }) as E
 
@@ -361,7 +361,7 @@ export class CrudController<E> extends BaseRoutedController {
       const metaFilter = meta.filters[f]
       if (requestFilter[f]) {
         const cond = isFunction(metaFilter.cond)
-          ? metaFilter.cond(requestFilter[f], 'read')
+          ? metaFilter.cond(requestFilter[f], 'read', em)
           : metaFilter.cond
         
         if (cond) {
@@ -380,7 +380,8 @@ export class CrudController<E> extends BaseRoutedController {
     const offset = +(query['offset'] || 0)
     const pageSize = +(query['pagesize'] || 20)
     const hasPopulate = Boolean(query.populate)
-    const populatedByQuery = (typeof query.populate === 'string' ? query.populate.split(',') : (query.populate || [])).filter(Boolean)
+    const populatedByQuery = (typeof query.populate === 'string' ? query.populate.split(',') : (query.populate || []))
+      .filter(Boolean)
 
     const em = this.getEntityManager(context)
 
@@ -402,7 +403,7 @@ export class CrudController<E> extends BaseRoutedController {
         orderBy: this._orderBy(context),
         filters: await this.options.defaultFilters(context, em),
         populate: hasPopulate
-          ? populatedByQuery
+          ? <any>populatedByQuery
           : this.options.defaultPopulate(context, true),
       })
 
@@ -423,13 +424,13 @@ export class CrudController<E> extends BaseRoutedController {
    * Extract orderBy from incoming `context.request.query`.
    * @param context 
    */
-  private _orderBy(context: KobpServiceContext): QueryOrderMap {
+  private _orderBy(context: KobpServiceContext): QueryOrderMap<E> {
     const req = context.request
     if (req.query.order) {
       const order = req.query.order as string
       const orders = order.split(',')
       return orders
-        .reduce((c, element): QueryOrderMap => {
+        .reduce((c, element): QueryOrderMap<E> => {
           const m = element.match(/^([^ ]+)(\s+(asc|desc))?$/)
           if (!m) throw CrudError.coded('RES-004 QUERY_MALFORM', this.resourceName, 'order MUST has following format `db_field_name_1 asc,db_field_name2,db_field_name_3 desc`')
           return { ...c, [m[1]]: (m[2]?.toLowerCase() ?? 'desc') as any }

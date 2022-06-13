@@ -21,7 +21,7 @@ withJsonConfig.errorPipeline.push(
 // Finally
 makeServer(
   makeDbConfig as any,
-  makeRoutes(),
+  makeRoutes() as any,
   {
     port: 3456,
   },

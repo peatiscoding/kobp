@@ -26,18 +26,15 @@
   },
   "author": "Kittiphat S.",
   "dependencies": {
-    "@mikro-orm/core": "^4.5.3",
-    "@mikro-orm/mysql-base": "^4.5.3",
-    "@mikro-orm/postgresql": "^4.3.4",
+    "@mikro-orm/core": "^5.2.0",
+    "@mikro-orm/postgresql": "^5.2.0",
     "koa": "^2.13.1",
     "koa-bodyparser": "^4.3.0",
     "koa-router": "^9.4.0",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@mikro-orm/cli": "^4.3.3",
-    "@mikro-orm/core": "^4.5.3",
-    "@mikro-orm/mysql-base": "^4.5.3",
+    "@mikro-orm/cli": "^5.2.0",
     "@types/jest": "^26.0.23",
     "@types/koa": "^2.11.6",
     "@types/koa-bodyparser": "^4.3.0",
