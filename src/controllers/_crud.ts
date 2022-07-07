@@ -147,7 +147,7 @@ export class CrudController<E> extends BaseRoutedController {
     this.options = {
       middlewares: [],
       forAllResources: () => ({}),
-      loadResourceToCreate: () => undefined,
+      loadResourceToCreate: async () => undefined,
       defaultFilters: async () => ({}),
       sanitizeInputBody: async (ctx, em, body) => body,
       searchableFields: [],
@@ -253,6 +253,9 @@ export class CrudController<E> extends BaseRoutedController {
 
     if (!r) {
       const elementMeta = em.getMetadata().find(this.cnstr.name)
+      if (!elementMeta) {
+        throw KobpError.fromUserInput(ClientErrorCode.notFound, `Unknown resource ${this.resourceName}: unable to resolve entity meta`)
+      }
       const primaryKeyHash = Utils.getCompositeKeyHash(where, elementMeta)
       throw KobpError.fromUserInput(ClientErrorCode.notFound, `Unknown resource ${this.resourceName}: ${primaryKeyHash}`)
     }
@@ -353,6 +356,9 @@ export class CrudController<E> extends BaseRoutedController {
     // due to unsupported merge option. We only utilise MikroORM's filters as definition.
     const requestFilter = await this.options.defaultFilters(context, em)
     const meta = em.getMetadata().find(this.cnstr.name)
+    if (!meta) {
+      throw KobpError.fromUserInput(ClientErrorCode.notFound, `Unknown resource ${this.resourceName}: unable to resolve entity meta`)
+    }
     const results: any[] = []
     for(const f of Object.keys(requestFilter)) {
       if (!meta.filters[f]) {
@@ -449,7 +455,7 @@ export class CrudController<E> extends BaseRoutedController {
     //   throw ServiceError.coded('RES-003 INVALID_RESOURCE_SCOPE', { resource: this.resourceName, scopeName, scopes })
     // }
     // q = { key: value }
-    const q: { [key: string]: string | string[] | Function } = {
+    const q: { [key: string]: string | string[] | Function } = <any>{
       // ...pick(scopes, scopeName, {} as any),
       ...pick(req.query, this.options.searchableFields),
     }
@@ -602,11 +608,17 @@ export class CrudController<E> extends BaseRoutedController {
       }
       // Process collection items so that assign can work through managed/unmanaged complications
       const meta = em.getMetadata().find(cnstr.name)
+      if (!meta) {
+        throw KobpError.fromUserInput(ClientErrorCode.notFound, `unable to resolve entity meta for ${cnstr.name}`)
+      }
       const relationshipForThisKey = meta.relations.find((o) => o.name === key)
       const primaryKeysForCollectionElement = relationshipForThisKey?.targetMeta?.primaryKeys
       if (payload[key] instanceof Array && parentEntity[key] && parentEntity[key].loadItems && relationshipForThisKey && primaryKeysForCollectionElement) {
         const parentKey = relationshipForThisKey.mappedBy
         const elementMeta = em.getMetadata().find(relationshipForThisKey.type)
+        if (!elementMeta) {
+          throw KobpError.fromUserInput(ClientErrorCode.notFound, `unable to resolve entity meta for ${relationshipForThisKey.type}`)
+        }
         const fromDb = parentEntity[key] as Collection<any>
         const fromPayload = payload[key] as Array<any>
         // Go through each existing objects.
