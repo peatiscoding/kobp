@@ -13,7 +13,7 @@ export class Lang {
 
   public static attach(): Middleware {
     return async function(ctx, next) {
-      const lang = `${ctx.request.headers[Lang.requestHeaderLanguageKey] || ''}` || Lang.defaultLangSymbol
+      const lang = `${ctx.request.headers[Lang.requestHeaderLanguageKey] || ''}`
       const crc = <any>RequestContext.currentRequestContext()
       crc.lang = lang
       ctx.lang = lang
