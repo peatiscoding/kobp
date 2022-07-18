@@ -1,4 +1,4 @@
-import { CrudController } from "kobp";
+import { CrudController } from "./_crud";
 import { ShelfEntity } from "../entities";
 
 export class ShelfController extends CrudController<ShelfEntity> {
