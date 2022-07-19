@@ -1,22 +1,15 @@
+import type { BookTagEntity } from '.'
 import {
-  ShelfEntity,
-  TagEntity,
-} from '.'
-import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKeyType, Property } from "@mikro-orm/core"
+  Collection,
+  Entity,
+  ManyToMany,
+  Property,
+} from "@mikro-orm/core"
 
 @Entity({
   tableName: 'books'
 })
 export class BookEntity {
-
-  [PrimaryKeyType]: [string, string]
-
-  @ManyToOne({
-    entity: 'ShelfEntity',
-    primary: true,
-    onDelete: 'cascade',
-  })
-  shelf: ShelfEntity
 
   @Property({
     columnType: 'VARCHAR(120)',
@@ -33,11 +26,11 @@ export class BookEntity {
   title: string
 
   @ManyToMany({
-    entity: () => TagEntity,
+    entity: 'BookTagEntity',
     owner: true,
     eager: true,
   })
-  tags: Collection<TagEntity> = new Collection<TagEntity>(this)
+  tags: Collection<BookTagEntity> = new Collection<BookTagEntity>(this)
 
   @Property({
     columnType: 'timestamp',

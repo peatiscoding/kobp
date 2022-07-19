@@ -1,9 +1,9 @@
 import { Entity, Property } from "@mikro-orm/core"
 
 @Entity({
-  tableName: 'tags'
+  tableName: 'book_tag'
 })
-export class TagEntity {
+export class BookTagEntity {
 
   @Property({
     columnType: 'VARCHAR(250)',
@@ -17,5 +17,5 @@ export class TagEntity {
     nullable: false,
     onUpdate: () => new Date(),
   })
-  updatedAt = new Date()
+  updatedAt?: Date = new Date()
 }

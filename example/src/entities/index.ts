@@ -1,3 +1,4 @@
 export { BookEntity } from './BookEntity'
-export { ShelfEntity } from './ShelfEnttiy'
-export { TagEntity } from './TagEntity'
+export { BookTagEntity } from './BookTagEntity'
+export { LibraryEntity } from './LibraryEntity'
+export { LibraryShelfEntity } from './LibraryShelfEntity'

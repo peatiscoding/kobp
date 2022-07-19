@@ -1,13 +1,20 @@
-import { MikroORM, MikroORMOptions } from '@mikro-orm/core'
+import {
+  MikroORM,
+  MikroORMOptions
+} from '@mikro-orm/core'
 import {
   BookEntity,
-  ShelfEntity,
+  LibraryEntity,
+  BookTagEntity,
+  LibraryShelfEntity,
 } from './entities'
 
 const ormConfig = <Partial<MikroORMOptions>>{
   entities: [
-    ShelfEntity,
     BookEntity,
+    BookTagEntity,
+    LibraryEntity,
+    LibraryShelfEntity,
   ],
   forceUtcTimezone: true,
   dbName: 'test_db',

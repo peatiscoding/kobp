@@ -1,10 +1,10 @@
-import type { BookEntity } from "."
+import type { LibraryShelfEntity } from "."
 import { Cascade, Collection, Entity, OneToMany, Property } from "@mikro-orm/core"
 
 @Entity({
-  tableName: 'shelves'
+  tableName: 'library'
 })
-export class ShelfEntity {
+export class LibraryEntity {
 
   @Property({
     columnType: 'VARCHAR(250)',
@@ -13,13 +13,19 @@ export class ShelfEntity {
   })
   slug: string = ""
 
+  @Property({
+    columnType: 'VARCHAR(250)',
+    nullable: false,
+  })
+  title: string = ""
+
   @OneToMany({
-    entity: 'BookEntity',
+    entity: 'LibraryShelfEntity',
     cascade: [Cascade.PERSIST],
     orphanRemoval: true,
-    mappedBy: (book: BookEntity) => book.shelf,
+    mappedBy: (shelf: LibraryShelfEntity) => shelf.library,
   })
-  books = new Collection<BookEntity>(this)
+  shelves = new Collection<LibraryShelfEntity>(this)
 
   @Property({
     columnType: 'timestamp',

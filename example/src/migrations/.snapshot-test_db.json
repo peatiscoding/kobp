@@ -15,6 +15,15 @@
           "nullable": false,
           "mappedType": "string"
         },
+        "title": {
+          "name": "title",
+          "type": "VARCHAR(250)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamp",
@@ -26,11 +35,11 @@
           "mappedType": "datetime"
         }
       },
-      "name": "tags",
+      "name": "library",
       "schema": "public",
       "indexes": [
         {
-          "keyName": "tags_pkey",
+          "keyName": "library_pkey",
           "columnNames": [
             "slug"
           ],
@@ -41,6 +50,68 @@
       ],
       "checks": [],
       "foreignKeys": {}
+    },
+    {
+      "columns": {
+        "library_slug": {
+          "name": "library_slug",
+          "type": "VARCHAR(250)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "slug": {
+          "name": "slug",
+          "type": "VARCHAR(250)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "library_shelf",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "library_shelf_pkey",
+          "columnNames": [
+            "library_slug",
+            "slug"
+          ],
+          "composite": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "library_shelf_library_slug_foreign": {
+          "constraintName": "library_shelf_library_slug_foreign",
+          "columnNames": [
+            "library_slug"
+          ],
+          "localTableName": "public.library_shelf",
+          "referencedColumnNames": [
+            "slug"
+          ],
+          "referencedTableName": "public.library",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      }
     },
     {
       "columns": {
@@ -64,11 +135,11 @@
           "mappedType": "datetime"
         }
       },
-      "name": "shelves",
+      "name": "book_tag",
       "schema": "public",
       "indexes": [
         {
-          "keyName": "shelves_pkey",
+          "keyName": "book_tag_pkey",
           "columnNames": [
             "slug"
           ],
@@ -82,15 +153,6 @@
     },
     {
       "columns": {
-        "shelf_slug": {
-          "name": "shelf_slug",
-          "type": "VARCHAR(250)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "string"
-        },
         "isbn": {
           "name": "isbn",
           "type": "VARCHAR(120)",
@@ -126,8 +188,45 @@
         {
           "keyName": "books_pkey",
           "columnNames": [
-            "shelf_slug",
             "isbn"
+          ],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {}
+    },
+    {
+      "columns": {
+        "book_entity_isbn": {
+          "name": "book_entity_isbn",
+          "type": "VARCHAR(120)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "book_tag_entity_slug": {
+          "name": "book_tag_entity_slug",
+          "type": "VARCHAR(250)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        }
+      },
+      "name": "books_tags",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "books_tags_pkey",
+          "columnNames": [
+            "book_entity_isbn",
+            "book_tag_entity_slug"
           ],
           "composite": true,
           "primary": true,
@@ -136,16 +235,29 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "books_shelf_slug_foreign": {
-          "constraintName": "books_shelf_slug_foreign",
+        "books_tags_book_entity_isbn_foreign": {
+          "constraintName": "books_tags_book_entity_isbn_foreign",
           "columnNames": [
-            "shelf_slug"
+            "book_entity_isbn"
           ],
-          "localTableName": "public.books",
+          "localTableName": "public.books_tags",
+          "referencedColumnNames": [
+            "isbn"
+          ],
+          "referencedTableName": "public.books",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "books_tags_book_tag_entity_slug_foreign": {
+          "constraintName": "books_tags_book_tag_entity_slug_foreign",
+          "columnNames": [
+            "book_tag_entity_slug"
+          ],
+          "localTableName": "public.books_tags",
           "referencedColumnNames": [
             "slug"
           ],
-          "referencedTableName": "public.shelves",
+          "referencedTableName": "public.book_tag",
           "deleteRule": "cascade",
           "updateRule": "cascade"
         }
@@ -153,8 +265,17 @@
     },
     {
       "columns": {
-        "book_entity_shelf_slug": {
-          "name": "book_entity_shelf_slug",
+        "library_shelf_entity_library_slug": {
+          "name": "library_shelf_entity_library_slug",
+          "type": "VARCHAR(250)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "library_shelf_entity_slug": {
+          "name": "library_shelf_entity_slug",
           "type": "VARCHAR(250)",
           "unsigned": false,
           "autoincrement": false,
@@ -170,26 +291,17 @@
           "primary": false,
           "nullable": false,
           "mappedType": "string"
-        },
-        "tag_entity_slug": {
-          "name": "tag_entity_slug",
-          "type": "VARCHAR(250)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "string"
         }
       },
-      "name": "books_tags",
+      "name": "library_shelf_books",
       "schema": "public",
       "indexes": [
         {
-          "keyName": "books_tags_pkey",
+          "keyName": "library_shelf_books_pkey",
           "columnNames": [
-            "book_entity_shelf_slug",
-            "book_entity_isbn",
-            "tag_entity_slug"
+            "library_shelf_entity_library_slug",
+            "library_shelf_entity_slug",
+            "book_entity_isbn"
           ],
           "composite": true,
           "primary": true,
@@ -198,31 +310,31 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "books_tags_book_entity_shelf_slug_book_entity_isbn_foreign": {
-          "constraintName": "books_tags_book_entity_shelf_slug_book_entity_isbn_foreign",
+        "library_shelf_books_library_shelf_entity_library__f7245_foreign": {
+          "constraintName": "library_shelf_books_library_shelf_entity_library__f7245_foreign",
           "columnNames": [
-            "book_entity_shelf_slug",
-            "book_entity_isbn"
+            "library_shelf_entity_library_slug",
+            "library_shelf_entity_slug"
           ],
-          "localTableName": "public.books_tags",
+          "localTableName": "public.library_shelf_books",
           "referencedColumnNames": [
-            "shelf_slug",
-            "isbn"
+            "library_slug",
+            "slug"
           ],
-          "referencedTableName": "public.books",
+          "referencedTableName": "public.library_shelf",
           "deleteRule": "cascade",
           "updateRule": "cascade"
         },
-        "books_tags_tag_entity_slug_foreign": {
-          "constraintName": "books_tags_tag_entity_slug_foreign",
+        "library_shelf_books_book_entity_isbn_foreign": {
+          "constraintName": "library_shelf_books_book_entity_isbn_foreign",
           "columnNames": [
-            "tag_entity_slug"
+            "book_entity_isbn"
           ],
-          "localTableName": "public.books_tags",
+          "localTableName": "public.library_shelf_books",
           "referencedColumnNames": [
-            "slug"
+            "isbn"
           ],
-          "referencedTableName": "public.tags",
+          "referencedTableName": "public.books",
           "deleteRule": "cascade",
           "updateRule": "cascade"
         }
