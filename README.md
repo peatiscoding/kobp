@@ -1,5 +1,7 @@
 # Kobp
 
+[![Node.js Package](https://github.com/peatiscoding/kobp/actions/workflows/main.yml/badge.svg)](https://github.com/peatiscoding/kobp/actions/workflows/main.yml)
+
 Start your Koa project with necessary Boring codes.
 
 ## Install
