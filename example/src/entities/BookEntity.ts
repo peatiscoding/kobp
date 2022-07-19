@@ -1,5 +1,8 @@
-import type { ShelfEntity } from "."
-import { Entity, ManyToOne, PrimaryKeyType, Property } from "@mikro-orm/core"
+import {
+  ShelfEntity,
+  TagEntity,
+} from '.'
+import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKeyType, Property } from "@mikro-orm/core"
 
 @Entity({
   tableName: 'books'
@@ -28,6 +31,13 @@ export class BookEntity {
     primary: false,
   })
   title: string
+
+  @ManyToMany({
+    entity: () => TagEntity,
+    owner: true,
+    eager: true,
+  })
+  tags: Collection<TagEntity> = new Collection<TagEntity>(this)
 
   @Property({
     columnType: 'timestamp',

@@ -1,0 +1,232 @@
+{
+  "namespaces": [
+    "public"
+  ],
+  "name": "public",
+  "tables": [
+    {
+      "columns": {
+        "slug": {
+          "name": "slug",
+          "type": "VARCHAR(250)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "tags",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "tags_pkey",
+          "columnNames": [
+            "slug"
+          ],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {}
+    },
+    {
+      "columns": {
+        "slug": {
+          "name": "slug",
+          "type": "VARCHAR(250)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "shelves",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "shelves_pkey",
+          "columnNames": [
+            "slug"
+          ],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {}
+    },
+    {
+      "columns": {
+        "shelf_slug": {
+          "name": "shelf_slug",
+          "type": "VARCHAR(250)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "isbn": {
+          "name": "isbn",
+          "type": "VARCHAR(120)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "title": {
+          "name": "title",
+          "type": "VARCHAR(250)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "books",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "books_pkey",
+          "columnNames": [
+            "shelf_slug",
+            "isbn"
+          ],
+          "composite": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "books_shelf_slug_foreign": {
+          "constraintName": "books_shelf_slug_foreign",
+          "columnNames": [
+            "shelf_slug"
+          ],
+          "localTableName": "public.books",
+          "referencedColumnNames": [
+            "slug"
+          ],
+          "referencedTableName": "public.shelves",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      }
+    },
+    {
+      "columns": {
+        "book_entity_shelf_slug": {
+          "name": "book_entity_shelf_slug",
+          "type": "VARCHAR(250)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "book_entity_isbn": {
+          "name": "book_entity_isbn",
+          "type": "VARCHAR(120)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "tag_entity_slug": {
+          "name": "tag_entity_slug",
+          "type": "VARCHAR(250)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        }
+      },
+      "name": "books_tags",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "books_tags_pkey",
+          "columnNames": [
+            "book_entity_shelf_slug",
+            "book_entity_isbn",
+            "tag_entity_slug"
+          ],
+          "composite": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "books_tags_book_entity_shelf_slug_book_entity_isbn_foreign": {
+          "constraintName": "books_tags_book_entity_shelf_slug_book_entity_isbn_foreign",
+          "columnNames": [
+            "book_entity_shelf_slug",
+            "book_entity_isbn"
+          ],
+          "localTableName": "public.books_tags",
+          "referencedColumnNames": [
+            "shelf_slug",
+            "isbn"
+          ],
+          "referencedTableName": "public.books",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "books_tags_tag_entity_slug_foreign": {
+          "constraintName": "books_tags_tag_entity_slug_foreign",
+          "columnNames": [
+            "tag_entity_slug"
+          ],
+          "localTableName": "public.books_tags",
+          "referencedColumnNames": [
+            "slug"
+          ],
+          "referencedTableName": "public.tags",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      }
+    }
+  ]
+}

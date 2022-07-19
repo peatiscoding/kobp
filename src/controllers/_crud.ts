@@ -26,6 +26,67 @@ export class CrudError extends Error {
   }
 }
 
+export const helpers = {
+  /**
+   * Advance method for assigning complex object.
+   * @param em 
+   * @param obj 
+   * @param payload 
+   * @returns 
+   */
+  persistNestedCollection<E>(em: EntityManager, cnstr: new () => E, obj: E, payload: any): E {
+    const parentEntity: any = obj
+    for (const key in parentEntity) {
+      if (!Object.prototype.hasOwnProperty.call(parentEntity, key)) {
+        continue
+      }
+      // Process collection items so that assign can work through managed/unmanaged complications
+      const meta = em.getMetadata().find(cnstr.name)
+      if (!meta) {
+        throw KobpError.fromUserInput(ClientErrorCode.notFound, `unable to resolve entity meta for ${cnstr.name}`)
+      }
+      const relationshipForThisKey = meta.relations.find((o) => o.name === key)
+      const primaryKeysForCollectionElement = relationshipForThisKey?.targetMeta?.primaryKeys
+      if (payload[key] instanceof Array && parentEntity[key] && parentEntity[key].loadItems && relationshipForThisKey && primaryKeysForCollectionElement) {
+        const parentKey = relationshipForThisKey.mappedBy
+        const elementMeta = em.getMetadata().find(relationshipForThisKey.type)
+        if (!elementMeta) {
+          throw KobpError.fromUserInput(ClientErrorCode.notFound, `unable to resolve entity meta for ${relationshipForThisKey.type}`)
+        }
+        const fromDb = parentEntity[key] as Collection<any>
+        const fromPayload = payload[key] as Array<any>
+        // Go through each existing objects.
+        const toRemove = fromPairs(map(fromDb, (o) => [Utils.getCompositeKeyHash(o, elementMeta), o]))
+        for (let i = 0; i < fromPayload.length; i++) {
+          // Creation case
+          const query = {
+            ...pick(fromPayload[i], ...primaryKeysForCollectionElement),
+            [parentKey]: parentEntity,
+          }
+          // Retry by fallback to default's session em.
+          const found = em.getUnitOfWork().tryGetById(relationshipForThisKey.type, query)
+          if (found) {
+            // mark dirty
+            wrap(found).assign(fromPayload[i], { em })
+            delete toRemove[Utils.getCompositeKeyHash(found, elementMeta)]
+          } else {
+            // Add new ones
+            const unmanaged = em.create(relationshipForThisKey.type, fromPayload[i])
+            fromDb.add(unmanaged)
+          }
+        }
+        // Removals
+        fromDb.remove(...values(toRemove))
+        // remove this from payload to assign to object.
+        delete payload[key]
+      }
+    }
+
+    em.assign(obj, payload)
+    return obj
+  }
+}
+
 export interface CrudControllerOption<E> {
 
   /**
@@ -288,7 +349,7 @@ export class CrudController<E> extends BaseRoutedController {
 
         let sanitizedBody = await this.options.sanitizeInputBody(context, t, body, false)
         sanitizedBody = await this.options.computeUpdatePayload(context, t, raw, sanitizedBody)
-        raw = this.persistNestedCollection(t, raw, sanitizedBody)
+        raw = helpers.persistNestedCollection(t, this.cnstr, raw, sanitizedBody)
 
         // Apply preSave hook
         for (const h of this.options.preSave) {
@@ -592,63 +653,4 @@ export class CrudController<E> extends BaseRoutedController {
     }, {})
   }
 
-  /**
-   * Advance method for assigning complex object.
-   * @param em 
-   * @param obj 
-   * @param payload 
-   * @returns 
-   */
-  protected persistNestedCollection(em: EntityManager, obj: E, payload: any): E {
-    const parentEntity: any = obj
-    const cnstr = this.cnstr
-    for (const key in parentEntity) {
-      if (!Object.prototype.hasOwnProperty.call(parentEntity, key)) {
-        continue
-      }
-      // Process collection items so that assign can work through managed/unmanaged complications
-      const meta = em.getMetadata().find(cnstr.name)
-      if (!meta) {
-        throw KobpError.fromUserInput(ClientErrorCode.notFound, `unable to resolve entity meta for ${cnstr.name}`)
-      }
-      const relationshipForThisKey = meta.relations.find((o) => o.name === key)
-      const primaryKeysForCollectionElement = relationshipForThisKey?.targetMeta?.primaryKeys
-      if (payload[key] instanceof Array && parentEntity[key] && parentEntity[key].loadItems && relationshipForThisKey && primaryKeysForCollectionElement) {
-        const parentKey = relationshipForThisKey.mappedBy
-        const elementMeta = em.getMetadata().find(relationshipForThisKey.type)
-        if (!elementMeta) {
-          throw KobpError.fromUserInput(ClientErrorCode.notFound, `unable to resolve entity meta for ${relationshipForThisKey.type}`)
-        }
-        const fromDb = parentEntity[key] as Collection<any>
-        const fromPayload = payload[key] as Array<any>
-        // Go through each existing objects.
-        const toRemove = fromPairs(map(fromDb, (o) => [Utils.getCompositeKeyHash(o, elementMeta), o]))
-        for (let i = 0; i < fromPayload.length; i++) {
-          // Creation case
-          const query = {
-            ...pick(fromPayload[i], ...primaryKeysForCollectionElement),
-            [parentKey]: parentEntity,
-          }
-          // Retry by fallback to default's session em.
-          const found = em.getUnitOfWork().tryGetById(relationshipForThisKey.type, query)
-          if (found) {
-            // mark dirty
-            wrap(found).assign(fromPayload[i], { em })
-            delete toRemove[Utils.getCompositeKeyHash(found, elementMeta)]
-          } else {
-            // Add new ones
-            const unmanaged = em.create(relationshipForThisKey.type, fromPayload[i])
-            fromDb.add(unmanaged)
-          }
-        }
-        // Removals
-        fromDb.remove(...values(toRemove))
-        // remove this from payload to assign to object.
-        delete payload[key]
-      }
-    }
-
-    em.assign(obj, payload)
-    return obj
-  }
 }
