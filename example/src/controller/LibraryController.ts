@@ -1,12 +1,17 @@
-import { CrudController } from "./_crud"
-import { LibraryEntity } from "../entities"
+import { CrudController } from "kobp"
+import { BookEntity, LibraryEntity } from "../entities"
 
 export class LibraryController extends CrudController<LibraryEntity> {
 
   public constructor() {
     super(LibraryEntity, 'library', {
       resourceKeyPath: ':slug',
-      defaultPopulate: () => ['shelves'] as any
+      defaultPopulate: () => ['shelves'] as any,
+      sanitizeInputBody: async (ctx, em, body) => {
+        // prepare all-resources findAll()
+        await em.getRepository(BookEntity).findAll()
+        return body
+      }
     })
   }
 }

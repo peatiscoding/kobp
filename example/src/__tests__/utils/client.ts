@@ -1,6 +1,6 @@
 import type { AxiosInstance } from 'axios'
 import axios from 'axios'
-import { BookEntity } from '../../entities'
+import { LibraryShelfEntity } from '../../entities'
 
 export interface APIResponse {
   httpStatusCode: number
@@ -47,8 +47,8 @@ export class Client {
     return { httpStatusCode: resp.status, data: resp.data.data }
   }
 
-  public async listShelves(limit: number = 0, offset: number = 0): Promise<APIArrayResponse> {
-    const resp = await this.axios.get('/shelf', {
+  public async listLibraries(limit: number = 0, offset: number = 0): Promise<APIArrayResponse> {
+    const resp = await this.axios.get('/library', {
       params: {
         limit,
         offset,
@@ -57,22 +57,22 @@ export class Client {
     return { httpStatusCode: resp.status, data: resp.data.data.items }
   }
 
-  public async getShelf(shelfSlug: string): Promise<APIObjectResponse> {
-    const resp = await this.axios.get(`/shelf/${shelfSlug}`)
+  public async getLibrary(librarySlug: string): Promise<APIObjectResponse> {
+    const resp = await this.axios.get(`/library/${librarySlug}`)
     return { httpStatusCode: resp.status, data: resp.data.data }
   }
 
-  public async createNewShelf(shelfSlug: string, books: BookEntity[]): Promise<APIObjectResponse> {
-    const resp = await this.axios.post('/shelf', {
-      slug: shelfSlug,
-      books,
+  public async createNewLibrary(librarySlug: string, shelves: LibraryShelfEntity[]): Promise<APIObjectResponse> {
+    const resp = await this.axios.post('/library', {
+      slug: librarySlug,
+      shelves,
     })
     return { httpStatusCode: resp.status, data: resp.data.data, error: resp.data.error }
   }
 
-  public async updateShelf(shelfSlug: string, books: BookEntity[]): Promise<APIObjectResponse> {
-    const resp = await this.axios.post(`/shelf/${shelfSlug}`, {
-      books,
+  public async updateLibrary(librarySlug: string, shelves: LibraryShelfEntity[]): Promise<APIObjectResponse> {
+    const resp = await this.axios.post(`/library/${librarySlug}`, {
+      shelves,
     })
     return { httpStatusCode: resp.status, data: resp.data.data }
   }

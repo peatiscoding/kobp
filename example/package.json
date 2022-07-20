@@ -2,13 +2,12 @@
   "name": "kobp-example",
   "version": "0.0.0",
   "description": "Kobp on Test",
-  "main": "lib/cjs/index.js",
   "scripts": {
     "clean": "rm -rf node_modules/ && rm -rf libs/",
     "migrate:create": "./node_modules/.bin/mikro-orm migration:create",
     "migrate:up": "./node_modules/.bin/mikro-orm migration:up",
     "migrate:down": "./node_modules/.bin/mikro-orm migration:down",
-    "example": "docker-compose up -d && export LOGGY_FORMAT=TXT && ts-node-dev --respawn -T src/server.ts",
+    "example": "LOGGY_FORMAT=TXT && docker-compose up -d && ts-node-dev --respawn -T src/server.ts",
     "test:e2e": "./node_modules/.bin/jest src/__tests__/e2e/",
     "test:unit": "./node_modules/.bin/jest src/__tests__/unit/ --detectOpenHandles"
   },
@@ -32,7 +31,7 @@
     "koa": "^2.13.1",
     "koa-bodyparser": "^4.3.0",
     "koa-router": "^9.4.0",
-    "kobp": "^1.0.0-0",
+    "kobp": "workspace:^",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
