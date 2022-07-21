@@ -1,21 +1,22 @@
 {
-  "name": "kobp-example",
+  "name": "example",
   "version": "0.0.0",
-  "description": "Kobp on Test",
+  "description": "Running Example",
   "scripts": {
     "clean": "rm -rf node_modules/ && rm -rf libs/",
-    "migrate:create": "./node_modules/.bin/mikro-orm migration:create",
-    "migrate:up": "./node_modules/.bin/mikro-orm migration:up",
-    "migrate:down": "./node_modules/.bin/mikro-orm migration:down",
+    "migrate:create": "mikro-orm migration:create",
+    "migrate:up": "mikro-orm migration:up",
+    "migrate:down": "mikro-orm migration:down",
     "example": "LOGGY_FORMAT=TXT && docker-compose up -d && ts-node-dev --respawn -T src/server.ts",
-    "test:e2e": "./node_modules/.bin/jest src/__tests__/e2e/",
-    "test:unit": "./node_modules/.bin/jest src/__tests__/unit/ --detectOpenHandles"
+    "test:e2e": "jest src/__tests__/e2e/",
+    "test:unit": "jest src/__tests__/unit/ --detectOpenHandles"
   },
   "mikro-orm": {
     "useTsNode": true,
     "configPaths": [
       "./src/orm.config.ts"
-    ]
+    ],
+    "tsConfigPath": "./tsconfig.json"
   },
   "jest": {
     "testEnvironment": "node",
