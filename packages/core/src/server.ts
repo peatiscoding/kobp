@@ -1,83 +1,36 @@
 import type Router from 'koa-router'
-import { MikroORM, MikroORMOptions, RequestContext } from '@mikro-orm/core'
-import isFunction from 'lodash/isFunction'
+import { MikroORM, MikroORMOptions } from '@mikro-orm/core'
 import Koa from 'koa'
-import bodyParser from 'koa-bodyparser'
-import { DI, createDI } from './di'
-import { isNumber } from 'lodash'
 import { Server } from 'http'
-import { Loggy, Lang, withJson } from '.'
+import { bootstrap, BootstrapOptions } from './bootstrap'
 
-/**
- * Parameters those would effect how system behave upon creation.
- */
-interface MakeServerOptions {
+interface MakeServerOptions extends BootstrapOptions {
   port: number
-  allowedBodyTypes: string[]
-  onServerCreated?: (sv: Server) => void
-  middlewareBeforeFork?: (app: Koa) => void
-  middlewareAfterFork?: (app: Koa) => void
+  onServerCreated?: (server: Server) => void
 }
 
-export const makeServer = async (initOrmOrConfig: MikroORMOptions | (() => Promise<MikroORM>), serviceRoutes: Router, portOrOptions: number | Partial<MakeServerOptions> = undefined): Promise<Koa> => {
-  const orm = isFunction(initOrmOrConfig)
-    ? await initOrmOrConfig()
-    : await MikroORM.init(initOrmOrConfig)
+const DEFAULT_PORT = 3000
 
-  createDI(orm)
-
-  const allowedBodyTypes: string[] = ((): string[] => {
-    if (!isNumber(portOrOptions) && portOrOptions.allowedBodyTypes) {
-      return portOrOptions.allowedBodyTypes
+/**
+ * Fireup a Local server with ormconfig and service routes.
+ * 
+ * @param initOrmOrConfig
+ * @param serviceRoutes 
+ * @param portOrOptions 
+ * @returns 
+ */
+export const makeServer = async (initOrmOrConfig: MikroORMOptions | (() => Promise<MikroORM>), serviceRoutes: Router, portOrOptions: number | Partial<MakeServerOptions> = DEFAULT_PORT): Promise<Koa> => {
+  const opts = ((): Partial<MakeServerOptions> & { port: number } => {
+    if (typeof portOrOptions === 'number' || typeof portOrOptions === 'string') {
+      return { port: +`${portOrOptions}` || DEFAULT_PORT }
     }
-    const raw = `${(process.env.KOBP_ALLOWED_BODY_TYPES || 'json,form')}`.trim()
-    if (!raw) {
-      return ['json', 'form']
-    }
-    return raw.split(',').filter(Boolean)
-  })()
-
-  let opts: MakeServerOptions = {
-    port: +(process.env.PORT) || 3000,
-    // this doesn't do anything just to keep interface intact. consider isolate this into another interface.
-    allowedBodyTypes,
-    middlewareBeforeFork: (koa) => {
-      koa.use(Loggy.autoCreate('_loggy'))
-      koa.use(withJson('_loggy'))
-      koa.use(bodyParser({
-        enableTypes: allowedBodyTypes,
-      }))
-    },
-    middlewareAfterFork: (koa) => {
-      koa.use(Loggy.attach('_loggy'))
-      koa.use(Lang.attach())
-    },
-  }
-  if (!isNumber(portOrOptions)) {
-    opts = {
-      ...opts,
+    return {
+      port: DEFAULT_PORT,
       ...portOrOptions,
     }
-  } else {
-    opts.port = portOrOptions
-  }
+  })()
 
-  const app = new Koa()
-  
-  if (opts.middlewareBeforeFork) {
-    opts.middlewareBeforeFork(app)
-  }
-  app.use((ctx, next) => RequestContext.createAsync(DI.orm.em, next))
-  app.use(async (ctx, next) => {
-    ctx.orm = DI.orm
-    ctx.em = DI.orm.em
-    await next()
-  })
-  if (opts.middlewareAfterFork) {
-    opts.middlewareAfterFork(app)
-  }
-  app.use(serviceRoutes.routes())
-  app.use(serviceRoutes.allowedMethods())
+  const app = await bootstrap(initOrmOrConfig, serviceRoutes, opts)
 
   // Completed
   const sv = app.listen(opts.port, '0.0.0.0', () => {

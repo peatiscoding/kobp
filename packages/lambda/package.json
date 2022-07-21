@@ -1,0 +1,23 @@
+{
+  "name": "kobp-lambda",
+  "version": "1.0.5",
+  "description": "lambda capability for Kobp",
+  "main": "lib/cjs/src/index.js",
+  "module": "lib/esm/src/index.js",
+  "typings": "lib/esm/src/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json",
+    "clean": "rm -rf node_modules/ && rm -rf libs/"
+  },
+  "author": "Kittiphat S.",
+  "license": "ISC",
+  "peerDependencies": {
+    "kobp": "^1.0.5"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.56",
+    "@types/koa": "^2.11.6",
+    "@types/koa-router": "^7.4.1",
+    "typescript": "^4"
+  }
+}

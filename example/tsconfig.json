@@ -10,15 +10,16 @@
     "target": "es2017",
     "skipLibCheck": true,
     "paths": {
-      "kobp": ["../packages/core/"]
+      "kobp": ["../packages/core/src/*"]
     },
     "baseUrl": "."
   },
-  "include": ["src"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules"],
-  "references": [
-    {
-      "path": "../packages/core/tsconfig.esm.json"
-    }
-  ]
+  "ts-node": {
+    "transpileOnly": true,
+    "require": [
+      "tsconfig-paths/register"
+    ]
+  }
 }
