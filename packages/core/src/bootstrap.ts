@@ -3,10 +3,12 @@ import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
 import { isFunction } from 'lodash'
+// import { Middleware } from './context'
 
 import { createDI, DI } from './di'
 import { withJson } from './middlewares'
 import { Lang, Loggy } from './utils'
+import { RequestRoomProvider } from './utils/RequestContext'
 
 /**
  * Parameters those would effect how system behave upon creation.
@@ -34,7 +36,7 @@ export const bootstrap = async (initOrmOrConfig: MikroORMOptions | (() => Promis
 
   // Actual Bootstraping
   const app = new Koa()
-  
+   
   // Before Fork
   app.use(Loggy.autoCreate('_loggy'))
   app.use(withJson('_loggy'))
@@ -47,15 +49,14 @@ export const bootstrap = async (initOrmOrConfig: MikroORMOptions | (() => Promis
 
   // Fork
   app.use((ctx, next) => RequestContext.createAsync(DI.orm.em, next))
+  app.use((ctx, next) => RequestRoomProvider.shared.createAsync(<any>ctx, next))
   app.use(async (ctx, next) => {
     ctx.orm = DI.orm
     ctx.em = DI.orm.em
+    Loggy.log('WTF233', Lang.current('th'))
     await next()
   })
-
   // After Fork
-  app.use(Loggy.attach('_loggy'))
-  app.use(Lang.attach())
   if (opts.middlewareAfterFork) {
     opts.middlewareAfterFork(app)
   }

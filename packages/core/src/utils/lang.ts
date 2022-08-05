@@ -1,23 +1,20 @@
-import { RequestContext } from '@mikro-orm/core'
-import { Middleware } from 'koa'
+import { KobpServiceContext } from '../context'
+import { RequestContextEnabled, RequestRoomProvider } from './RequestContext'
 
+@RequestContextEnabled('__lang__')
 export class Lang {
 
   public static requestHeaderLanguageKey = 'x-lang'
   public static defaultLangSymbol = 'en'
 
-  public static current(fallback: string = ''): string {
-    const crc = <any>RequestContext.currentRequestContext()
-    return crc?.lang || fallback || Lang.defaultLangSymbol
+  private langFromHeader: string
+
+  public constructor(ctx: KobpServiceContext) {
+    this.langFromHeader = `${ctx.request.headers[Lang.requestHeaderLanguageKey] || ''}`
   }
 
-  public static attach(): Middleware {
-    return async function(ctx, next) {
-      const lang = `${ctx.request.headers[Lang.requestHeaderLanguageKey] || ''}`
-      const crc = <any>RequestContext.currentRequestContext()
-      crc.lang = lang
-      ctx.lang = lang
-      await next()
-    }
+  public static current(fallback: string = ''): string {
+    const lng = RequestRoomProvider.instanceOf(this)
+    return lng.langFromHeader || fallback || Lang.defaultLangSymbol
   }
 }

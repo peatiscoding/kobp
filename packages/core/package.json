@@ -6,7 +6,7 @@
   "module": "lib/esm/src/index.js",
   "typings": "lib/esm/src/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json",
+    "build": "tsc -p tsconfig.esm.json && tsc -p tsconfig.json",
     "clean": "rm -rf node_modules/ && rm -rf libs/"
   },
   "repository": {

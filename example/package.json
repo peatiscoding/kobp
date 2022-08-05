@@ -9,7 +9,8 @@
     "migrate:down": "mikro-orm migration:down",
     "example": "LOGGY_FORMAT=TXT && docker-compose up -d && node-dev src/server.ts",
     "test:e2e": "jest src/__tests__/e2e/",
-    "test:unit": "jest src/__tests__/unit/ --detectOpenHandles"
+    "test:unit": "jest src/__tests__/unit/ --detectOpenHandles",
+    "build": "tsc --build"
   },
   "mikro-orm": {
     "useTsNode": true,

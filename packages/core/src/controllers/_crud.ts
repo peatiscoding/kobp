@@ -449,8 +449,6 @@ export class CrudController<E> extends BaseRoutedController {
     const populatedByQuery = (typeof query.populate === 'string' ? query.populate.split(',') : (query.populate || []))
       .filter(Boolean)
 
-    console.log('DASDFASDFASDF')
-
     const em = this.getEntityManager(context)
 
     const _filterQueries = await this._filtersQuery(context, em)
