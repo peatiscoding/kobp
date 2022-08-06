@@ -1,10 +1,13 @@
 import type Router from 'koa-router'
-import { MikroORM, MikroORMOptions } from '@mikro-orm/core'
+import type { MikroORM, MikroORMOptions } from '@mikro-orm/core'
+
 import Koa from 'koa'
 import { Server } from 'http'
-import { bootstrap, BootstrapOptions } from './bootstrap'
+import { BootstrapLoader, KobpCustomization } from './bootstrap'
+import { BootstrapModule } from './modules/bootstrap.module'
+import { MikroormModule } from './modules/mikroorm.module'
 
-interface MakeServerOptions extends BootstrapOptions {
+interface MakeServerOptions extends KobpCustomization {
   port: number
   onServerCreated?: (server: Server) => void
 }
@@ -30,7 +33,11 @@ export const makeServer = async (initOrmOrConfig: MikroORMOptions | (() => Promi
     }
   })()
 
-  const app = await bootstrap(initOrmOrConfig, serviceRoutes, opts)
+  const loader = new BootstrapLoader()
+  const app = await loader
+    .addModule(new BootstrapModule(['json']))
+    .addModule(new MikroormModule(initOrmOrConfig))
+    .build(serviceRoutes, opts)
 
   // Completed
   const sv = app.listen(opts.port, '0.0.0.0', () => {
