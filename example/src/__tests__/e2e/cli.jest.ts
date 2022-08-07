@@ -1,4 +1,5 @@
-import { fork, Loggy } from "kobp"
+import { Loggy } from 'kobp'
+import { fork } from "kobp-mikroorm"
 import { prepareDependencies } from "../utils/di"
 
 beforeAll(async() => {

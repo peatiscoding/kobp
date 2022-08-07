@@ -1,6 +1,6 @@
 import type { AutoPath } from '@mikro-orm/core/typings'
 import type { EntityManager } from '@mikro-orm/mysql-base'
-import type { KobpServiceContext, RouteMap } from '..'
+import type { KobpServiceContext, RouteMap } from 'kobp'
 
 import { Collection, QueryOperator, QueryOrderMap, Utils, wrap } from '@mikro-orm/core'
 
@@ -11,9 +11,13 @@ import fromPairs from 'lodash/fromPairs'
 import toPairs from 'lodash/toPairs'
 import isFunction from 'lodash/isFunction'
 
-import { BaseRoutedController } from '.'
-import { ClientErrorCode, KobpError, ServerErrorCode } from '../utils'
 import { Middleware } from 'koa'
+import {
+  ClientErrorCode,
+  KobpError,
+  ServerErrorCode,
+  BaseRoutedController,
+} from 'kobp'
 
 
 export class CrudError extends Error {

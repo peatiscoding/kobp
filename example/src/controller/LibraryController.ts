@@ -1,4 +1,4 @@
-import { CrudController } from "kobp"
+import { CrudController } from 'kobp-mikroorm'
 import { BookEntity, LibraryEntity } from "../entities"
 
 export class LibraryController extends CrudController<LibraryEntity> {

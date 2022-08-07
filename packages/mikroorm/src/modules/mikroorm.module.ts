@@ -1,7 +1,14 @@
-import type { KobpCustomization } from '../bootstrap'
-import type { KobpModule } from '..'
+import type {
+  KobpCustomization,
+  KobpModule,
+} from 'kobp'
 
-import { MikroORM, MikroORMOptions, RequestContext } from '@mikro-orm/core'
+import {
+  MikroORM,
+  MikroORMOptions,
+  RequestContext,
+} from '@mikro-orm/core'
+
 import { isFunction } from 'lodash'
 import { createDI, DI } from '../di'
 

@@ -1,4 +1,12 @@
-import { KobpError, Loggy, makeServer, ServerErrorCode, withJsonConfig } from 'kobp'
+import {
+  BootstrapLoader,
+  BootstrapModule,
+  KobpError,
+  Loggy,
+  ServerErrorCode,
+  withJsonConfig,
+} from 'kobp'
+import { MikroormModule } from 'kobp-mikroorm'
 
 import { makeDbConfig } from "./orm.config"
 import { makeRoutes } from "./routes"
@@ -20,10 +28,14 @@ withJsonConfig.errorPipeline.push(
 )
 
 // Finally
-makeServer(
-  makeDbConfig as any,
-  makeRoutes() as any,
-  {
-    port: 3456,
-  },
-)
+const run = async () => {
+  const loader = new BootstrapLoader()
+  const app = await loader
+    .addModule(new BootstrapModule(['json']))
+    .addModule(new MikroormModule(makeDbConfig))
+    .build(makeRoutes(), {})
+  
+  app.listen(3456, '0.0.0.0')
+}
+
+run()

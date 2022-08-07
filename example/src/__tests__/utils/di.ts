@@ -1,4 +1,4 @@
-import { DI } from "kobp"
+import { DI } from "kobp-mikroorm"
 import { MikroORM } from "@mikro-orm/core"
 import { makeDbConfig } from "../../orm.config"
 

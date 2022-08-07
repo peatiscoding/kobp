@@ -34,6 +34,7 @@
     "koa-bodyparser": "^4.3.0",
     "koa-router": "^9.4.0",
     "kobp": "*",
+    "kobp-mikroorm": "*",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
