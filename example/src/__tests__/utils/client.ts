@@ -47,6 +47,51 @@ export class Client {
     return { httpStatusCode: resp.status, data: resp.data.data }
   }
 
+  public async listBookTags(limit: number = 0, offset: number = 0): Promise<APIArrayResponse> {
+    const resp = await this.axios.get('/book/tag/', {
+      params: {
+        limit,
+        offset,
+      }
+    })
+    return { httpStatusCode: resp.status, data: resp.data.data.items }
+  }
+
+  public async createNewBookTag(slug: string): Promise<APIObjectResponse> {
+    const resp = await this.axios.post('/book/tag/', {
+      slug,
+    })
+    return { httpStatusCode: resp.status, data: resp.data.data, error: resp.data.error }
+  }
+
+  public async listBooks(limit: number = 0, offset: number = 0): Promise<APIArrayResponse> {
+    const resp = await this.axios.get('/book', {
+      params: {
+        limit,
+        offset,
+      }
+    })
+    return { httpStatusCode: resp.status, data: resp.data.data.items }
+  }
+
+  public async createNewBook(isbn: string, title: string, tags: { slug: string }[]): Promise<APIObjectResponse> {
+    const resp = await this.axios.post('/book', {
+      isbn,
+      title,
+      tags,
+    })
+    return { httpStatusCode: resp.status, data: resp.data.data, error: resp.data.error }
+  }
+
+  public async updateBook(isbn: string, title: string, tags: { slug: string }[]): Promise<APIObjectResponse> {
+    const resp = await this.axios.post(`/book/${isbn}`, {
+      isbn,
+      title,
+      tags,
+    })
+    return { httpStatusCode: resp.status, data: resp.data.data, error: resp.data.error }
+  }
+
   public async listLibraries(limit: number = 0, offset: number = 0): Promise<APIArrayResponse> {
     const resp = await this.axios.get('/library', {
       params: {
