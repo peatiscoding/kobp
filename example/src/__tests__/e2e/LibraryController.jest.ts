@@ -16,9 +16,10 @@ const makeBooks = (...args: string[]): BookEntity[] => {
   return out
 }
 
-const makeShelf = (slug: string, ...books: BookEntity[]): LibraryShelfEntity => {
+const makeShelf = (slug: string, title: string, ...books: BookEntity[]): LibraryShelfEntity => {
   const b = new LibraryShelfEntity()
   b.slug = slug
+  b.title = title
   b.books.set(books)
   return b
 }
@@ -45,8 +46,8 @@ describe('LibraryController Endpoint', () => {
       slug
       ${'history'}
       ${'textbook'}
-      ${'comic'}
       ${'teletubies'}
+      ${'kids'}
       ${'children'}
     `('can create bookTags', async ({ slug }) => {
       const resp = await client.createNewBookTag(slug)
@@ -56,7 +57,7 @@ describe('LibraryController Endpoint', () => {
     })
 
     it('can list bookTags', async () => {
-      const expectedList = new Set(['history', 'textbook', 'teletubies', 'children', 'comic'])
+      const expectedList = new Set(['history', 'textbook', 'teletubies', 'children', 'kids'])
       const resp = await client.listBookTags(expectedList.size, 0)
 
       expect(resp.httpStatusCode).toEqual(200)
@@ -75,13 +76,33 @@ describe('LibraryController Endpoint', () => {
       ${'0199987556'}   | ${'A Brief History of the Romans'}                           | ${'history'}
       ${'1319022545'}   | ${'Ways of the World: A Brief Global History, Volume II'}    | ${'history'}
       ${'1447123581'}   | ${'A Brief History of Computing'}                            | ${'history'}
-      ${'1405281081'}   | ${'Teletubbies: A Rainy Day (Teletubbies board storybooks)'} | ${'teletubies,comic'}
+      ${'1405281081'}   | ${'Teletubbies: A Rainy Day (Teletubbies board storybooks)'} | ${'teletubies,kids'}
       ${'043913854x'}   | ${'Lift-the-flap Board Book: Big Hug (teletubbies)'}         | ${'teletubies,children'}
       ${'056338462X'}   | ${'Teletubbies Craft Book'}                                  | ${'teletubies'}
-      ${'1582400229'}   | ${'WildC.A.T.S/ X-men (Wildcats, Xmen)'}                     | ${'xmen'}
-      ${'0785102345'}   | ${'Xmen 2099 TPB (Oasis, Volume 1)'}                         | ${'xmen,comic'}
-      ${'1904419402'}   | ${'Uncanny X-Men: Second Gaenesis! (Uncanny Xmen)'}          | ${'history,xmen'}
     `('can create book $title', async ({ isbn, title, tags }) => {
+      const tagObjects = tags
+        .split(',')
+        .map((o: string) => o.trim())
+        .filter(Boolean)
+        .map((slug: string) => ({ slug }))
+      const resp = await client.createNewBook(isbn, title, tagObjects)
+
+      expect(resp.httpStatusCode).toEqual(200)
+      expect(resp.data).toBeTruthy()
+      expect(resp.data.title).toEqual(title)
+      expect(resp.data.isbn).toEqual(isbn)
+      expect(resp.data.tags).toBeTruthy()
+      expect(resp.data.tags).toMatchObject(tagObjects)
+    })
+
+    it.each`
+      isbn              | title                                                                     | tags
+      ${'0785102345'}   | ${'Xmen 2099 TPB (Oasis, Volume 1)'}                                      | ${'xmen,first-volume,comic'}
+      ${'1582400229'}   | ${'WildC.A.T.S/ X-men (Wildcats, Xmen)'}                                  | ${'xmen'}
+      ${'1904419402'}   | ${'Uncanny X-Men: Second Gaenesis! (Uncanny Xmen)'}                       | ${'history,xmen'}
+      ${'1593274246'}   | ${'Think Like a Programmer: An Introduction to Creative Problem Solving'} | ${'c++,programming'}
+      ${'0321623215'}   | ${'C++ Standard Library, The: A Tutorial and Reference'}                  | ${'c++'}
+    `('can create book $title with non-existing tags', async ({ isbn, title, tags }) => {
       const tagObjects = tags
         .split(',')
         .map((o: string) => o.trim())
@@ -110,7 +131,7 @@ describe('LibraryController Endpoint', () => {
   
       // Create new one
       const targetSlug = 'test'
-      const createdResp = await client.createNewLibrary(targetSlug, [])
+      const createdResp = await client.createNewLibrary(targetSlug, 'Test', [])
       expect(createdResp.httpStatusCode).toEqual(200)
       expect(createdResp.data).toBeTruthy()
       expect(createdResp.data.slug).toEqual(targetSlug)
@@ -123,7 +144,7 @@ describe('LibraryController Endpoint', () => {
 
     it('will throw wrapped error when insert existing object', async () => {
       const existingSlug = 'test'
-      const createNewResp = await client.createNewLibrary(existingSlug, [])
+      const createNewResp = await client.createNewLibrary(existingSlug, 'Test', [])
       expect(createNewResp.httpStatusCode).toEqual(500)
       expect(createNewResp.error).toBeTruthy()
       expect(createNewResp.error).toMatch(/Internal Server Error/)  // Error should have been wrapped.
@@ -131,28 +152,86 @@ describe('LibraryController Endpoint', () => {
 
     it('Can update items from CrudController', async () => {
       // Create new one
-      const targetSlug = 'history'
-      const shelves = [
+      const targetSlug = 'updatable'
+      const sourceTitle = 'Updatable'
+      // Update multiple items in the shelf
+      const check = async (targetTitle: string, targetShelves: LibraryShelfEntity[]): Promise<void> => {
+        const afterCreated = await client.getLibrary(targetSlug)
+        const toIsbns = (shelves: LibraryShelfEntity[]) => shelves
+          .map((s): BookEntity[] => s.books as any)
+          .reduce((c, b) => [...c, ...b], [])
+          .map((b) => b.isbn)
+          // .sort()
+        expect(afterCreated.httpStatusCode).toEqual(200)
+        expect(afterCreated.data.slug).toEqual(targetSlug)
+        expect(afterCreated.data.title).toEqual(targetTitle)
+        expect(afterCreated.data.shelves.map((o) => o.slug)).toEqual(targetShelves.map((o) => o.slug))
+        expect(afterCreated.data.shelves.map((o) => o.title)).toEqual(targetShelves.map((o) => o.title))
+        expect(toIsbns(afterCreated.data.shelves)).toEqual(toIsbns(targetShelves))
+      }
+
+      const initShelves = [
         makeShelf(
           'bob',
+          'Bob',
           ...makeBooks(
             '0199987556', 'A Brief History of the Romans',
             '1319022545', 'Ways of the World: A Brief Global History, Volume II',
             '1447123581', 'A Brief History of Computing',
           )
-        )
+        ),
       ]
-      const createdResp = await client.createNewLibrary(targetSlug, [])
+      const createdResp = await client.createNewLibrary(targetSlug, sourceTitle, initShelves)
       expect(createdResp.httpStatusCode).toEqual(200)
       expect(createdResp.data.slug).toEqual(targetSlug)
+      await check(sourceTitle, initShelves)
 
-      await client.updateLibrary(targetSlug, shelves)
+      // UPDATE: with shelves
+      const newShelves = [
+        makeShelf(
+          'computer',
+          'Computar', // typo (will be fixed in later API call)
+          ...makeBooks(
+            '1593274246', 'Think Like a Programmer: An Introduction to Creative Problem Solving',
+            '0321623215', 'C++ Standard Library, The: A Tutorial and Reference',
+          )
+        ),
+        makeShelf(
+          'bob',
+          'Bob',
+          ...makeBooks(
+            '0199987556', 'A Brief History of the Romans',
+            '1447123581', 'A Brief History of Computing',
+          )
+        ),
+      ]
+      await client.updateLibraryShelves(targetSlug, newShelves)
+      await check(sourceTitle, newShelves)
 
-      // Update multiple items in the shelf
-      const afterCreated = await client.getLibrary(targetSlug)
-      expect(afterCreated.httpStatusCode).toEqual(200)
-      expect(afterCreated.data.slug).toEqual(targetSlug)
-      expect(afterCreated.data.shelves.map((o) => o.slug)).toEqual(shelves.map((o) => o.slug))
+      // UPDATE: with shelves but "without" (undefined) books -- this will clean out all fields. as it flags "books" as dirty.
+      // newShelves[0].title = 'Computer'
+      // await client.updateLibraryShelvesWithoutBooks(targetSlug, newShelves)
+      // await check(sourceTitle, newShelves)
+
+      // UPDATE: title only
+      const newTitle = `${sourceTitle} New`
+      await client.updateLibraryTitle(targetSlug, newTitle)
+      await check(newTitle, newShelves)
+
+      // UPDATE: Title & Shelves
+      const newShelves2 = [
+        makeShelf(
+          'computer',
+          'Computer',
+          ...makeBooks(
+            '1593274246', 'Think Like a Programmer: An Introduction to Creative Problem Solving',
+            '0321623215', 'C++ Standard Library, The: A Tutorial and Reference',
+          )
+        ),
+      ]
+      const newTitle2 = `${sourceTitle} New2`
+      await client.updateLibraryTitleAndShelves(targetSlug, newTitle2, newShelves2)
+      await check(newTitle2, newShelves2)
     })
 
     // Unrelated chain
@@ -162,6 +241,7 @@ describe('LibraryController Endpoint', () => {
       const shelves = [
         makeShelf(
           'kids',
+          'Kids',
           ...makeBooks(
             '1405281081', 'Teletubbies: A Rainy Day (Teletubbies board storybooks)',
             '043913854x', 'Lift-the-flap Board Book: Big Hug (teletubbies)',
@@ -169,7 +249,7 @@ describe('LibraryController Endpoint', () => {
           )
         )
       ]
-      const createdResp = await client.createNewLibrary(targetSlug, shelves)
+      const createdResp = await client.createNewLibrary(targetSlug, 'Teletubbies', shelves)
       expect(createdResp.httpStatusCode).toEqual(200)
       expect(createdResp.data.slug).toEqual(targetSlug)
 
@@ -178,184 +258,6 @@ describe('LibraryController Endpoint', () => {
       expect(afterCreated.httpStatusCode).toEqual(200)
       expect(afterCreated.data.slug).toEqual(targetSlug)
       expect(afterCreated.data.shelves.map((o) => o.slug).sort()).toEqual(shelves.map((o) => o.slug).sort())
-    })
-
-    it('Can update nested item in Crud Controller', async () => {
-      // Create new one
-      const targetSlug = 'xmen'
-      const shelves = [
-        makeShelf(
-          'xmen',
-          ...makeBooks(
-            '1582400229', 'WildC.A.T.S/ X-men (Wildcats, Xmen)',
-            '0785102345', 'Xmen 2099 TPB (Oasis, Volume 1)',
-            '1904419402', 'Uncanny X-Men: Second Gaenesis! (Uncanny Xmen)',
-          )
-        )
-      ]
-      const createdResp = await client.createNewLibrary(targetSlug, shelves)
-      expect(createdResp.httpStatusCode).toEqual(200)
-      expect(createdResp.data.slug).toEqual(targetSlug)
-
-      // Update multiple items in the shelf
-      const afterCreated = await client.getLibrary(targetSlug)
-      expect(afterCreated.httpStatusCode).toEqual(200)
-      expect(afterCreated.data.slug).toEqual(targetSlug)
-      expect(afterCreated.data.shelves.map((o) => o.slug).sort()).toEqual(shelves.map((o) => o.slug).sort())
-
-      // const additionalBooks = [
-      //   makeBook('8490248567', 'New Xmen 3 Imperial'),
-      //   makeBook('8490248346', 'New Xmen 6 Ataque A Arma'),
-      // ]
-      // const newList = [
-      //   ...books,
-      //   ...additionalBooks,
-      // ]
-      // const updatedResp = await client.updateShelf(targetSlug, newList)
-      // expect(updatedResp.httpStatusCode).toEqual(200)
-      // expect(updatedResp.data.slug).toEqual(targetSlug)
-
-      // // Update multiple items in the shelf
-      // const afterUpdated = await client.getShelf(targetSlug)
-      // expect(afterUpdated.httpStatusCode).toEqual(200)
-      // expect(afterUpdated.data.slug).toEqual(targetSlug)
-      // expect(afterUpdated.data.books.map((o) => o.isbn).sort()).toEqual(newList.map((o) => o.isbn).sort())
     })
   })
-
-  // it('Can remove nested item in Crud Controller', async () => {
-  //   // Create new one
-  //   const targetSlug = 'magic'
-  //   const books = [
-  //     makeBook('0205718116', 'The Anthropology of Religion, Magic, and Witchcraft (3rd Edition)'),
-  //     makeBook('0671646788', 'The Magic of Thinking Big'),
-  //     makeBook('1577666135', 'The Magic Garment: Principles of Costume Design'),
-  //   ]
-  //   const createdResp = await client.createNewShelf(targetSlug, books)
-  //   expect(createdResp.httpStatusCode).toEqual(200)
-  //   expect(createdResp.data.slug).toEqual(targetSlug)
-
-  //   // Update multiple items in the shelf
-  //   const afterCreated = await client.getShelf(targetSlug)
-  //   expect(afterCreated.httpStatusCode).toEqual(200)
-  //   expect(afterCreated.data.slug).toEqual(targetSlug)
-  //   expect(afterCreated.data.books.map((o) => o.isbn).sort()).toEqual(books.map((o) => o.isbn).sort())
-
-  //   const removedList = [
-  //     books[0],
-  //     books[1],
-  //   ]
-  //   const updatedResp = await client.updateShelf(targetSlug, removedList)
-  //   expect(updatedResp.httpStatusCode).toEqual(200)
-  //   expect(updatedResp.data.slug).toEqual(targetSlug)
-
-  //   // Update multiple items in the shelf
-  //   const afterUpdated = await client.getShelf(targetSlug)
-  //   expect(afterUpdated.httpStatusCode).toEqual(200)
-  //   expect(afterUpdated.data.slug).toEqual(targetSlug)
-  //   expect(afterUpdated.data.books.map((o) => o.isbn).sort()).toEqual(removedList.map((o) => o.isbn).sort())
-  // })
-
-  // it('Can empty the items in Crud Controller', async () => {
-  //   // Create new one
-  //   const targetSlug = 'swift'
-  //   const books = [
-  //     makeBook('0134044703', 'Swift for Beginners: Develop and Design'),
-  //     makeBook('067233724x', 'Swift In 24 Hours, Sams Teach Yourself (sams Teach Yourself -- Hours)'),
-  //     makeBook('0393930653', 'The Essential Writings of Jonathan Swift (First Edition) (Norton Critical Editions)'),
-  //   ]
-  //   const createdResp = await client.createNewShelf(targetSlug, books)
-  //   expect(createdResp.httpStatusCode).toEqual(200)
-  //   expect(createdResp.data.slug).toEqual(targetSlug)
-
-  //   // Update multiple items in the shelf
-  //   const afterCreated = await client.getShelf(targetSlug)
-  //   expect(afterCreated.httpStatusCode).toEqual(200)
-  //   expect(afterCreated.data.slug).toEqual(targetSlug)
-  //   expect(afterCreated.data.books.map((o) => o.isbn).sort()).toEqual(books.map((o) => o.isbn).sort())
-
-  //   const updatedResp = await client.updateShelf(targetSlug, [])
-  //   expect(updatedResp.httpStatusCode).toEqual(200)
-  //   expect(updatedResp.data.slug).toEqual(targetSlug)
-
-  //   // Update multiple items in the shelf
-  //   const afterUpdated = await client.getShelf(targetSlug)
-  //   expect(afterUpdated.httpStatusCode).toEqual(200)
-  //   expect(afterUpdated.data.slug).toEqual(targetSlug)
-  //   expect(afterUpdated.data.books.map((o) => o.isbn).length).toEqual(0)
-  // })
-
-  // it('Can update internal items in Crud Controller', async () => {
-  //   // Create new one
-  //   const targetSlug = 'transformer'
-  //   const books = [
-  //     makeBook('0134096401', 'Rotating Electric Machinery and Transformer Technology (4th Edition)'),
-  //     makeBook('0824768019', 'Transformer and Inductor Design Handbook (Electrical engineering and electronics)'),
-  //     makeBook('0835967506', 'Rotating Electric Machinery And Transformer Technology with some Typo!'),
-  //     makeBook('0945495595', 'Transformer Exam Calculations #104'),
-  //   ]
-  //   const createdResp = await client.createNewShelf(targetSlug, books)
-  //   expect(createdResp.httpStatusCode).toEqual(200)
-  //   expect(createdResp.data.slug).toEqual(targetSlug)
-
-  //   // Update multiple items in the shelf
-  //   const afterCreated = await client.getShelf(targetSlug)
-  //   expect(afterCreated.httpStatusCode).toEqual(200)
-  //   expect(afterCreated.data.slug).toEqual(targetSlug)
-  //   expect(afterCreated.data.books.map((o) => o.isbn).sort()).toEqual(books.map((o) => o.isbn).sort())
-
-  //   const updatedItems = [
-  //     books[0],
-  //     books[1],
-  //     makeBook('0835967506', 'Rotating Electric Machinery And Transformer Technology!'),
-  //     books[3],
-  //   ]
-  //   const updatedResp = await client.updateShelf(targetSlug, updatedItems)
-  //   expect(updatedResp.httpStatusCode).toEqual(200)
-  //   expect(updatedResp.data.slug).toEqual(targetSlug)
-
-  //   // Update multiple items in the shelf
-  //   const afterUpdated = await client.getShelf(targetSlug)
-  //   expect(afterUpdated.httpStatusCode).toEqual(200)
-  //   expect(afterUpdated.data.slug).toEqual(targetSlug)
-  //   expect(afterUpdated.data.books.find((o) => o.isbn === '0835967506')?.title).toEqual('Rotating Electric Machinery And Transformer Technology!')
-  // })
-
-  // it('Can update and remove and add internal items Crud Controller', async () => {
-  //   // Create new one
-  //   const targetSlug = 'complex'
-  //   const books = [
-  //     makeBook('0231157134', 'Transgender 101: A Simple Guide to a Complex Issue'),
-  //     makeBook('9810939329', 'Simplicity in Complexity: An Introduction to Complex Systems'),
-  //     makeBook('1442276711', 'TYPO! International Negotiation in a Complex World (New Millennium Books in International Studies)'),
-  //     makeBook('1592537561', 'Universal Methods of Design: 100 Ways to Research Complex Problems, Develop Innovative Ideas, and Design Effective Solutions'),
-  //   ]
-  //   const createdResp = await client.createNewShelf(targetSlug, books)
-  //   expect(createdResp.httpStatusCode).toEqual(200)
-  //   expect(createdResp.data.slug).toEqual(targetSlug)
-
-  //   // Update multiple items in the shelf
-  //   const afterCreated = await client.getShelf(targetSlug)
-  //   expect(afterCreated.httpStatusCode).toEqual(200)
-  //   expect(afterCreated.data.slug).toEqual(targetSlug)
-  //   expect(afterCreated.data.books.map((o) => o.isbn).sort()).toEqual(books.map((o) => o.isbn).sort())
-
-  //   const updatedItems = [
-  //     books[0],
-  //     books[1],
-  //     makeBook('1442276711', 'International Negotiation in a Complex World (New Millennium Books in International Studies)'), // Updated
-  //     // Removed
-  //     makeBook('0805841199', 'Human Factors in Simple and Complex Systems, Second Edition'), // added
-  //   ]
-  //   const updatedResp = await client.updateShelf(targetSlug, updatedItems)
-  //   expect(updatedResp.httpStatusCode).toEqual(200)
-  //   expect(updatedResp.data.slug).toEqual(targetSlug)
-
-  //   // Update multiple items in the shelf
-  //   const afterUpdated = await client.getShelf(targetSlug)
-  //   expect(afterUpdated.httpStatusCode).toEqual(200)
-  //   expect(afterUpdated.data.slug).toEqual(targetSlug)
-  //   expect(afterUpdated.data.books.find((o) => o.isbn === '1442276711')?.title).toEqual('International Negotiation in a Complex World (New Millennium Books in International Studies)')
-  //   expect(afterUpdated.data.books.map((o) => o.isbn).sort()).toEqual(updatedItems.map((o) => o.isbn).sort())
-  // })
 })

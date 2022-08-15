@@ -1,5 +1,6 @@
 import type { AxiosInstance } from 'axios'
 import axios from 'axios'
+import { omit } from 'lodash'
 import { LibraryShelfEntity } from '../../entities'
 
 export interface APIResponse {
@@ -107,16 +108,47 @@ export class Client {
     return { httpStatusCode: resp.status, data: resp.data.data }
   }
 
-  public async createNewLibrary(librarySlug: string, shelves: LibraryShelfEntity[]): Promise<APIObjectResponse> {
+  public async createNewLibrary(librarySlug: string, title: string, shelves: LibraryShelfEntity[]): Promise<APIObjectResponse> {
     const resp = await this.axios.post('/library', {
       slug: librarySlug,
+      title: title || librarySlug,
       shelves,
     })
     return { httpStatusCode: resp.status, data: resp.data.data, error: resp.data.error }
   }
 
-  public async updateLibrary(librarySlug: string, shelves: LibraryShelfEntity[]): Promise<APIObjectResponse> {
+  /**
+   * Try update specific library without tampering the nested attribute "shelves"
+   * @param librarySlug
+   * @param title 
+   * @returns 
+   */
+  public async updateLibraryTitle(librarySlug: string, title: string): Promise<APIObjectResponse> {
     const resp = await this.axios.post(`/library/${librarySlug}`, {
+      title,
+    })
+    return { httpStatusCode: resp.status, data: resp.data.data }
+  }
+
+  public async updateLibraryShelves(librarySlug: string, shelves: LibraryShelfEntity[]): Promise<APIObjectResponse> {
+    const resp = await this.axios.post(`/library/${librarySlug}`, {
+      shelves,
+    })
+    return { httpStatusCode: resp.status, data: resp.data.data }
+  }
+
+  public async updateLibraryShelvesWithoutBooks(librarySlug: string, rawShelves: LibraryShelfEntity[]): Promise<APIObjectResponse> {
+    const payload = JSON.stringify(rawShelves)
+    const shelves = JSON.parse(payload).map((shelf) => omit(shelf, 'books'))
+    const resp = await this.axios.post(`/library/${librarySlug}`, {
+      shelves,
+    })
+    return { httpStatusCode: resp.status, data: resp.data.data }
+  }
+
+  public async updateLibraryTitleAndShelves(librarySlug: string, title: string, shelves: LibraryShelfEntity[]): Promise<APIObjectResponse> {
+    const resp = await this.axios.post(`/library/${librarySlug}`, {
+      title,
       shelves,
     })
     return { httpStatusCode: resp.status, data: resp.data.data }

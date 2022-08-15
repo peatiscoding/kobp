@@ -33,6 +33,12 @@ export class LibraryShelfEntity {
   slug: string = ""
 
   @Property({
+    columnType: 'VARCHAR(250)',
+    nullable: false,
+  })
+  title: string = ""
+
+  @Property({
     columnType: 'timestamp',
     nullable: false,
     onUpdate: () => new Date(),

@@ -71,6 +71,15 @@
           "nullable": false,
           "mappedType": "string"
         },
+        "title": {
+          "name": "title",
+          "type": "VARCHAR(250)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamp",
