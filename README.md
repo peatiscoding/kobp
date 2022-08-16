@@ -69,15 +69,43 @@ export class HelloController extends BasedRouteController {
 }
 ```
 
-Now to utilise this controller. Simply use Koa as your application with our boiler plate.
-
-`server.ts`
+Now to utilise this controller. Here is how we start a module.
 
 ```ts
-export default makeServer((koa) => {
-}, {
-  port: 9000
-})
+// routes.ts
+import { KobpServiceContext, KobpServiceState } from 'kobp'
+
+import Router from 'koa-router'
+import { HelloController } from 'src/controller/HelloController'
+
+export const makeRoutes = (): Router => {
+  const api = new Router<KobpServiceState, KobpServiceContext>()
+  api.use('/hello', ...new HelloController().getMiddlewares() as any)
+  return api
+}
+```
+
+And also ...
+
+```ts
+// server.ts
+import {
+  BootstrapLoader,
+  BootstrapModule,
+} from 'kobp'
+import { makeRoutes } from "./routes"
+
+// Finally
+const run = async () => {
+  const loader = new BootstrapLoader()
+  const app = await loader
+    .addModule(new BootstrapModule(['json']))
+    .build(makeRoutes(), {}) // returns Koa App
+  
+  app.listen(9000, '0.0.0.0')
+}
+
+run()
 ```
 
 By the example above. You will be able to:

@@ -1,12 +1,13 @@
 {
-  "name": "example",
+  "name": "ex-mikroorm",
   "version": "0.0.0",
-  "description": "Running Example",
+  "description": "Kobp Example with MikroORM enabled",
   "scripts": {
     "clean": "rm -rf node_modules/ && rm -rf libs/",
     "migrate:create": "mikro-orm migration:create",
     "migrate:up": "mikro-orm migration:up",
     "migrate:down": "mikro-orm migration:down",
+    "infra:down": "docker-compose down",
     "example": "LOGGY_FORMAT=TXT && docker-compose up -d && node-dev src/server.ts",
     "test:e2e": "jest src/__tests__/e2e/",
     "test:unit": "jest src/__tests__/unit/ --detectOpenHandles",

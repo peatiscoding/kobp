@@ -161,12 +161,12 @@ describe('LibraryController Endpoint', () => {
           .map((s): BookEntity[] => s.books as any)
           .reduce((c, b) => [...c, ...b], [])
           .map((b) => b.isbn)
-          // .sort()
+          .sort()
         expect(afterCreated.httpStatusCode).toEqual(200)
         expect(afterCreated.data.slug).toEqual(targetSlug)
         expect(afterCreated.data.title).toEqual(targetTitle)
-        expect(afterCreated.data.shelves.map((o) => o.slug)).toEqual(targetShelves.map((o) => o.slug))
-        expect(afterCreated.data.shelves.map((o) => o.title)).toEqual(targetShelves.map((o) => o.title))
+        expect(afterCreated.data.shelves.map((o) => o.slug).sort()).toEqual(targetShelves.map((o) => o.slug).sort())
+        expect(afterCreated.data.shelves.map((o) => o.title).sort()).toEqual(targetShelves.map((o) => o.title).sort())
         expect(toIsbns(afterCreated.data.shelves)).toEqual(toIsbns(targetShelves))
       }
 
