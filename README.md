@@ -32,7 +32,7 @@ export class HelloController extends BaseRoutedController {
 
   @Route('post', '/echo')
   async migrate(context: KobpServiceContext) {
-    return context.request
+    return context.request.body
   }
 
   @Route()
@@ -69,27 +69,64 @@ export class HelloController extends BasedRouteController {
 }
 ```
 
-Now to utilise this controller. Simply use Koa as your application with our boiler plate.
-
-`server.ts`
+Now to utilise this controller. Here is how we start a module.
 
 ```ts
-export default makeServer((koa) => {
-}, {
-  port: 9000
-})
+// routes.ts
+import { KobpServiceContext, KobpServiceState } from 'kobp'
+
+import Router from 'koa-router'
+import { HelloController } from 'src/controller/HelloController'
+
+export const makeRoutes = (): Router => {
+  const api = new Router<KobpServiceState, KobpServiceContext>()
+  api.use('/hello', ...new HelloController().getMiddlewares() as any)
+  return api
+}
+```
+
+And also ...
+
+```ts
+// server.ts
+import {
+  BootstrapLoader,
+  BootstrapModule,
+} from 'kobp'
+import { makeRoutes } from "./routes"
+
+// Finally
+const run = async () => {
+  const loader = new BootstrapLoader()
+  const app = await loader
+    .addModule(new BootstrapModule(['json'])) // type of input body it should support.
+    .build(makeRoutes(), {}) // returns Koa App
+  
+  app.listen(9000, '0.0.0.0')
+}
+
+run()
 ```
 
 By the example above. You will be able to:
 
 ```bash
-curl -XGET http://localhost:9000/hello/hi
+curl http://localhost:9000/hello/
+
+# OR
+
+curl -XPOST http://localhost:9000/hello/echo -H 'content-type: application/json' -d '{"some":"key","json":"value"}'
 ```
+
+See other [Example](./examples/) for more info.
 
 ## TODO
 
 ```
-[ ] Example repo
-[ ] Inter Service Communication
+[/] Example repo
+[/] Modularized
+[/] Core module
+[/] Mikroorm module
+[ ] Lambda Handler
 [ ] SNS/SQS Handler
 ```

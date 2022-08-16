@@ -1,5 +1,5 @@
 import { Middleware } from 'koa'
-import { HttpMethod, RouteMapMeta } from '../_base'
+import { HttpMethod, RouteMapMeta } from '../base.controller'
 
 export function Route(): MethodDecorator
 export function Route(meta: RouteMapMeta): MethodDecorator

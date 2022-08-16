@@ -1,69 +1,81 @@
-import { MikroORM, MikroORMOptions, RequestContext } from '@mikro-orm/core'
+import type Router from 'koa-router'
 import Koa from 'koa'
-import bodyParser from 'koa-bodyparser'
-import Router from 'koa-router'
-import { isFunction } from 'lodash'
 
-import { createDI, DI } from './di'
-import { withJson } from './middlewares'
-import { Lang, Loggy } from './utils'
-
-/**
- * Parameters those would effect how system behave upon creation.
- */
-export interface BootstrapOptions {
-  allowedBodyTypes?: ('json' | 'form')[]
+export interface KobpCustomization {
+  /**
+   * Before app is being created
+   */
+  onInit?: () => Promise<void>
+  /**
+   * After app has been created
+   */
   onAppCreated?: (app: Koa) => void
-  middlewareBeforeFork?: (app: Koa) => void
-  middlewareAfterFork?: (app: Koa) => void
+  /**
+   * Attach all necessary middlewares.
+   */
+  middlewares?: (app: Koa) => void
 }
 
-export const bootstrap = async (initOrmOrConfig: MikroORMOptions | (() => Promise<MikroORM>), serviceRoutes: Router, opts: Partial<BootstrapOptions>): Promise<Koa> => {
-  const orm = isFunction(initOrmOrConfig)
-    ? await initOrmOrConfig()
-    : await MikroORM.init(initOrmOrConfig)
-
-  createDI(orm)
-
-  const allowedBodyTypes: string[] = ((): string[] => {
-    if (opts?.allowedBodyTypes) {
-      return opts.allowedBodyTypes
+const compileCustomization = (options: KobpCustomization[]): KobpCustomization => {
+  const allOpts = options
+  return {
+    onInit: async () => {
+      for(const opt of allOpts) {
+        if (opt.onInit) {
+          await opt.onInit()
+        }
+      }
+    },
+    onAppCreated: (app: Koa) => {
+      for(const opt of allOpts) {
+        if (opt.onAppCreated) {
+          opt.onAppCreated(app)
+        }
+      }
+    },
+    middlewares: (app: Koa) => {
+      for(const opt of allOpts) {
+        if (opt.middlewares) {
+          opt.middlewares(app)
+        }
+      }
     }
-    return `${(process.env.KOBP_ALLOWED_BODY_TYPES || 'json,form')}`.trim().split(',').filter(Boolean)
-  })()
+  }
+}
 
-  // Actual Bootstraping
-  const app = new Koa()
-  
-  // Before Fork
-  app.use(Loggy.autoCreate('_loggy'))
-  app.use(withJson('_loggy'))
-  app.use(bodyParser({
-    enableTypes: allowedBodyTypes,
-  }))
-  if (opts.middlewareBeforeFork) {
-    opts.middlewareBeforeFork(app)
+export interface KobpModule {
+  customization(): Promise<KobpCustomization>
+}
+
+export class BootstrapLoader {
+
+  private modules: KobpModule[] = []
+
+  public addModule(module: KobpModule): this {
+    this.modules.push(module)
+    return this
   }
 
-  // Fork
-  app.use((ctx, next) => RequestContext.createAsync(DI.orm.em, next))
-  app.use(async (ctx, next) => {
-    ctx.orm = DI.orm
-    ctx.em = DI.orm.em
-    await next()
-  })
+  public async build(serviceRoutes: Router, appCustomization: KobpCustomization): Promise<Koa> {
+    const opts = compileCustomization([
+      ...(await Promise.all(this.modules.map((o) => o.customization()))),
+      appCustomization,
+    ])
 
-  // After Fork
-  app.use(Loggy.attach('_loggy'))
-  app.use(Lang.attach())
-  if (opts.middlewareAfterFork) {
-    opts.middlewareAfterFork(app)
+    await opts.onInit()
+
+    // Actual Bootstraping
+    const app = new Koa()
+    
+    // Fork
+    opts.middlewares && opts.middlewares(app)
+
+    // Register actual application
+    app.use(serviceRoutes.routes())
+    app.use(serviceRoutes.allowedMethods())
+
+    opts.onAppCreated && opts.onAppCreated(app)
+
+    return app
   }
-
-  app.use(serviceRoutes.routes())
-  app.use(serviceRoutes.allowedMethods())
-
-  opts.onAppCreated && opts.onAppCreated(app)
-
-  return app
 }

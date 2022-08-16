@@ -1,3 +1,2 @@
-export * from './_base'
-export * from './_crud'
+export * from './base.controller'
 export * from './decorators/route'

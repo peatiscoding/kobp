@@ -1,6 +1,7 @@
 import { Middleware } from 'koa'
 import type { Logger } from '.'
 import { KobpServiceContext } from '..'
+import { RequestContextEnabled, RequestRoomProvider } from './RequestContext'
 import { Tracer } from './tracer'
 
 const _stringify = (o: any) => (typeof o === 'string' || typeof o === 'number') ? `${o}` : JSON.stringify(o)
@@ -21,6 +22,7 @@ interface PrintContent {
   verdict: 'OK' | 'ER' | 'PG'
 }
 
+@RequestContextEnabled('__TRC__')
 export class Loggy extends Tracer implements Logger {
 
   public static format: 'JSN' | 'TXT' = /JSO?N/i.test(`${process.env.LOGGY_FORMAT || 'JSN'}`) ? 'JSN' : 'TXT'
@@ -82,7 +84,7 @@ export class Loggy extends Tracer implements Logger {
 
   // Usage
   static log(...messageParts: any[]) {
-    const loggy = Tracer.current<Loggy>()
+    const loggy = RequestRoomProvider.instanceOf(this)
     if (!loggy) {
       console.log(...messageParts)
     } else {
@@ -92,7 +94,7 @@ export class Loggy extends Tracer implements Logger {
 
   // Usage
   static error(message: string, error?: string | Error) {
-    const loggy = Tracer.current<Loggy>()
+    const loggy = RequestRoomProvider.instanceOf(this)
     if (!loggy) {
       console.error(message, error)
     } else {

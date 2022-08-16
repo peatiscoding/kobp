@@ -16,5 +16,6 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: npm i -g npm
       - run: ./npm_release.sh packages/core
+      - run: ./npm_release.sh packages/mikroorm
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

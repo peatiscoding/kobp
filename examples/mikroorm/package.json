@@ -1,0 +1,57 @@
+{
+  "name": "ex-mikroorm",
+  "version": "0.0.0",
+  "description": "Kobp Example with MikroORM enabled",
+  "scripts": {
+    "clean": "rm -rf node_modules/ && rm -rf libs/",
+    "migrate:create": "mikro-orm migration:create",
+    "migrate:up": "mikro-orm migration:up",
+    "migrate:down": "mikro-orm migration:down",
+    "infra:down": "docker-compose down",
+    "example": "export LOGGY_FORMAT=TXT && docker-compose up -d && node-dev src/server.ts",
+    "test:e2e": "jest src/__tests__/e2e/",
+    "test:unit": "jest src/__tests__/unit/ --detectOpenHandles",
+    "build": "tsc --build"
+  },
+  "mikro-orm": {
+    "useTsNode": true,
+    "configPaths": [
+      "./src/orm.config.ts"
+    ],
+    "tsConfigPath": "./tsconfig.json"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    }
+  },
+  "author": "Kittiphat S.",
+  "dependencies": {
+    "@mikro-orm/core": "^5.2.0",
+    "@mikro-orm/migrations": "^5.2.0",
+    "@mikro-orm/postgresql": "^5.2.0",
+    "koa": "^2.13.1",
+    "koa-bodyparser": "^4.3.0",
+    "koa-router": "^9.4.0",
+    "kobp": "*",
+    "kobp-mikroorm": "*",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@mikro-orm/cli": "^5.2.0",
+    "@types/jest": "^26.0.23",
+    "@types/koa": "^2.11.6",
+    "@types/koa-bodyparser": "^4.3.0",
+    "@types/koa-router": "^7.4.1",
+    "@types/lodash": "^4.14.168",
+    "@types/node": "^14.14.6",
+    "axios": "^0.21.1",
+    "jest": "^27.0.4",
+    "node-dev": "^7.4.3",
+    "ts-jest": "^27.0.3",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.0.0",
+    "typescript": "^4"
+  }
+}

@@ -5,7 +5,8 @@
   "workspaces": [
     "packages/core",
     "packages/lambda",
-    "example"
+    "packages/mikroorm",
+    "examples/*"
   ],
   "repository": {
     "type": "git",
