@@ -8,7 +8,7 @@
     "migrate:up": "mikro-orm migration:up",
     "migrate:down": "mikro-orm migration:down",
     "infra:down": "docker-compose down",
-    "example": "LOGGY_FORMAT=TXT && docker-compose up -d && node-dev src/server.ts",
+    "example": "export LOGGY_FORMAT=TXT && docker-compose up -d && node-dev src/server.ts",
     "test:e2e": "jest src/__tests__/e2e/",
     "test:unit": "jest src/__tests__/unit/ --detectOpenHandles",
     "build": "tsc --build"

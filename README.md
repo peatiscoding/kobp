@@ -32,7 +32,7 @@ export class HelloController extends BaseRoutedController {
 
   @Route('post', '/echo')
   async migrate(context: KobpServiceContext) {
-    return context.request
+    return context.request.body
   }
 
   @Route()
@@ -99,7 +99,7 @@ import { makeRoutes } from "./routes"
 const run = async () => {
   const loader = new BootstrapLoader()
   const app = await loader
-    .addModule(new BootstrapModule(['json']))
+    .addModule(new BootstrapModule(['json'])) // type of input body it should support.
     .build(makeRoutes(), {}) // returns Koa App
   
   app.listen(9000, '0.0.0.0')
@@ -111,7 +111,11 @@ run()
 By the example above. You will be able to:
 
 ```bash
-curl -XGET http://localhost:9000/hello/hi
+curl http://localhost:9000/hello/
+
+# OR
+
+curl -XPOST http://localhost:9000/hello/echo -H 'content-type: application/json' -d '{"some":"key","json":"value"}'
 ```
 
 ## TODO

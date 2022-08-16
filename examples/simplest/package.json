@@ -1,0 +1,25 @@
+{
+  "name": "ex-simplest",
+  "version": "0.0.0",
+  "description": "Kobp example - simplest one",
+  "scripts": {
+    "example": "export LOGGY_FORMAT=TXT && node-dev src/server.ts",
+    "build": "tsc --build"
+  },
+  "author": "Kittiphat S.",
+  "dependencies": {
+    "koa": "^2.13.1",
+    "koa-bodyparser": "^4.3.0",
+    "koa-router": "^9.4.0",
+    "kobp": "*"
+  },
+  "devDependencies": {
+    "@types/koa": "^2.11.6",
+    "@types/koa-bodyparser": "^4.3.0",
+    "@types/koa-router": "^7.4.1",
+    "node-dev": "^7.4.3",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.0.0",
+    "typescript": "^4"
+  }
+}
