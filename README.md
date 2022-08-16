@@ -118,10 +118,15 @@ curl http://localhost:9000/hello/
 curl -XPOST http://localhost:9000/hello/echo -H 'content-type: application/json' -d '{"some":"key","json":"value"}'
 ```
 
+See other [Example](./examples/) for more info.
+
 ## TODO
 
 ```
-[ ] Example repo
-[ ] Inter Service Communication
+[/] Example repo
+[/] Modularized
+[/] Core module
+[/] Mikroorm module
+[ ] Lambda Handler
 [ ] SNS/SQS Handler
 ```
