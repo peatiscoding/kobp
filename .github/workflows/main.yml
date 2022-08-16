@@ -15,6 +15,7 @@ jobs:
           node-version: 14
           registry-url: https://registry.npmjs.org/
       - run: npm i -g npm
+      - run: npm ci
       - run: ./npm_release.sh packages/core
       - run: ./npm_release.sh packages/mikroorm
         env:

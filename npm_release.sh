@@ -27,6 +27,4 @@ then
 fi
 
 echo "Version mismatched releasing new version...";
-npm ci
-npm run build --workspace=$CODE_PATH
-npm publish --workspace=$CODE_PATH
+npm run build --workspace=$CODE_PATH && npm publish --workspace=$CODE_PATH

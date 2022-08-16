@@ -15,7 +15,7 @@
     "@mikro-orm/core": "^5.2",
     "@mikro-orm/mysql-base": "^5.0.0-rc.2",
     "lodash": "^4.17.21",
-    "kobp": "^2.0.0"
+    "kobp": "^2.0.1"
   },
   "devDependencies": {
     "@mikro-orm/core": "^5.2",
