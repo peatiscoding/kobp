@@ -59,10 +59,11 @@ export const helpers = {
         const toRemove = fromPairs(map(fromDb, (o) => [Utils.getCompositeKeyHash(o, elementMeta), o]))
         for (let i = 0; i < fromPayload.length; i++) {
           // Creation case
-          const query = {
+          // Make the query from the relationship
+          const query = pick({
             ...pick(fromPayload[i], ...primaryKeysForCollectionElement),
             [parentKey]: parentEntity,
-          }
+          }, relationshipForThisKey.referencedPKs)
           // Retry by fallback to default's session em.
           const found = em.getUnitOfWork().tryGetById(relationshipForThisKey.type, query)
           if (found) {
