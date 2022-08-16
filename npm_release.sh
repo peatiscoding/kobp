@@ -22,7 +22,7 @@ echo "(NPM) '$NPM_VERSION' -> (SOURCE) '$CODE_VERSION'"
 
 if [ "$NPM_VERSION" = "$CODE_VERSION" ]
 then
-  echo "Version already matched nothing to do.\nbye";
+  echo "Version already matched nothing to do. bye..";
   exit 0;
 fi
 
