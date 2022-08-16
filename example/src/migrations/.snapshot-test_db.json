@@ -6,6 +6,434 @@
   "tables": [
     {
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        }
+      },
+      "name": "criteria_level_entity",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "criteria_level_entity_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {}
+    },
+    {
+      "columns": {
+        "employee_id": {
+          "name": "employee_id",
+          "type": "varchar(40)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "enumItems": [
+            "online",
+            "offline"
+          ],
+          "mappedType": "enum"
+        },
+        "start": {
+          "name": "start",
+          "type": "timestamp",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "mappedType": "datetime"
+        },
+        "resigned": {
+          "name": "resigned",
+          "type": "timestamp",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 6,
+          "mappedType": "datetime"
+        },
+        "nameth": {
+          "name": "nameth",
+          "type": "varchar(150)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "nickname": {
+          "name": "nickname",
+          "type": "varchar(150)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(150)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "direct_report_employee_id": {
+          "name": "direct_report_employee_id",
+          "type": "varchar(40)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "string"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 6,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "employee_entity",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "employee_entity_pkey",
+          "columnNames": [
+            "employee_id"
+          ],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "employee_entity_direct_report_employee_id_foreign": {
+          "constraintName": "employee_entity_direct_report_employee_id_foreign",
+          "columnNames": [
+            "direct_report_employee_id"
+          ],
+          "localTableName": "public.employee_entity",
+          "referencedColumnNames": [
+            "employee_id"
+          ],
+          "referencedTableName": "public.employee_entity",
+          "deleteRule": "set null",
+          "updateRule": "cascade"
+        }
+      }
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "evaluate_to_employee_id": {
+          "name": "evaluate_to_employee_id",
+          "type": "varchar(40)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "evaluated_by_employee_id": {
+          "name": "evaluated_by_employee_id",
+          "type": "varchar(40)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "enumItems": [
+            "waiting_for_approver",
+            "approver",
+            "new"
+          ],
+          "mappedType": "enum"
+        },
+        "approver_by_employee_id": {
+          "name": "approver_by_employee_id",
+          "type": "varchar(40)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "string"
+        },
+        "approved_at": {
+          "name": "approved_at",
+          "type": "timestamp",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 6,
+          "mappedType": "datetime"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 6,
+          "mappedType": "datetime"
+        },
+        "prev_id": {
+          "name": "prev_id",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "integer"
+        }
+      },
+      "name": "evaluation_record_entity",
+      "schema": "public",
+      "indexes": [
+        {
+          "columnNames": [
+            "prev_id"
+          ],
+          "composite": false,
+          "keyName": "evaluation_record_entity_prev_id_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "evaluation_record_entity_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "evaluation_record_entity_evaluate_to_employee_id_foreign": {
+          "constraintName": "evaluation_record_entity_evaluate_to_employee_id_foreign",
+          "columnNames": [
+            "evaluate_to_employee_id"
+          ],
+          "localTableName": "public.evaluation_record_entity",
+          "referencedColumnNames": [
+            "employee_id"
+          ],
+          "referencedTableName": "public.employee_entity",
+          "updateRule": "cascade"
+        },
+        "evaluation_record_entity_evaluated_by_employee_id_foreign": {
+          "constraintName": "evaluation_record_entity_evaluated_by_employee_id_foreign",
+          "columnNames": [
+            "evaluated_by_employee_id"
+          ],
+          "localTableName": "public.evaluation_record_entity",
+          "referencedColumnNames": [
+            "employee_id"
+          ],
+          "referencedTableName": "public.employee_entity",
+          "updateRule": "cascade"
+        },
+        "evaluation_record_entity_approver_by_employee_id_foreign": {
+          "constraintName": "evaluation_record_entity_approver_by_employee_id_foreign",
+          "columnNames": [
+            "approver_by_employee_id"
+          ],
+          "localTableName": "public.evaluation_record_entity",
+          "referencedColumnNames": [
+            "employee_id"
+          ],
+          "referencedTableName": "public.employee_entity",
+          "deleteRule": "set null",
+          "updateRule": "cascade"
+        },
+        "evaluation_record_entity_prev_id_foreign": {
+          "constraintName": "evaluation_record_entity_prev_id_foreign",
+          "columnNames": [
+            "prev_id"
+          ],
+          "localTableName": "public.evaluation_record_entity",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.evaluation_record_entity",
+          "deleteRule": "set null",
+          "updateRule": "cascade"
+        }
+      }
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "evaluation_id": {
+          "name": "evaluation_id",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "criteria_level_id": {
+          "name": "criteria_level_id",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 6,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "evaluation_detail_entity",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "evaluation_detail_entity_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "evaluation_detail_entity_evaluation_id_foreign": {
+          "constraintName": "evaluation_detail_entity_evaluation_id_foreign",
+          "columnNames": [
+            "evaluation_id"
+          ],
+          "localTableName": "public.evaluation_detail_entity",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.evaluation_record_entity",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "evaluation_detail_entity_criteria_level_id_foreign": {
+          "constraintName": "evaluation_detail_entity_criteria_level_id_foreign",
+          "columnNames": [
+            "criteria_level_id"
+          ],
+          "localTableName": "public.evaluation_detail_entity",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.criteria_level_entity",
+          "updateRule": "cascade"
+        }
+      }
+    },
+    {
+      "columns": {
         "slug": {
           "name": "slug",
           "type": "VARCHAR(250)",

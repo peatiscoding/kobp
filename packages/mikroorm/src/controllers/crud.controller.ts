@@ -61,14 +61,22 @@ export const helpers = {
         const fromPayload = payload[key] as Array<any>
         // Go through each existing objects.
         const toRemove = fromPairs(map(fromDb, (o) => [Utils.getCompositeKeyHash(o, elementMeta), o]))
+        // let log = key === 'details' ? console.log.bind(console) : () => {}
+        // log('FromDb', fromDb.getItems())
+        // log('FromPayload', fromPayload)
+        // log('toRemove', toRemove)
+        // log('Element', primaryKeysForCollectionElement)
         for (let i = 0; i < fromPayload.length; i++) {
           // Creation case
-          const query = {
+          // Make the query from the relationship
+          const query = pick({
             ...pick(fromPayload[i], ...primaryKeysForCollectionElement),
             [parentKey]: parentEntity,
-          }
+          }, relationshipForThisKey.referencedPKs)
           // Retry by fallback to default's session em.
           const found = em.getUnitOfWork().tryGetById(relationshipForThisKey.type, query)
+          // log('Query', relationshipForThisKey, query)
+          // log('Found', found)
           if (found) {
             // mark dirty
             wrap(found).assign(fromPayload[i], { em })

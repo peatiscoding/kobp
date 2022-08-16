@@ -7,6 +7,10 @@ import {
   LibraryEntity,
   BookTagEntity,
   LibraryShelfEntity,
+  EmployeeEntity,
+  CriteriaLevelEntity,
+  EvaluationDetailEntity,
+  EvaluationRecordEntity,
 } from './entities'
 
 const ormConfig = <Partial<MikroORMOptions>>{
@@ -15,6 +19,10 @@ const ormConfig = <Partial<MikroORMOptions>>{
     BookTagEntity,
     LibraryEntity,
     LibraryShelfEntity,
+    EmployeeEntity,
+    CriteriaLevelEntity,
+    EvaluationDetailEntity,
+    EvaluationRecordEntity,
   ],
   forceUtcTimezone: true,
   dbName: 'test_db',
