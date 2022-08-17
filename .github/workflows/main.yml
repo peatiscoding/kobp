@@ -17,6 +17,8 @@ jobs:
       - run: npm i -g npm
       - run: npm ci
       - run: ./npm_release.sh packages/core
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - run: ./npm_release.sh packages/mikroorm
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
