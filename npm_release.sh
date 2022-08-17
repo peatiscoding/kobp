@@ -14,7 +14,7 @@ then
 fi
 
 NPM_PACKAGE=$(cat $CODE_PATH/package.json | grep -m 1 name | sed 's/"name": "\(.*\)",/\1/g')
-NPM_VERSION=$(npm view $NPM_PACKAGE version)
+NPM_VERSION=$(npm view $NPM_PACKAGE version || echo 0.0.0)
 CODE_VERSION=$(cat $CODE_PATH/package.json | grep -m 1 version | sed 's/[^0-9.]//g')
 
 
