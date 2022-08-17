@@ -127,6 +127,7 @@ See other [Example](./examples/) for more info.
 [/] Modularized
 [/] Core module
 [/] Mikroorm module
+[ ] Publish with microbundle instead.
 [ ] Lambda Handler
 [ ] SNS/SQS Handler
 ```

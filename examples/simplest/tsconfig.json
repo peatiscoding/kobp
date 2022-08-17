@@ -10,7 +10,7 @@
     "target": "es2017",
     "skipLibCheck": true,
     "paths": {
-      "kobp": ["../packages/core/src/*"]
+      "kobp": ["../../packages/core/src/*"]
     },
     "baseUrl": "."
   },
