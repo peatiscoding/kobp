@@ -29,10 +29,10 @@ export class BootstrapModule implements KobpModule {
       },
       middlewares: (app) => {
         app.use(Loggy.autoCreate('_loggy'))
-        app.use(withJson('_loggy'))
         app.use(bodyParser({
           enableTypes: this.allowedBodyTypes,
         }))
+        app.use(withJson('_loggy'))
         app.use((ctx, next) => RequestRoomProvider.shared.createAsync(<any>ctx, next))
       },
     }
