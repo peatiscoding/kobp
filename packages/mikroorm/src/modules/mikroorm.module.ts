@@ -17,7 +17,7 @@ export class MikroormModule implements KobpModule {
   constructor(protected initOrmOrConfig: MikroORMOptions | (() => Promise<MikroORM>)) {
   }
 
-  public async customization(): Promise<KobpCustomization> {
+  public customization(): KobpCustomization {
     return {
       onInit: async () => {
         const orm = isFunction(this.initOrmOrConfig)

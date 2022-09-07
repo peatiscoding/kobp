@@ -1,7 +1,15 @@
 {
-  "extends": "./tsconfig.esm.json",
   "compilerOptions": {
-    "module": "CommonJS",
-    "outDir": "./lib/cjs"
+    "declaration": true,
+    "lib": ["es2020"],
+    "moduleResolution": "node",
+    "noUnusedLocals": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "target": "es2020",
+    "outDir": "./dist"
   },
+  "include": ["src"],
+  "exclude": ["node_modules"]
 }

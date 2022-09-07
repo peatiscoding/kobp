@@ -1,0 +1,31 @@
+{
+  "name": "ex-serverless",
+  "version": "0.0.0",
+  "description": "Kobp example - serverless + lambda",
+  "scripts": {
+    "example": "sls offline start --noPrependStageInUrl",
+    "build": "tsc --build"
+  },
+  "engines": {
+    "node": ">=14.18.0"
+  },
+  "author": "Kittiphat S.",
+  "dependencies": {
+    "koa": "^2.13.1",
+    "koa-bodyparser": "^4.3.0",
+    "koa-router": "^9.4.0",
+    "kobp": "*",
+    "kobp-lambda": "*"
+  },
+  "devDependencies": {
+    "@serverless/typescript": "^3.21.0",
+    "@types/koa": "^2.11.6",
+    "@types/koa-bodyparser": "^4.3.0",
+    "@types/koa-router": "^7.4.1",
+    "serverless-esbuild": "^1.32.8",
+    "serverless-offline": "^10.0.0",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.0.0",
+    "typescript": "^4"
+  }
+}

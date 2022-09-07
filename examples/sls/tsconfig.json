@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "lib": ["es2017"],
+    "moduleResolution": "node",
+    "noUnusedLocals": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "target": "es2017",
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@lambdas/*": ["src/lambdas/*"],
+      "@models/*": ["src/models/*"],
+      "@middlewares/*": ["src/middlewares/*"],
+      "@libs/*": ["src/libs/*"],
+      "@controllers/*": ["src/controllers/*"],
+      "kobp": ["../../packages/core/src/*"],
+      "kobp-lambda": ["../../packages/lambda/src/*"]
+    },
+    "outDir": "./dist"
+  },
+  "include": ["src/**/*", "serverless.ts"],
+  "exclude": [
+    "node_modules/**/*",
+    ".serverless/**/*",
+    ".webpack/**/*",
+    "_warmup/**/*",
+    ".vscode/**/*"
+  ],
+  "ts-node": {
+    "transpileOnly": true,
+    "require": [
+      "tsconfig-paths/register"
+    ]
+  }
+}

@@ -22,7 +22,7 @@ export class BootstrapModule implements KobpModule {
     })()
   }
 
-  public async customization(): Promise<KobpCustomization> {
+  public customization(): KobpCustomization {
     return {
       onInit: async () => {
         console.log('Bootstrap Module initialized.')
