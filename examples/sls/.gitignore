@@ -1,0 +1,4 @@
+.serverless
+.esbuild
+.dynamodb
+node_modules
