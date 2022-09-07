@@ -30,7 +30,7 @@
     "@types/aws-lambda": "^8.10.56",
     "@types/koa": "^2.11.6",
     "@types/koa-router": "^7.4.1",
-    "kobp": "^2.0.0",
+    "kobp": "*",
     "tsup": "^6.2.3",
     "typescript": "^4"
   },
