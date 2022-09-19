@@ -16,8 +16,9 @@ export interface KobpCustomization {
   middlewares?: (app: Koa) => void
 }
 
-const compileCustomization = (options: KobpCustomization[]): KobpCustomization => {
+const _compileCustomization = (options: KobpCustomization[]): KobpCustomization => {
   const allOpts = options
+  console.log('registering', allOpts.length)
   return {
     onInit: async () => {
       for(const opt of allOpts) {
@@ -34,6 +35,7 @@ const compileCustomization = (options: KobpCustomization[]): KobpCustomization =
       }
     },
     middlewares: (app: Koa) => {
+      console.log('middlewares!!!', app)
       for(const opt of allOpts) {
         if (opt.middlewares) {
           opt.middlewares(app)
@@ -57,7 +59,7 @@ export class BootstrapLoader {
   }
 
   public buildSync(serviceRoutes: Router, appCustomization: KobpCustomization): Koa {
-    const opts = compileCustomization([
+    const opts = _compileCustomization([
       ...(this.modules.map((o) => o.customization())),
       appCustomization,
     ])
@@ -72,13 +74,13 @@ export class BootstrapLoader {
       await next()
     })
 
-    this.launchKoa(serviceRoutes, app, appCustomization)
+    this._launchKoa(serviceRoutes, app, opts)
 
     return app
   }
 
   public async build(serviceRoutes: Router, appCustomization: KobpCustomization): Promise<Koa> {
-    const opts = compileCustomization([
+    const opts = _compileCustomization([
       ...(this.modules.map((o) => o.customization())),
       appCustomization,
     ])
@@ -88,12 +90,12 @@ export class BootstrapLoader {
     // Actual Bootstraping
     const app = new Koa()
 
-    this.launchKoa(serviceRoutes, app, appCustomization)
+    this._launchKoa(serviceRoutes, app, opts)
 
     return app
   }
 
-  private launchKoa(serviceRoutes: Router, koa: Koa, opts: KobpCustomization) {
+  private _launchKoa(serviceRoutes: Router, koa: Koa, opts: KobpCustomization) {
     // Fork
     opts.middlewares && opts.middlewares(koa)
 
