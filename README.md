@@ -120,6 +120,12 @@ curl -XPOST http://localhost:9000/hello/echo -H 'content-type: application/json'
 
 See other [Example](./examples/) for more info.
 
+## Enabled Debug Mode
+
+Sometime we need to understand what's going on under the hood of our custom made feature such as RequestContext. Attach the message logging by declare
+
+ENV: `KOBP_DEBUG` to `Yes` or `True` or `1` to let the framework emit debugging messages.
+
 ## TODO
 
 ```

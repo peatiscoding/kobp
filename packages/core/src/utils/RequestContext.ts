@@ -1,7 +1,10 @@
 import { AsyncLocalStorage } from 'async_hooks'
 import { KobpServiceContext } from '../context'
+import { env } from './env'
 
 type RequestContextCreator<O extends any> = new (context: any) => O
+
+const isDebug = env.b('KOBP_DEBUG', false)
 
 /**
  * Marking any class to be available when resource is being created.
@@ -16,6 +19,9 @@ type RequestContextCreator<O extends any> = new (context: any) => O
 export function RequestContextEnabled(keyName: string) {
   return function (constructor: RequestContextCreator<any>) {
     constructor.prototype.__rctx_enabled = keyName
+    if (isDebug) {
+      console.log(`RCTX RequestContextEnabled (decorator) registered: ${keyName} with`, constructor)
+    }
     RequestRoomProvider.shared.roomRegistries[keyName] = constructor
   }
 }
@@ -26,7 +32,11 @@ export class KobpRequestRoom {
 
   public readonly id = KobpRequestRoom.counter++
 
-  constructor(protected readonly data: Map<string, any>) { }
+  constructor(protected readonly data: Map<string, any>) {
+    if (isDebug) {
+      console.log(`RCTX KobpRequestRoom #${this.id} created with data of size: ${data.size}`)
+    }
+  }
 
   get<T>(key: string): T {
     return this.data[key]
@@ -36,6 +46,12 @@ export class KobpRequestRoom {
     this.data[key] = data
   }
 
+  public free() {
+    if (isDebug) {
+      console.log(`RCTX KobpRequestRoom #${this.id} of size ${this.data.size} has been freed.`)
+    }
+    this.data.clear()
+  }
 }
 
 /**
@@ -49,16 +65,29 @@ export class RequestRoomProvider {
 
   public static readonly shared = new RequestRoomProvider()
 
+  private constructor() {
+    if (isDebug) {
+      console.log(`RCTX RoomProvider. This should be called only once. If you see this message multiple times. Then something is wrong..`)
+    }
+    console.info('RCTX RoomProvider has been created.')
+  }
+
+  // Entry point for Middleware (Koa) to call.
   public createAsync(_ctx: KobpServiceContext, next: (...args: any[]) => Promise<KobpRequestRoom>): Promise<KobpRequestRoom> {
     const rctx = this.createContext(_ctx)
+    if (isDebug) {
+      console.log(`RCTX RoomProvider.createAsync. Middleware registered. If you see this message multiple times. Then something is wrong..`)
+    }
     return this.storage.run(rctx, (...args) => {
+      if (isDebug) {
+        console.log(`RCTX RoomProvider RoomContext injected.`)
+      }
       return next(...args)
-    })
+    }).finally(rctx.free.bind(rctx))
   }
 
   public current(): KobpRequestRoom | undefined  {
-    const store = this.storage.getStore()
-    return store
+    return this.storage.getStore()
   }
 
   public static instanceOf<O>(keyOrCnstr: string | RequestContextCreator<O>): O | undefined {
@@ -78,9 +107,15 @@ export class RequestRoomProvider {
 
   public createContext(_ctx: KobpServiceContext): KobpRequestRoom {
     const _room = new KobpRequestRoom(new Map())
+    if (isDebug) {
+      console.log(`RCTX RoomProvider.createContext. KobpRequestRoom #${_room.id} Context is being initialized.`)
+    }
     for(const regKey in this.roomRegistries) {
       const cnstr = this.roomRegistries[regKey]
       _room.set(regKey, new cnstr(_ctx))
+      if (isDebug) {
+        console.log(`RCTX RoomProvider.createContext. KobpRequestRoom #${_room.id} Context populating: ${regKey}, new instance of ${cnstr}`)
+      }
     }
     return _room
   }
