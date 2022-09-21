@@ -1,6 +1,6 @@
 {
   "name": "kobp",
-  "version": "2.0.4",
+  "version": "2.0.6",
   "description": "Koa Boilerplate with MikroORM",
   "main": "lib/cjs/src/index.js",
   "module": "lib/esm/src/index.js",
