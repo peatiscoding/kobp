@@ -9,4 +9,16 @@ export class HelloController extends BaseRoutedController {
       hello: 'world!'
     }
   }
+
+  @Route({
+    method: 'post',
+    path: '/echo',
+    middlewares: [
+    ]
+  })
+  async echo(_context: Context) {
+    return {
+      body: _context.request.body,
+    }
+  }
 }
