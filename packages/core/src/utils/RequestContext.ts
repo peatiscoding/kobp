@@ -6,6 +6,14 @@ type RequestContextCreator<O extends any> = new (context: any) => O
 
 const isDebug = env.b('KOBP_DEBUG', false)
 
+
+const _storage = new AsyncLocalStorage<KobpRequestRoom>()
+const _roomRegistries: Record<string, new (context: any) => any> = {}
+
+if (isDebug) {
+  console.log('RCTX initialized, >>>>>>>>>>>>>>>>>>> this should appear only ONCE. >>>>>>>>>>>>>>>>>>>')
+}
+
 /**
  * Marking any class to be available when resource is being created.
  * 
@@ -22,7 +30,7 @@ export function RequestContextEnabled(keyName: string) {
     if (isDebug) {
       console.log(`RCTX RequestContextEnabled (decorator) registered: ${keyName} with`, constructor)
     }
-    RequestRoomProvider.shared.roomRegistries[keyName] = constructor
+    _roomRegistries[keyName] = constructor
   }
 }
 
@@ -32,23 +40,36 @@ export class KobpRequestRoom {
 
   public readonly id = KobpRequestRoom.counter++
 
-  constructor(protected readonly data: Map<string, any>) {
+  private data: Map<string, any> = new Map()
+
+  public constructor(context: KobpServiceContext) {
+    for(const regKey in _roomRegistries) {
+      const cnstr = _roomRegistries[regKey]
+      this.set(regKey, new cnstr(context))
+    }
     if (isDebug) {
-      console.log(`RCTX KobpRequestRoom #${this.id} created with data of size: ${data.size}`)
+      console.log(`RCTX KobpRequestRoom #${this.id} created with data of size: ${this.data.size}`)
     }
   }
 
   get<T>(key: string): T {
-    return this.data[key]
+    const v = this.data[key]
+    if (isDebug) {
+      console.log(`RCTX KobpRequestRoom #${this.id} get(${key}) ${v}.`)
+    }
+    return v
   }
 
   set<T>(key: string, data: T) {
+    if (isDebug) {
+      console.log(`RCTX KobpRequestRoom #${this.id} has been set with ${key}.`)
+    }
     this.data[key] = data
   }
 
   public free() {
     if (isDebug) {
-      console.log(`RCTX KobpRequestRoom #${this.id} of size ${this.data.size} has been freed.`)
+      console.log(`RCTX KobpRequestRoom #${this.id} of size ${[...this.data.keys()].join(', ')} has been freed.`)
     }
     this.data.clear()
   }
@@ -58,10 +79,6 @@ export class KobpRequestRoom {
  * A factory for `KobpRequestRoom`
  */
 export class RequestRoomProvider {
-
-  private storage = new AsyncLocalStorage<KobpRequestRoom>()
-
-  public roomRegistries: Record<string, new (context: any) => any> = {}
 
   public static readonly shared = new RequestRoomProvider()
 
@@ -74,20 +91,18 @@ export class RequestRoomProvider {
 
   // Entry point for Middleware (Koa) to call.
   public createAsync(_ctx: KobpServiceContext, next: (...args: any[]) => Promise<KobpRequestRoom>): Promise<KobpRequestRoom> {
-    const rctx = this.createContext(_ctx)
+    const rctx = new KobpRequestRoom(_ctx)
     if (isDebug) {
-      console.log(`RCTX RoomProvider.createAsync. Middleware registered. If you see this message multiple times. Then something is wrong..`)
+      console.log(`RCTX RoomProvider.createAsync. RoomContext created.`)
     }
-    return this.storage.run(rctx, (...args) => {
-      if (isDebug) {
-        console.log(`RCTX RoomProvider RoomContext injected.`)
-      }
-      return next(...args)
-    }).finally(rctx.free.bind(rctx))
+    return _storage.run(rctx, next).finally(rctx.free.bind(rctx))
   }
 
   public current(): KobpRequestRoom | undefined  {
-    return this.storage.getStore()
+    if (isDebug) {
+      console.log(`RCTX RoomProvider.current().`)
+    }
+    return _storage.getStore()
   }
 
   public static instanceOf<O>(keyOrCnstr: string | RequestContextCreator<O>): O | undefined {
@@ -103,20 +118,5 @@ export class RequestRoomProvider {
       throw new Error('Class does not decorated as RequestContextEnabled')
     }
     return this.current()?.get(cnstrEnabledKey)
-  }
-
-  public createContext(_ctx: KobpServiceContext): KobpRequestRoom {
-    const _room = new KobpRequestRoom(new Map())
-    if (isDebug) {
-      console.log(`RCTX RoomProvider.createContext. KobpRequestRoom #${_room.id} Context is being initialized.`)
-    }
-    for(const regKey in this.roomRegistries) {
-      const cnstr = this.roomRegistries[regKey]
-      _room.set(regKey, new cnstr(_ctx))
-      if (isDebug) {
-        console.log(`RCTX RoomProvider.createContext. KobpRequestRoom #${_room.id} Context populating: ${regKey}, new instance of ${cnstr}`)
-      }
-    }
-    return _room
   }
 }

@@ -4,6 +4,7 @@
   "description": "Kobp example - simplest one",
   "scripts": {
     "example": "export LOGGY_FORMAT=TXT && node-dev src/server.ts",
+    "example:debug": "export LOGGY_FORMAT=TXT && export KOBP_DEBUG=TRUE && node-dev src/server.ts",
     "build": "tsc --build"
   },
   "author": "Kittiphat S.",
