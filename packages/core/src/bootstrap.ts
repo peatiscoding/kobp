@@ -14,11 +14,14 @@ export interface KobpCustomization {
    * Attach all necessary middlewares.
    */
   middlewares?: (app: Koa) => void
+  /**
+   * Handle signal received for graceful shutdown.
+   */
+  onSignalReceived?: (signal: NodeJS.Signals, app: Koa) => Promise<void>
 }
 
 const _compileCustomization = (options: KobpCustomization[]): KobpCustomization => {
   const allOpts = options
-  console.log('registering', allOpts.length)
   return {
     onInit: async () => {
       for(const opt of allOpts) {
@@ -35,10 +38,16 @@ const _compileCustomization = (options: KobpCustomization[]): KobpCustomization 
       }
     },
     middlewares: (app: Koa) => {
-      console.log('middlewares!!!', app)
       for(const opt of allOpts) {
         if (opt.middlewares) {
           opt.middlewares(app)
+        }
+      }
+    },
+    onSignalReceived: async (signal: NodeJS.Signals, app: Koa): Promise<void> => {
+      for(const opt of allOpts) {
+        if (opt.onSignalReceived) {
+          await opt.onSignalReceived(signal, app)
         }
       }
     }
@@ -104,5 +113,18 @@ export class BootstrapLoader {
     koa.use(serviceRoutes.allowedMethods())
 
     opts.onAppCreated && opts.onAppCreated(koa)
+
+    if (opts.onSignalReceived) {
+      // register onSignalReceived handler.
+      process.on('SIGTERM', (signal) => {
+        opts.onSignalReceived(signal, koa)
+        .then(() => {
+          process.exit(0)
+        })
+        .catch((e) => {
+          process.exit(1)
+        })
+      })
+    }
   }
 }

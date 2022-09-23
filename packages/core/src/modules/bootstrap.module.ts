@@ -25,7 +25,7 @@ export class BootstrapModule implements KobpModule {
   public customization(): KobpCustomization {
     return {
       onInit: async () => {
-        console.log('Bootstrap Module initialized.')
+        console.log(`Kobp initialized.`)
       },
       middlewares: (app) => {
         app.use(Loggy.autoCreate('_loggy'))
@@ -34,6 +34,10 @@ export class BootstrapModule implements KobpModule {
         }))
         app.use(withJson('_loggy'))
         app.use((ctx, next) => RequestRoomProvider.shared.createAsync(<any>ctx, next))
+      },
+      onSignalReceived: async (signal, app) => {
+        // gracefully shutting this down.
+        console.log('Kobp Shutting Down')
       },
     }
   }
