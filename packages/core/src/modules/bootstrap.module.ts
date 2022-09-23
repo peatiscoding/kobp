@@ -36,7 +36,7 @@ export class BootstrapModule implements KobpModule {
         app.use((ctx, next) => RequestRoomProvider.shared.createAsync(<any>ctx, next))
       },
       onSignalReceived: async (signal, app) => {
-        // gracefully shutting this down.
+        // gracefully shutting this down. 
         console.log('Kobp Shutting Down')
       },
     }
