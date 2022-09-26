@@ -96,6 +96,83 @@ export const helpers = {
 
     em.assign(obj, payload)
     return obj
+  },
+  /**
+   * Supported format
+   * 
+   * - Date Operator: `$dt(milliseconds)`
+   * - Between Operator: `$between(v1, v2)`
+   * - In Operator: `$in(value split by comma)`
+   * - Like Operator: `$like(value)` -- does not support $datetime
+   * - iLike Operator: `$ilike(value)` -- does not support $datetime
+   * - greater then Operator: `$gt(value)`
+   * - less than Operator: `$lt(value)`
+   * - is null: `$null`
+   * - is not null: `$notNull`
+   * 
+   * @param v
+   */
+  evalQuery(v: string, resourceName: string): (Partial<{ [key: string]: any }>) | 'void' {
+    const evalValue = (val: string): string => {
+      if (/\$dt\([1-9][0-9]+\)/.test(val)) {
+        const m = val.match(/\$dt\((.+)\)/)
+        if (!m) throw CrudError.coded('RES-004 QUERY_MALFORM', resourceName, 'failed to evalQuery $dt')
+        return new Date(+m[1]).toISOString()
+      }
+      return val
+    }
+    if (/^\$between\((\d+),(\d+)\)$/i.test(v)) {
+      const m = v.match(/\$between\(([^,]+),(.+)\)/i)
+      if (!m) throw CrudError.coded('RES-004 QUERY_MALFORM', resourceName, 'failed to evalQuery $between')
+      // return [{ [QueryOperator.$lte]: +m[1] }, { [QueryOperator.$gte]: +m[2] }]
+      return { $gte: +m[1], $lte: +m[2] }
+    } else if (/^\$like\((.*)\)$/i.test(v)) {
+      const m = v.match(/^\$like\((.*)\)$/i)
+      if (!m) throw CrudError.coded('RES-004 QUERY_MALFORM', resourceName, 'failed to evalQuery $like')
+      return { $like: m[1] }
+    } else if (/^\$ilike\((.*)\)$/i.test(v)) {
+      const m = v.match(/^\$ilike\((.*)\)$/i)
+      if (!m) throw CrudError.coded('RES-004 QUERY_MALFORM', resourceName, 'failed to evalQuery $ilike')
+      return { $ilike: m[1] }
+    } else if (/^\$between\(([^,]+),(.+)\)$/i.test(v)) {
+      const m = v.match(/^\$between\(([^,]+),(.+)\)$/i)
+      if (!m) throw CrudError.coded('RES-004 QUERY_MALFORM', resourceName, 'failed to evalQuery $between')
+      // return [`BETWEEN :${paramKeyFrom} AND :${paramKeyTo}`, {
+      //   [paramKeyFrom]: evalValue(m[1]), 
+      //   [paramKeyTo]: evalValue(m[2])
+      // }]
+      return { $gte: evalValue(m[1]), $lte: evalValue(m[2]) }
+    } else if (/^\$in\(.+\)$/i.test(v)) {
+      const m = v.match(/^\$in\((.+)\)$/i)
+      if (!m) throw CrudError.coded('RES-004 QUERY_MALFORM', resourceName, 'failed to evalQuery $in')
+      const splitted = m[1].split(',').filter((o) => !!o)
+      if (splitted.length > 0) {
+        // return [`IN (:...${_pk})`, {
+        //   [_pk]: splitted
+        // }]
+        return { $in: splitted }
+      }
+      return 'void'
+    } else if (/^\$gt\(.+\)$/i.test(v)) {
+      const m = v.match(/^\$gt\((.+)\)$/i)
+      if (!m) throw CrudError.coded('RES-004 QUERY_MALFORM', resourceName, 'failed to evalQuery $gt')
+      // return [`>= :${gtPk}`, {
+      //   [gtPk]: evalValue(m[1])
+      // }]
+      return { $gt: evalValue(m[1]) }
+    } else if (/^\$lt\(.+\)$/i.test(v)) {
+      const m = v.match(/^\$lt\((.+)\)$/i)
+      if (!m) throw CrudError.coded('RES-004 QUERY_MALFORM', resourceName, 'failed to evalQuery $lt')
+      // return [`<= :${ltPk}`, {
+      //   [ltPk]: evalValue(m[1])
+      // }]
+      return { $lt: evalValue(m[1]) }
+    } else if (/\$null/i.test(v)) {
+      return { $eq: null }
+    } else if (/\$notNull/i.test(v)) {
+      return { $ne: null }
+    }
+    return { $eq: evalValue(v) }
   }
 }
 
@@ -532,87 +609,6 @@ export class CrudController<E> extends BaseRoutedController {
       ...pick(req.query, this.options.searchableFields),
     }
 
-    const evalValue = (val: string): string => {
-      if (/\$dt\(1[0-9]+\)/.test(val)) {
-        const m = val.match(/\$dt\((.+)\)/)
-        if (!m) throw CrudError.coded('RES-004 QUERY_MALFORM', this.resourceName, 'failed to evalQuery $dt')
-        return new Date(+m[1]).toISOString()
-      }
-      return val
-    }
-    /**
-     * Supported format
-     * 
-     * - Between Operator: `$between(v1, v2)`
-     * - Date Operator: `$dt(milliseconds)`
-     * - In Operator: `$in(value split by comma)`
-     * - Like Operator: `$like(value)`
-     * - iLike Operator: `$ilike(value)`
-     * - greater then Operator: `$gt(value)`
-     * - less than Operator: `$lt(value)`
-     * - is null: `$null`
-     * - is not null: `$notNull`
-     * 
-     * @param v
-     */
-    const evalQuery = (v: string): (Partial<{ [key: string]: any }>) | 'void' => {
-      if (/\$between\((\d+),(\d+)\)/i.test(v)) {
-        const m = v.match(/\$between\(([^,]+),(.+)\)/i)
-        if (!m) throw CrudError.coded('RES-004 QUERY_MALFORM', this.resourceName, 'failed to evalQuery $between')
-        // return [{ [QueryOperator.$lte]: +m[1] }, { [QueryOperator.$gte]: +m[2] }]
-        return { $gte: +m[1], $lte: +m[2] }
-      } else if (/\$like\(([^)]*)\)/i.test(v)) {
-        const m = v.match(/\$like\(([^)]*)\)/i)
-        if (!m) throw CrudError.coded('RES-004 QUERY_MALFORM', this.resourceName, 'failed to evalQuery $like')
-        return { $like: m[1] }
-      } else if (/\$ilike\(([^)]*)\)/i.test(v)) {
-        const m = v.match(/\$ilike\(([^)]*)\)/i)
-        if (!m) throw CrudError.coded('RES-004 QUERY_MALFORM', this.resourceName, 'failed to evalQuery $ilike')
-        return { $ilike: m[1] }
-      } else if (/\$between\(([^,]+),(.+)\)/i.test(v)) {
-        const m = v.match(/\$between\(([^,]+),(.+)\)/i)
-        if (!m) throw CrudError.coded('RES-004 QUERY_MALFORM', this.resourceName, 'failed to evalQuery $between')
-        // return [`BETWEEN :${paramKeyFrom} AND :${paramKeyTo}`, {
-        //   [paramKeyFrom]: evalValue(m[1]), 
-        //   [paramKeyTo]: evalValue(m[2])
-        // }]
-        return { $gte: evalValue(m[1]), $lte: evalValue(m[2]) }
-      } else if (/\$in\([^)]+\)/i.test(v)) {
-        const m = v.match(/\$in\(([^)]+)\)/i)
-        if (!m) throw CrudError.coded('RES-004 QUERY_MALFORM', this.resourceName, 'failed to evalQuery $in')
-        const splitted = m[1].split(',').filter((o) => !!o)
-        if (splitted.length > 0) {
-          // return [`IN (:...${_pk})`, {
-          //   [_pk]: splitted
-          // }]
-          return { $in: splitted }
-        }
-        return 'void'
-      } else if (/\$gt\([^)]+\)/i.test(v)) {
-        const m = v.match(/\$gt\(([^)]+)\)/i)
-        if (!m) throw CrudError.coded('RES-004 QUERY_MALFORM', this.resourceName, 'failed to evalQuery $gt')
-        // return [`>= :${gtPk}`, {
-        //   [gtPk]: evalValue(m[1])
-        // }]
-        return { $gt: evalValue(m[1]) }
-      } else if (/\$lt\([^)]+\)/i.test(v)) {
-        const m = v.match(/\$lt\(([^)]+)\)/i)
-        if (!m) throw CrudError.coded('RES-004 QUERY_MALFORM', this.resourceName, 'failed to evalQuery $lt')
-        // return [`<= :${ltPk}`, {
-        //   [ltPk]: evalValue(m[1])
-        // }]
-        return { $lt: evalValue(m[1]) }
-      } else if (/\$null/i.test(v)) {
-        return { $eq: null }
-      } else if (/\$notNull/i.test(v)) {
-        return { $ne: null }
-      }
-      // return [`= :${defaultPk}`, {
-      //   [defaultPk]: evalValue(v)
-      // }]
-      return { $eq: evalValue(v) }
-    }
-
     /**
      * {
      *  [fieldName]: {
@@ -624,7 +620,7 @@ export class CrudController<E> extends BaseRoutedController {
     const res = toPairs(q).map(([key, v]): Partial<{ [key in keyof E]: Partial<{ [key in QueryOperator]: any }> }> => {
       if (typeof v === 'function') throw CrudError.coded('RES-004 QUERY_MALFORM', this.resourceName, 'Cannot evaluate value as function.')
       const _v = this.options.searchableFieldValueConverter[key] ? this.options.searchableFieldValueConverter[key](v) : v
-      const val = evalQuery(_v)
+      const val = helpers.evalQuery(_v, this.resourceName)
       return (val === 'void') ? {} : { [key]: val } as any
     })
     return res

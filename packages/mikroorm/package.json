@@ -7,7 +7,14 @@
   "typings": "lib/esm/src/index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.esm.json && tsc -p tsconfig.json",
-    "clean": "rm -rf node_modules/ && rm -rf libs/"
+    "clean": "rm -rf node_modules/ && rm -rf libs/",
+    "test": "jest"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    }
   },
   "author": "Kittiphat S.",
   "license": "ISC",
@@ -24,6 +31,8 @@
     "@types/koa": "^2.11.6",
     "@types/koa-router": "^7.4.1",
     "@types/lodash": "^4.14.168",
+    "jest": "^27.0.4",
+    "ts-jest": "^27.0.3",
     "kobp": "*",
     "typescript": "^4"
   }
