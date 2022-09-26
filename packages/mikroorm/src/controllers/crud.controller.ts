@@ -546,6 +546,12 @@ export class CrudController<E> extends BaseRoutedController {
      * - Between Operator: `$between(v1, v2)`
      * - Date Operator: `$dt(milliseconds)`
      * - In Operator: `$in(value split by comma)`
+     * - Like Operator: `$like(value)`
+     * - iLike Operator: `$ilike(value)`
+     * - greater then Operator: `$gt(value)`
+     * - less than Operator: `$lt(value)`
+     * - is null: `$null`
+     * - is not null: `$notNull`
      * 
      * @param v
      */
