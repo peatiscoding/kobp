@@ -1,4 +1,6 @@
+import { KobpServiceContext, Route } from "kobp";
 import { CrudController, DI } from "kobp-mikroorm";
+import { repeat } from "lodash";
 import { BookEntity, BookTagEntity } from "src/entities";
 
 export class BooksController extends CrudController<BookEntity> {
@@ -13,5 +15,21 @@ export class BooksController extends CrudController<BookEntity> {
         }
       ]
     })
+  }
+
+  @Route({
+    method: 'post',
+    path: '/load',
+    middlewares: [],
+  })
+  async load(context: KobpServiceContext) {
+    const arr = repeat('SomeArray', 100_000)
+    const data = repeat('Data', 100_000)
+    const numbers = repeat(`${300}`, 100_000)
+    return {
+      arr,
+      data,
+      numbers,
+    }
   }
 }

@@ -1,5 +1,5 @@
 import type { AutoPath } from '@mikro-orm/core/typings'
-import type { EntityManager } from '@mikro-orm/mysql-base'
+import { EntityManager } from '@mikro-orm/mysql-base'
 import type { KobpServiceContext, RouteMap } from 'kobp'
 
 import { Collection, QueryOperator, QueryOrderMap, Utils, wrap } from '@mikro-orm/core'
@@ -18,6 +18,7 @@ import {
   ServerErrorCode,
   BaseRoutedController,
 } from 'kobp'
+import { DI } from '../di'
 
 
 export class CrudError extends Error {
@@ -317,7 +318,12 @@ export class CrudController<E> extends BaseRoutedController {
     this.allRoutesMiddlewares = this.options.middlewares
   }
 
-  protected getEntityManager(context: KobpServiceContext): EntityManager { return context.em as EntityManager }
+  protected getEntityManager(context: KobpServiceContext): EntityManager {
+    if (context.em && context.em instanceof EntityManager) {
+      return context.em
+    }
+    return DI.em as EntityManager
+  }
 
   public getRouteMaps(): RouteMap {
     return {
