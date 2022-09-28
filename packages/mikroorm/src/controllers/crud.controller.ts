@@ -1,5 +1,5 @@
 import type { AutoPath } from '@mikro-orm/core/typings'
-import { EntityManager } from '@mikro-orm/mysql-base'
+import type { EntityManager } from '@mikro-orm/mysql-base'
 import type { KobpServiceContext, RouteMap } from 'kobp'
 
 import { Collection, QueryOperator, QueryOrderMap, Utils, wrap } from '@mikro-orm/core'
@@ -319,7 +319,7 @@ export class CrudController<E> extends BaseRoutedController {
   }
 
   protected getEntityManager(context: KobpServiceContext): EntityManager {
-    if (context.em && context.em instanceof EntityManager) {
+    if (context.em && context.em.createQueryBuilder) {
       return context.em
     }
     return DI.em as EntityManager
