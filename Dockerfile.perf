@@ -1,0 +1,9 @@
+FROM node:14.19.3-alpine3.15
+WORKDIR /usr/src/app
+
+RUN npm i -g npm
+COPY . .
+RUN npm i
+
+EXPOSE 3456
+CMD npm run -w examples/mikroorm target:perf:migrate

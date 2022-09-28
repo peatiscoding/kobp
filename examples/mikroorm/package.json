@@ -10,6 +10,8 @@
     "infra:up": "docker-compose up -d",
     "infra:down": "docker-compose down",
     "example": "export LOGGY_FORMAT=TXT && docker-compose up -d && node-dev src/server.ts",
+    "target:perf": "export LOGGY_FORMAT=TXT && ts-node src/server.ts",
+    "target:perf:migrate": "mikro-orm migration:up && export LOGGY_FORMAT=TXT && ts-node src/server.ts",
     "test:e2e": "jest src/__tests__/e2e/",
     "test:unit": "jest src/__tests__/unit/ --detectOpenHandles",
     "build": "tsc --build"
@@ -49,6 +51,7 @@
     "@types/node": "^14.14.6",
     "axios": "^0.21.1",
     "jest": "^27.0.4",
+    "k6": "^0.0.0",
     "node-dev": "^7.4.3",
     "ts-jest": "^27.0.3",
     "ts-node": "^10.9.1",

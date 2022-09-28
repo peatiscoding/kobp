@@ -8,6 +8,9 @@
     "packages/mikroorm",
     "examples/*"
   ],
+  "scripts": {
+    "test:perf": "k6 run --vus 10 --duration 120s loadtest.k6.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/peatiscoding/kobp.git"

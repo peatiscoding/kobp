@@ -1,0 +1,32 @@
+version: '3'
+volumes:
+  target_node_modules:
+
+services:
+  rds:
+    image: postgres:11.11-alpine # for testing
+    ports:
+      - 54322:5432
+    environment:
+      - POSTGRES_USER=tester
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=test_db
+  target:
+    build:
+      context: .
+      dockerfile: Dockerfile.perf
+    volumes:
+      - target_node_modules:/usr/src/app/node_modules
+    command: npm run -w examples/mikroorm target:perf:migrate
+    ports:
+      - 3456:3456
+    environment:
+      - ORM_DBNAME=test_db
+      - ORM_HOST=rds
+      - ORM_USER=tester
+      - ORM_PASSWORD=password
+      - ORM_PORT=5432
+      - NODE_OPTIONS=--max-old-space-size=128
+    depends_on:
+      - rds
+

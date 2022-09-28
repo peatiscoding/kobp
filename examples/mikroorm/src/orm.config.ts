@@ -25,14 +25,15 @@ const ormConfig = <Partial<MikroORMOptions>>{
     EvaluationRecordEntity,
   ],
   forceUtcTimezone: true,
-  dbName: 'test_db',
-  host: 'localhost',
-  port: 54322,
-  user: 'tester',
-  password: 'password',
+  dbName: process.env.ORM_DBNAME || 'test_db',
+  host: process.env.ORM_HOST || 'localhost',
+  port: process.env.ORM_PORT || 54322,
+  user: process.env.ORM_USER || 'tester',
+  password: process.env.ORM_PASSWORD || 'password',
   type: 'postgresql', // one of `mongo` | `mysql` | `mariadb` | `postgresql` | `sqlite`
   tsNode: true,
   migrations: {
+    snapshot: false,
     path:
       process.cwd() +
       `/${
