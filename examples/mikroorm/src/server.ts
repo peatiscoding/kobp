@@ -11,10 +11,9 @@ import { MikroormModule } from 'kobp-mikroorm'
 import { makeDbConfig } from "./orm.config"
 import { makeRoutes } from "./routes"
 
-
-// Override withJsonError handling
-withJsonConfig.errorPipeline.push(
-  (err: any, loggy?: Loggy): Error => {
+async function init() {
+  // Override withJsonError handling
+  const errorMapper = (err: any, loggy?: Loggy): Error => {
     if (err instanceof KobpError) {
       return err
     }
@@ -25,10 +24,9 @@ withJsonConfig.errorPipeline.push(
       traceId: loggy?.traceId
     })
   }
-)
+  withJsonConfig.errorPipeline.push(errorMapper)
 
-// Finally
-const run = async () => {
+  // Finally
   const loader = new BootstrapLoader()
   const app = await loader
     .addModule(new BootstrapModule(['json']))
@@ -38,4 +36,4 @@ const run = async () => {
   app.listen(3456, '0.0.0.0')
 }
 
-run()
+init()

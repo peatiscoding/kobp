@@ -6,4 +6,5 @@ COPY . .
 RUN npm i
 
 EXPOSE 3456
+RUN npm run -w examples/mikroorm build
 CMD npm run -w examples/mikroorm target:perf:migrate

@@ -37,7 +37,7 @@ const ormConfig = <Partial<MikroORMOptions>>{
     path:
       process.cwd() +
       `/${
-        process.env.NODE_ENVIRONMENT === 'production' ? 'lib' : 'src'
+        process.env.NODE_ENVIRONMENT === 'production' ? 'dist' : 'src'
       }/migrations/`,
     pattern: /^[\w-]+\d+\.[jt]s$/,
     allOrNothing: true,

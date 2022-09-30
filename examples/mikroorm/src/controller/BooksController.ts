@@ -1,7 +1,7 @@
 import { KobpServiceContext, Route } from "kobp";
 import { CrudController, DI } from "kobp-mikroorm";
 import { repeat } from "lodash";
-import { BookEntity, BookTagEntity } from "src/entities";
+import { BookEntity, BookTagEntity } from "../entities";
 
 export class BooksController extends CrudController<BookEntity> {
 

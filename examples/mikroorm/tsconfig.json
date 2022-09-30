@@ -9,6 +9,9 @@
     "emitDecoratorMetadata": true,
     "target": "es2017",
     "skipLibCheck": true,
+    "outDir": "dist/",
+    "rootDir": "src/",
+    "module": "CommonJS",
     "paths": {
       "kobp": ["../../packages/core/src/*"],
       "kobp-mikroorm": ["../../packages/mikroorm/src/*"]

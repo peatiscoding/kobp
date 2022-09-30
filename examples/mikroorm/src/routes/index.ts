@@ -3,10 +3,10 @@ import { KobpServiceContext, KobpServiceState } from 'kobp'
 import Router from 'koa-router'
 import { LangController } from '../controller/LangController'
 import { LibraryController } from '../controller/LibraryController'
-import { BooksController } from 'src/controller/BooksController'
-import { BookTagsController } from 'src/controller/BookTagsController'
-import { EmployeeController } from 'src/controller/EmployeeController'
-import { EvaluationController } from 'src/controller/EvaluationController'
+import { BooksController } from '../controller/BooksController'
+import { BookTagsController } from '../controller/BookTagsController'
+import { EmployeeController } from '../controller/EmployeeController'
+import { EvaluationController } from '../controller/EvaluationController'
 
 export const makeRoutes = (): Router => {
 

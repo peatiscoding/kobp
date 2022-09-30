@@ -9,7 +9,7 @@
     "examples/*"
   ],
   "scripts": {
-    "test:perf": "k6 run --vus 10 --duration 120s loadtest.k6.js"
+    "test:perf": "k6 run --vus 10 --duration 10m loadtest.k6.js"
   },
   "repository": {
     "type": "git",

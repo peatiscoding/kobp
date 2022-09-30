@@ -2,6 +2,7 @@
   "name": "ex-mikroorm",
   "version": "0.0.0",
   "description": "Kobp Example with MikroORM enabled",
+  "main": "dist/index.js",
   "scripts": {
     "clean": "rm -rf node_modules/ && rm -rf libs/",
     "migrate:create": "mikro-orm migration:create",
@@ -11,7 +12,7 @@
     "infra:down": "docker-compose down",
     "example": "export LOGGY_FORMAT=TXT && docker-compose up -d && node-dev src/server.ts",
     "target:perf": "export LOGGY_FORMAT=TXT && ts-node src/server.ts",
-    "target:perf:migrate": "mikro-orm migration:up && export LOGGY_FORMAT=TXT && ts-node src/server.ts",
+    "target:perf:migrate": "NODE_ENVIRONMENT=production LOGGY_FORMAT=TXT mikro-orm migration:up && node dist/server.js",
     "test:e2e": "jest src/__tests__/e2e/",
     "test:unit": "jest src/__tests__/unit/ --detectOpenHandles",
     "build": "tsc --build"

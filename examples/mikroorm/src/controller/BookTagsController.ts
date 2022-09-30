@@ -1,5 +1,5 @@
 import { CrudController } from "kobp-mikroorm";
-import { BookTagEntity } from "src/entities";
+import { BookTagEntity } from "../entities";
 
 export class BookTagsController extends CrudController<BookTagEntity> {
 

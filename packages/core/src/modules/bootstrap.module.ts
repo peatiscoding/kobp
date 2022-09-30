@@ -25,7 +25,7 @@ export class BootstrapModule implements KobpModule {
   public customization(): KobpCustomization {
     return {
       onInit: async () => {
-        console.log(`Kobp initialized.`)
+        console.log(`Kobp initialized 2.`)
       },
       middlewares: (app) => {
         app.use(Loggy.autoCreate('_loggy'))
