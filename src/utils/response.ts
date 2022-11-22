@@ -70,6 +70,13 @@ export enum ClientErrorCode {
    * Method is not allowed, the HTTP verb is not supported at ths endpoint.
    */
   methodNotAllowed = 405,
+  
+  conflict = 409,
+
+  gone = 410,
+
+  tooManyRequests = 429,
+
 }
 
 export enum ServerErrorCode {
