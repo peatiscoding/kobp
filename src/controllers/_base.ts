@@ -2,6 +2,7 @@ import type { KobpServiceContext, KobpServiceState } from '../context'
 
 import { Middleware } from 'koa'
 import Router from 'koa-router'
+import { Tracer } from '../utils/tracer'
 
 export type HttpMethod = 'post'|'get'|'delete'|'put'|'patch'
 
@@ -30,9 +31,11 @@ export class BaseRoutedController {
   }
 
   async handleSuccess(ctx: KobpServiceContext, data: any): Promise<void> {
+    const traceId = Tracer.current()?.traceId || '<no-trace-id>'
     ctx.status = 200
     ctx.body = {
       success: true,
+      traceId,
       data
     }
   }

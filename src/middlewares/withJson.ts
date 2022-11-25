@@ -1,5 +1,6 @@
 import type { Middleware } from '../context'
 import { KobpError, Loggy } from '..'
+import { Tracer } from '../utils/tracer'
 
 const WithJson = () => {
   const config: {
@@ -29,6 +30,7 @@ const WithJson = () => {
         loggy?.success(`[>>] ${url}`)
       } catch (err) {
         // will only respond with JSON
+        const traceId = Tracer.current()?.traceId || '<no-trace-id>'
         let _err = err
         if (config.errorPipeline) {
           for(const pipe of config.errorPipeline) {
@@ -38,6 +40,7 @@ const WithJson = () => {
         ctx.status = _err.statusCode || _err.status || 500;
         ctx.body = {
           success: false,
+          traceId,
           code: _err.code && _err.code,
           error: _err.message,
           data: _err.data,
