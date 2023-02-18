@@ -7,7 +7,7 @@ export class LibraryController extends CrudController<LibraryEntity> {
     super(LibraryEntity, 'library', {
       resourceKeyPath: ':slug',
       defaultPopulate: () => ['shelves'] as any,
-      sanitizeInputBody: async (ctx, em, body) => {
+      sanitizeInputBody: async (_ctx, em, body) => {
         // prepare all-resources findAll()
         await em.getRepository(BookEntity).findAll()
         return body

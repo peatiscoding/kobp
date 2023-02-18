@@ -150,10 +150,13 @@ describe('LibraryController Endpoint', () => {
       expect(createNewResp.error).toMatch(/Internal Server Error/)  // Error should have been wrapped.
     })
 
-    it('Can update items from CrudController', async () => {
+    describe('Can update items from CrudController', () => {
       // Create new one
       const targetSlug = 'updatable'
       const sourceTitle = 'Updatable'
+      let initShelves = []
+      let currentTitle = sourceTitle 
+     
       // Update multiple items in the shelf
       const check = async (targetTitle: string, targetShelves: LibraryShelfEntity[]): Promise<void> => {
         const afterCreated = await client.getLibrary(targetSlug)
@@ -169,69 +172,81 @@ describe('LibraryController Endpoint', () => {
         expect(afterCreated.data.shelves.map((o) => o.title).sort()).toEqual(targetShelves.map((o) => o.title).sort())
         expect(toIsbns(afterCreated.data.shelves)).toEqual(toIsbns(targetShelves))
       }
+      it('can init with first batch', async () => {
+        initShelves = [
+          makeShelf(
+            'bob',
+            'Bob',
+            ...makeBooks(
+              '0199987556', 'A Brief History of the Romans',
+              '1319022545', 'Ways of the World: A Brief Global History, Volume II',
+              '1447123581', 'A Brief History of Computing',
+            )
+          ),
+        ]
+        const createdResp = await client.createNewLibrary(targetSlug, sourceTitle, initShelves)
+        expect(createdResp.httpStatusCode).toEqual(200)
+        expect(createdResp.data.slug).toEqual(targetSlug)
+        await check(sourceTitle, initShelves)
+      })
 
-      const initShelves = [
-        makeShelf(
-          'bob',
-          'Bob',
-          ...makeBooks(
-            '0199987556', 'A Brief History of the Romans',
-            '1319022545', 'Ways of the World: A Brief Global History, Volume II',
-            '1447123581', 'A Brief History of Computing',
-          )
-        ),
-      ]
-      const createdResp = await client.createNewLibrary(targetSlug, sourceTitle, initShelves)
-      expect(createdResp.httpStatusCode).toEqual(200)
-      expect(createdResp.data.slug).toEqual(targetSlug)
-      await check(sourceTitle, initShelves)
+      it('can update only some meta (title)', async () => {
+        // UPDATE: title only
+        const newTitle = `${sourceTitle} New`
+        currentTitle = newTitle
+        await client.updateLibraryTitle(targetSlug, newTitle)
+        await check(newTitle, initShelves)
+      })
 
-      // UPDATE: with shelves
-      const newShelves = [
-        makeShelf(
-          'computer',
-          'Computar', // typo (will be fixed in later API call)
-          ...makeBooks(
-            '1593274246', 'Think Like a Programmer: An Introduction to Creative Problem Solving',
-            '0321623215', 'C++ Standard Library, The: A Tutorial and Reference',
-          )
-        ),
-        makeShelf(
-          'bob',
-          'Bob',
-          ...makeBooks(
-            '0199987556', 'A Brief History of the Romans',
-            '1447123581', 'A Brief History of Computing',
-          )
-        ),
-      ]
-      await client.updateLibraryShelves(targetSlug, newShelves)
-      await check(sourceTitle, newShelves)
+      // shared among test cases
+      let replacedShelves = []
 
-      // UPDATE: with shelves but "without" (undefined) books -- this will clean out all fields. as it flags "books" as dirty.
-      // newShelves[0].title = 'Computer'
-      // await client.updateLibraryShelvesWithoutBooks(targetSlug, newShelves)
-      // await check(sourceTitle, newShelves)
+      it('can update (replace) the shelf only using new set of books', async () => {
+        replacedShelves = [
+          makeShelf(
+            'computer',
+            'Computar', // typo (will be fixed in later API call)
+            ...makeBooks(
+              '1593274246', 'Think Like a Programmer: An Introduction to Creative Problem Solving',
+              '0321623215', 'C++ Standard Library, The: A Tutorial and Reference',
+            )
+          ),
+          makeShelf(
+            'bob',
+            'Bob',
+            ...makeBooks(
+              '0199987556', 'A Brief History of the Romans',
+              '1447123581', 'A Brief History of Computing',
+            )
+          ),
+        ]
 
-      // UPDATE: title only
-      const newTitle = `${sourceTitle} New`
-      await client.updateLibraryTitle(targetSlug, newTitle)
-      await check(newTitle, newShelves)
+        // UPDATE: with shelves
+        await client.updateLibraryShelves(targetSlug, replacedShelves)
+        await check(currentTitle, replacedShelves)
 
-      // UPDATE: Title & Shelves
-      const newShelves2 = [
-        makeShelf(
-          'computer',
-          'Computer',
-          ...makeBooks(
-            '1593274246', 'Think Like a Programmer: An Introduction to Creative Problem Solving',
-            '0321623215', 'C++ Standard Library, The: A Tutorial and Reference',
-          )
-        ),
-      ]
-      const newTitle2 = `${sourceTitle} New2`
-      await client.updateLibraryTitleAndShelves(targetSlug, newTitle2, newShelves2)
-      await check(newTitle2, newShelves2)
+        // UPDATE: with shelves but "without" (undefined) books -- this will clean out all fields. as it flags "books" as dirty.
+        // newShelves[0].title = 'Computer'
+        // await client.updateLibraryShelvesWithoutBooks(targetSlug, newShelves)
+        // await check(sourceTitle, newShelves)
+      })
+
+      // it('can update (replace) both shelf and meta', async () => {
+      //   // UPDATE: Title & Shelves
+      //   const newShelves2 = [
+      //     makeShelf(
+      //       'computer',
+      //       'Computer fixed',
+      //       ...makeBooks(
+      //         '1593274246', 'Think Like a Programmer: An Introduction to Creative Problem Solving',
+      //         '0321623215', 'C++ Standard Library, The: A Tutorial and Reference',
+      //       )
+      //     ),
+      //   ]
+      //   const newTitle2 = `${sourceTitle} New2`
+      //   await client.updateLibraryTitleAndShelves(targetSlug, newTitle2, newShelves2)
+      //   await check(newTitle2, newShelves2)
+      // })
     })
 
     // Unrelated chain

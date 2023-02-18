@@ -1,5 +1,5 @@
 import type { AutoPath } from '@mikro-orm/core/typings'
-import type { EntityManager } from '@mikro-orm/mysql-base'
+import type { SqlEntityManager as EntityManager } from '@mikro-orm/knex'
 import type { KobpServiceContext, RouteMap } from 'kobp'
 
 import { Collection, QueryOperator, QueryOrderMap, Utils, wrap } from '@mikro-orm/core'
@@ -89,13 +89,15 @@ export const helpers = {
           }
         }
         // Removals
-        fromDb.remove(...values(toRemove))
+        for (const removal of values(toRemove)) {
+          fromDb.remove(removal)
+        }
         // remove this from payload to assign to object.
         delete payload[key]
       }
     }
 
-    em.assign(obj, payload)
+    em.assign(obj as any, payload)
     return obj
   },
   /**
@@ -151,7 +153,7 @@ export const helpers = {
         // return [`IN (:...${_pk})`, {
         //   [_pk]: splitted
         // }]
-        return { $in: splitted }
+        return { $in: splitted.map(evalValue) }
       }
       return 'void'
     } else if (/^\$gt\(.+\)$/i.test(v)) {
@@ -373,7 +375,7 @@ export class CrudController<E> extends BaseRoutedController {
         }
 
         // Save
-        t.persist(raw)
+        t.persist(raw as any)
 
         // Apply postSave hook
         for (const h of this.options.postSave) {
@@ -451,7 +453,7 @@ export class CrudController<E> extends BaseRoutedController {
         }
 
         // Save
-        t.persist(raw)
+        t.persist(raw as any)
 
         // Apply postSave hook
         for (const h of this.options.postSave) {

@@ -1,5 +1,4 @@
-// import { SqlEntityManager } from "@mikro-orm/mysql-base"
-import { SqlEntityManager } from "@mikro-orm/mysql-base"
+import { SqlEntityManager } from "@mikro-orm/knex"
 import { values } from "lodash"
 import { DI, helpers } from "kobp-mikroorm"
 import { BookEntity, LibraryEntity } from "../../entities"

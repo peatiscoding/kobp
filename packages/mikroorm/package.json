@@ -1,6 +1,6 @@
 {
   "name": "kobp-mikroorm",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "ORM + CRUD Controller for Kobp",
   "main": "lib/cjs/src/index.js",
   "module": "lib/esm/src/index.js",
@@ -19,14 +19,14 @@
   "author": "Kittiphat S.",
   "license": "ISC",
   "peerDependencies": {
-    "@mikro-orm/core": "^5.2",
-    "@mikro-orm/mysql-base": "^5.0.0-rc.2",
+    "@mikro-orm/core": "^5.6.10",
+    "@mikro-orm/knex": "^5.6.10",
     "lodash": "^4.17.21",
     "kobp": "^2.0.1"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^5.2",
-    "@mikro-orm/mysql-base": "^5.0.0-rc.2",
+    "@mikro-orm/core": "^5.6.10",
+    "@mikro-orm/knex": "^5.6.10",
     "@types/aws-lambda": "^8.10.56",
     "@types/koa": "^2.11.6",
     "@types/koa-router": "^7.4.1",
