@@ -80,13 +80,16 @@ export class KobpRequestRoom {
  */
 export class RequestRoomProvider {
 
-  public static readonly shared = new RequestRoomProvider()
+  private static _instance?: RequestRoomProvider
+
+  public static get shared(): RequestRoomProvider {
+    return this._instance ?? (this._instance = new RequestRoomProvider())
+  }
 
   private constructor() {
     if (isDebug) {
       console.log(`RCTX RoomProvider. This should be called only once. If you see this message multiple times. Then something is wrong..`)
     }
-    console.info('RCTX RoomProvider has been created.')
   }
 
   // Entry point for Middleware (Koa) to call.
