@@ -45,7 +45,9 @@ export class BaseRoutedController {
    */
   public register(path: string, koaRouter: KobpRouter, ...middlewares: Router.IMiddleware<KobpServiceState, KobpServiceContext>[]) {
     const r = this.getRouter()
-    koaRouter.use(path, ...middlewares, r.routes(), r.allowedMethods())
+    // clean the path - path may ended with extra slashes that we don't need.
+    const cleanPath = path.trim().replace(/\/*$/, '')
+    koaRouter.use(cleanPath , ...middlewares, r.routes(), r.allowedMethods())
   }
 
   public getRouter(): KobpRouter {
@@ -63,7 +65,7 @@ export class BaseRoutedController {
         for(let i = 0; i < mw.length; i += 1) {
           router[_m](path, mw[i])
         }
-        router[_m](path, async (ctx, next): Promise<void> => {
+        router[_m](path, async (ctx, _next): Promise<void> => {
           try {
             const out = await this[fname || 'index'](ctx)
             const res = ctx.response
