@@ -84,6 +84,16 @@ export class Client {
     return { httpStatusCode: resp.status, data: resp.data.data, error: resp.data.error }
   }
 
+  public async getIsbns(queryIsbn?: string): Promise<APIArrayResponse> {
+    const resp = await this.axios.get('/book/_lov/isbn', queryIsbn && {
+      params: {
+        isbn: queryIsbn,
+      },
+    } || undefined)
+
+    return { httpStatusCode: resp.status, data: resp.data.data, error: resp.data.error }
+  }
+
   public async updateBook(isbn: string, title: string, tags: { slug: string }[]): Promise<APIObjectResponse> {
     const resp = await this.axios.post(`/book/${isbn}`, {
       isbn,

@@ -196,6 +196,14 @@ export interface CrudControllerOption<E> {
   searchableFields: (keyof E)[]
 
   /**
+   * list of fields that can be distincted by _lov endpoint.
+   *
+   * Adding field to this option will allow the controller to invoke (distinct list of value)
+   * It is highly recommend that the fields to be present in this endpoint should be indexed for optimal performance.
+   */
+  distinctableFields: (keyof E)[]
+
+  /**
    * Default populate options
    * - one = use when populate select one
    * - many = use when populate select many
@@ -304,6 +312,7 @@ export class CrudController<E> extends BaseRoutedController {
       defaultFilters: async () => ({}),
       sanitizeInputBody: async (ctx, em, body) => body,
       searchableFields: [],
+      distinctableFields: [],
       searchableFieldValueConverter: {},
       orderBy: { updatedAt: -1 } as any, // Expected that every entity would have `updatedAt`
       computeUpdatePayload: async (ctx, em, fromDb, body) => body,
@@ -332,6 +341,7 @@ export class CrudController<E> extends BaseRoutedController {
       ...super.getRouteMaps(),
       index: { method: 'get', path: '/' },
       createOne: { method: 'post', path: '/' },
+      distinct: { method: 'get', path: '/_lov/:fieldName' },
       getOne: { method: 'get', path: this.options.resourceKeyPath },
       updateOne: { method: 'post', path: this.options.resourceKeyPath },
       deleteOne: { method: 'delete', path: this.options.resourceKeyPath },
@@ -579,6 +589,28 @@ export class CrudController<E> extends BaseRoutedController {
       count,
       items,
     }
+  }
+
+  public async distinct(context: KobpServiceContext): Promise<string[]> {
+    const fieldName = context.params.fieldName
+    if (this.options.distinctableFields.indexOf(fieldName) < 0) {
+      throw CrudError.coded('RES-004 QUERY_MALFORM', this.resourceName, 'cannot perform distinct query over non-whitelisted fields.')
+    }
+    const em = this.getEntityManager(context)
+    const _filterQueries = await this._filtersQuery(context, em)
+    const smartWhereClause = {
+      ...this.options.forAllResources(context),
+      '$and': [
+        ..._filterQueries,
+        ...this._whereClauseByQuery(context),
+      ]
+    }
+
+    const qb = em.createQueryBuilder(this.cnstr)
+    const res = await qb.select(fieldName, true)
+      .where(smartWhereClause)
+      .getResultList()
+    return res.map((v) => v[fieldName])
   }
 
   /* PRIVATE METHODS */

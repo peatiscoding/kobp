@@ -8,6 +8,12 @@ export class BooksController extends CrudController<BookEntity> {
   constructor() {
     super(BookEntity, 'books', {
       resourceKeyPath: ':isbn',
+      searchableFields: [
+        'isbn',
+      ],
+      distinctableFields: [
+        'isbn',
+      ],
       preSave: [
         async (ctx, em, obj) => {
           await DI.em.find(BookTagEntity, {})

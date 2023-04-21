@@ -119,6 +119,22 @@ describe('LibraryController Endpoint', () => {
     })
   })
 
+  it('can call _lov for specific fields', async () => {
+    const resp = await client.getIsbns()
+
+    expect(resp.httpStatusCode).toEqual(200)
+    expect(resp.data).toBeTruthy()
+    expect(resp.data).toEqual(expect.arrayContaining(['1593274246', '1405281081']))
+  })
+
+  it('can call _lov for specific fields with filters', async () => {
+    const resp = await client.getIsbns('1405281081')
+
+    expect(resp.httpStatusCode).toEqual(200)
+    expect(resp.data).toBeTruthy()
+    expect(resp.data).toEqual(['1405281081'])
+  })
+
   // Library has shelf, and depends on Book
   describe('nested dependent resource', () => {
 
