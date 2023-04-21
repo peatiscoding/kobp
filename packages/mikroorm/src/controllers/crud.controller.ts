@@ -609,7 +609,7 @@ export class CrudController<E> extends BaseRoutedController {
     const qb = em.createQueryBuilder(this.cnstr)
     const res = await qb.select(fieldName, true)
       .where(smartWhereClause)
-      .getResultList()
+      .execute('all')
     return res.map((v) => v[fieldName])
   }
 
