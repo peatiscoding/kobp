@@ -13,12 +13,12 @@ export class HelloController extends BaseRoutedController {
     method: 'get',
     path: '/lang',
   })
-  async lang(context: KobpServiceContext) {
+  async lang(_ctx: KobpServiceContext) {
     return `${Lang.current()}`
   }
 
   @Route()
-  async index(context: KobpServiceContext) {
+  async index(_ctx: KobpServiceContext) {
     return {
       hello: 'world'
     }
@@ -29,7 +29,7 @@ export class HelloController extends BaseRoutedController {
     path: '/load',
     middlewares: [],
   })
-  async load(context: KobpServiceContext) {
+  async load(_ctx: KobpServiceContext) {
     const arr = repeat('SomeArray', 100_000)
     const data = repeat('Data', 100_000)
     const numbers = repeat(`${300}`, 100_000)
@@ -38,5 +38,13 @@ export class HelloController extends BaseRoutedController {
       data,
       numbers,
     }
+  }
+
+  @Route({
+    method: 'post',
+    path: '/upload',
+    middlewares: [],
+  })
+  async upload(_ctx: KobpServiceContext) {
   }
 }

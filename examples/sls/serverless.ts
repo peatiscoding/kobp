@@ -19,10 +19,18 @@ const serverlessConfiguration: AWS = {
     apiGateway: {
       minimumCompressionSize: 1024,
       shouldStartNameWithService: false,
+      binaryMediaTypes: [
+        '*/*',
+      ],
     },
     environment: {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
+      LOCAL_S3_ENDPOINT: 'http://localhost:9000',
+      LOCAL_S3_ACCESS_KEY: 'root',
+      LOCAL_S3_SECRET_KEY: 'password',
+      MEDIA_BUCKET_EXPENSE_DOCS: 'mzic-local-expense-docs',
+      LOGGY_FORMAT: 'TXT',
       STAGE: '${self:custom.stage}',
     },
     iamRoleStatements: [

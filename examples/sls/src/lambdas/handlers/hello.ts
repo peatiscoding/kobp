@@ -13,4 +13,5 @@ export default makeLambdaHandler(router, {
   customizer: (loader) => {
     loader.addModule(new BootstrapModule(['json']))
   },
+  binary: true,
 })
