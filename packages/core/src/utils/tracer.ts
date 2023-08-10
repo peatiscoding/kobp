@@ -53,9 +53,9 @@ export class Tracer {
     traceIdMaker: (currentKey: string) => {
       // Stack key when current ray run through multiple services.
       if (!currentKey) {
-        return `${new Date().getTime().toString(32)}.${randomBytes(4).toString('hex').substr(0, 4)}`
+        return `${new Date().getTime().toString(32)}.${randomBytes(4).toString('hex').substring(0, 4)}`
       }
-      return `${currentKey}>${randomBytes(4).toString('hex').substr(0, 4)}`
+      return `${currentKey}>${randomBytes(4).toString('hex').substring(0, 4)}`
     }
   }
 
