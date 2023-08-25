@@ -1,6 +1,5 @@
 import type { KobpServiceContext, KobpServiceState } from '../context'
-
-import { Middleware } from 'koa'
+import type { Context, Middleware } from 'koa'
 import Router from 'koa-router'
 
 export type HttpMethod = 'post'|'get'|'delete'|'put'|'patch'
@@ -79,6 +78,24 @@ export class BaseRoutedController {
       }
     }
     return router
+  }
+
+  /**
+   * Tell the context to disable default JSON output handler
+   *
+   * @example
+   * ```
+   * class SomeController {
+   *  @Route('/')
+   *  async call(context: KobpServiceContext): Promise<void> {
+   *    this.setDoNotHandleSuccess(context)
+   *    context.redirect('/login')
+   *  }
+   * }
+   * ```
+   */
+  protected setDoNotHandleSuccess(context: KobpServiceContext | Context) {
+    (context.response as any).doNotHandleSuccess = true
   }
 
   public getMiddlewares(): Router.IMiddleware<KobpServiceState, KobpServiceContext>[] {
