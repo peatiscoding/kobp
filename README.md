@@ -134,6 +134,6 @@ ENV: `KOBP_DEBUG` to `Yes` or `True` or `1` to let the framework emit debugging 
 [/] Core module
 [/] Mikroorm module
 [/] Publish with microbundle instead.
-[ ] Lambda Handler
+[/] Lambda Handler
 [ ] SNS/SQS Handler
 ```
