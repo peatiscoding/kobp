@@ -1,5 +1,5 @@
 import type { KobpCustomization } from '../bootstrap'
-import type { KobpModule } from '..'
+import type { KobpModule, PrintFn } from '..'
 
 import bodyParser from 'koa-bodyparser'
 import { withJson } from '../middlewares'
@@ -9,11 +9,17 @@ import {
   RequestRoomProvider,
 } from '../utils'
 
+export interface BootstrapModuleOption {
+  loggyPrintFn?: PrintFn 
+}
+
 export class BootstrapModule implements KobpModule {
 
   private allowedBodyTypes: string[]
+  private options: BootstrapModuleOption = {}
 
-  constructor(allowedBodyTypes?: string[]) {
+  constructor(allowedBodyTypes?: string[], options?: BootstrapModuleOption) {
+    this.options = options
     this.allowedBodyTypes = ((): string[] => {
     if (allowedBodyTypes) {
         return allowedBodyTypes
@@ -27,7 +33,7 @@ export class BootstrapModule implements KobpModule {
       onInit: async () => {
       },
       middlewares: (app) => {
-        app.use(Loggy.autoCreate('_loggy'))
+        app.use(Loggy.autoCreate('_loggy', this.options?.loggyPrintFn))
         app.use(bodyParser({
           enableTypes: this.allowedBodyTypes,
         }))
