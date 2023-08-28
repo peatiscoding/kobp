@@ -22,18 +22,27 @@ export interface PrintContent {
   verdict: 'OK' | 'ER' | 'PG'
 }
 
+export type PrintFn = (content: PrintContent) => void
+
 @RequestContextEnabled('__TRC__')
 export class Loggy extends Tracer implements Logger {
 
   public static format: 'JSN' | 'TXT' = /JSO?N/i.test(`${process.env.LOGGY_FORMAT || 'JSN'}`) ? 'JSN' : 'TXT'
 
-  private _printLn: (content: PrintContent) => void
+  private _printLn: PrintFn 
 
-  constructor(ctx: KobpServiceContext) {
+  constructor(ctx: KobpServiceContext, printFn?: PrintFn) {
     super(ctx)
-    this._printLn = Loggy.format === 'JSN'
+    this._printLn = printFn ?? (Loggy.format === 'JSN'
       ? (c) => console.log(JSON.stringify(c))
-      : (c) => console.log(`${c.requestId} [${c.verdict} ${c.statusCode}] ${c.method} ${c.path}`, [c.message, c.error].filter(Boolean).join(' '))
+      : (c) => console.log(`${c.requestId} [${c.verdict} ${c.statusCode}] ${c.method} ${c.path}`, [c.message, c.error].filter(Boolean).join(' ')))
+  }
+
+  /**
+   * Override the print function
+   */
+  public setPrintFn(printLn: (content: PrintContent) => void) {
+    this._printLn = printLn
   }
 
   /**
@@ -109,22 +118,10 @@ export class Loggy extends Tracer implements Logger {
     }
   }
 
-  static autoCreate(attachToContextKey: string): Middleware {
+  static autoCreate(attachToContextKey: string, printFn?: PrintFn): Middleware {
     return async function (ctx, next) {
-      ctx[attachToContextKey] = new Loggy(ctx as any)
-      await next()
-    }
-  }
-
-  // provide customize endpoint as middleware
-  static customize(attachToContextKey: string, customize: (loggy: Loggy) => void): Middleware {
-    return async function (ctx, next) {
-      const loggy = ctx[attachToContextKey]
-      if (loggy) {
-        customize(loggy)
-      } else {
-        console.warn(`Loggy overridePrintFn: ${attachToContextKey} failed`)
-      }
+      const loggy = new Loggy(ctx as any, printFn)
+      ctx[attachToContextKey] = loggy
       await next()
     }
   }
