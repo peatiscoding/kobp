@@ -45,6 +45,13 @@ export class Loggy extends Tracer implements Logger {
     this._printLn = printLn
   }
 
+  /**
+   * Override the print function
+   */
+  public setPrintFn(printLn: (content: PrintContent) => void) {
+    this._printLn = printLn
+  }
+
   success(...messageParts: any[]): void {
     this._print({ finalized: true, message: messageParts.map((o) => _stringify(o)).join(' ') })
   }
