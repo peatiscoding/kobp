@@ -41,7 +41,7 @@ export class Loggy extends Tracer implements Logger {
   /**
    * Override the print function
    */
-  public setPrintFn(printLn: (content: PrintContent) => void) {
+  public setPrintFn(printLn: PrintFn) {
     this._printLn = printLn
   }
 
