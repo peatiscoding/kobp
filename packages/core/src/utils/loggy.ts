@@ -6,7 +6,7 @@ import { Tracer } from './tracer'
 
 const _stringify = (o: any) => (typeof o === 'string' || typeof o === 'number') ? `${o}` : JSON.stringify(o)
 
-interface PrintContent {
+export interface PrintContent {
   requestId: string
   user: any
   ip: string[]
@@ -34,6 +34,13 @@ export class Loggy extends Tracer implements Logger {
     this._printLn = Loggy.format === 'JSN'
       ? (c) => console.log(JSON.stringify(c))
       : (c) => console.log(`${c.requestId} [${c.verdict} ${c.statusCode}] ${c.method} ${c.path}`, [c.message, c.error].filter(Boolean).join(' '))
+  }
+
+  /**
+   * Override the print function
+   */
+  public setPrintFn(printLn: (content: PrintContent) => void) {
+    this._printLn = printLn
   }
 
   success(...messageParts: any[]): void {
@@ -105,6 +112,19 @@ export class Loggy extends Tracer implements Logger {
   static autoCreate(attachToContextKey: string): Middleware {
     return async function (ctx, next) {
       ctx[attachToContextKey] = new Loggy(ctx as any)
+      await next()
+    }
+  }
+
+  // provide customize endpoint as middleware
+  static customize(attachToContextKey: string, customize: (loggy: Loggy) => void): Middleware {
+    return async function (ctx, next) {
+      const loggy = ctx[attachToContextKey]
+      if (loggy) {
+        customize(loggy)
+      } else {
+        console.warn(`Loggy overridePrintFn: ${attachToContextKey} failed`)
+      }
       await next()
     }
   }
