@@ -29,11 +29,13 @@ export class Loggy extends Tracer implements Logger {
 
   public static format: 'JSN' | 'TXT' = /JSO?N/i.test(`${process.env.LOGGY_FORMAT || 'JSN'}`) ? 'JSN' : 'TXT'
 
+  public static customPrintLn?: PrintFn = undefined
+
   private _printLn: PrintFn 
 
-  constructor(ctx: KobpServiceContext, printFn?: PrintFn) {
+  constructor(ctx: KobpServiceContext) {
     super(ctx)
-    this._printLn = printFn ?? (Loggy.format === 'JSN'
+    this._printLn = Loggy.customPrintLn ?? (Loggy.format === 'JSN'
       ? (c) => console.log(JSON.stringify(c))
       : (c) => console.log(`${c.requestId} [${c.verdict} ${c.statusCode}] ${c.method} ${c.path}`, [c.message, c.error].filter(Boolean).join(' ')))
   }
@@ -42,13 +44,6 @@ export class Loggy extends Tracer implements Logger {
    * Override the print function
    */
   public setPrintFn(printLn: PrintFn) {
-    this._printLn = printLn
-  }
-
-  /**
-   * Override the print function
-   */
-  public setPrintFn(printLn: (content: PrintContent) => void) {
     this._printLn = printLn
   }
 
@@ -118,9 +113,18 @@ export class Loggy extends Tracer implements Logger {
     }
   }
 
-  static autoCreate(attachToContextKey: string, printFn?: PrintFn): Middleware {
+  static current(): Loggy {
+    const loggy = RequestRoomProvider.instanceOf(this)
+    return loggy
+  }
+
+  /**
+   * the dirty way to prematurly create the Loggy instance manually via middleware
+   * so that the instance is being ready before the RequestContext is ready.
+   */
+  static autoCreate(attachToContextKey: string): Middleware {
     return async function (ctx, next) {
-      const loggy = new Loggy(ctx as any, printFn)
+      const loggy = new Loggy(ctx as any)
       ctx[attachToContextKey] = loggy
       await next()
     }

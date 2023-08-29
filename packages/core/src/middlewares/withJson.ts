@@ -39,12 +39,13 @@ const WithJson = () => {
     suppressPath: `${process.env.KOBP_JSON_SILENT_PATH || ''}` || '/healthcheck'
   }
 
-  const middleware = (loggyContextKey: string): Middleware => {
+  const middleware = (): Middleware => {
     // Assign logger if needed.
     const suppressPathPattern = new RegExp(config.suppressPath, 'i')
     return async function(ctx, next) {
       const url = ctx.request.url
-      const loggy = suppressPathPattern.test(url) ? null : ctx[loggyContextKey]
+      const loggy = suppressPathPattern.test(url) ? null : Loggy.current()
+      console.log("loggy", loggy)
       const auditMessage = (event: AuditMessagePipelineEventType, error?: Error): string => {
         const httpStatus = event === 'start' ? '' : `${ctx.response?.status || ''}`
         let msg = `${ctx.request.method} ${url} ${httpStatus}`
@@ -74,7 +75,7 @@ const WithJson = () => {
           type: _err instanceof KobpError ? 'kobp' : undefined,
         };
         // Always logs error case
-        ctx._loggy?.failed(`[>>] ${auditMessage('error', _err)}`, _err)
+        loggy?.failed(`[>>] ${auditMessage('error', _err)}`, _err)
       }
     }
   }

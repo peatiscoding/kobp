@@ -48,6 +48,9 @@ export interface TracerConfig {
  */
 export class Tracer {
 
+  /**
+   * Access this parameter to customize the Tracer behavior
+   */
   public static _config: TracerConfig = {
     requestTraceHeaderKey: 'x-trace-id',
     traceIdMaker: (currentKey: string) => {
@@ -74,6 +77,10 @@ export class Tracer {
   public readonly traceId: string
   public readonly context: KobpServiceContext
 
+  /**
+   *
+   * will be called automatically when the context is created
+   */
   constructor(ctx: KobpServiceContext) {
     const config = Tracer._config
     const fromHeader = ctx.request.headers[config.requestTraceHeaderKey]
