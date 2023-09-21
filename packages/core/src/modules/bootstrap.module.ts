@@ -29,6 +29,11 @@ export class BootstrapModule implements KobpModule {
       middlewares: (app) => {
         app.use(bodyParser({
           enableTypes: this.allowedBodyTypes,
+          // TODO: Enhance this to use Function instead.
+          jsonLimit: '5mb',
+          textLimit: '5mb',
+          xmlLimit: '5mb',
+          formLimit: '5mb',
         }))
         // automatically create the required instances.
         app.use((ctx, next) => RequestRoomProvider.shared.createAsync(<any>ctx, next))
