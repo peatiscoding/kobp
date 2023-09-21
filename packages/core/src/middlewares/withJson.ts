@@ -45,7 +45,6 @@ const WithJson = () => {
     return async function(ctx, next) {
       const url = ctx.request.url
       const loggy = suppressPathPattern.test(url) ? null : Loggy.current()
-      console.log("loggy", loggy)
       const auditMessage = (event: AuditMessagePipelineEventType, error?: Error): string => {
         const httpStatus = event === 'start' ? '' : `${ctx.response?.status || ''}`
         let msg = `${ctx.request.method} ${url} ${httpStatus}`
