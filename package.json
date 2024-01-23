@@ -21,7 +21,7 @@
     "kobp"
   ],
   "engines": {
-    "node": "v14",
+    "node": "v18",
     "npm": ">=8.1.0"
   },
   "author": "Kittiphat S.",
