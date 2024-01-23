@@ -11,30 +11,39 @@ import {
 
 export class BootstrapModule implements KobpModule {
 
-  private allowedBodyTypes: string[]
+  private bodyParserOptions: bodyParser.Options
 
-  constructor(allowedBodyTypes?: string[]) {
-    this.allowedBodyTypes = ((): string[] => {
-    if (allowedBodyTypes) {
-        return allowedBodyTypes
+  public constructor(opts?: string[] | (() => bodyParser.Options)) {
+    if (opts && typeof opts === 'function') {
+      this.bodyParserOptions = opts()
+    } else {
+      const resolveAllowedBodyTypes = ((): string[] => {
+        if (opts && Array.isArray(opts)) {
+          return opts
+        }
+        return `${(process.env.KOBP_ALLOWED_BODY_TYPES || 'json,form')}`.trim().split(',').filter(Boolean)
+      })
+
+      this.bodyParserOptions = {
+        enableTypes: resolveAllowedBodyTypes(),
+        // Enhance this to use Function instead.
+        jsonLimit: '10mb',
+        textLimit: '10mb',
+        xmlLimit: '10mb',
+        formLimit: '10mb',
       }
-      return `${(process.env.KOBP_ALLOWED_BODY_TYPES || 'json,form')}`.trim().split(',').filter(Boolean)
-    })()
+    }
   }
 
+  /**
+   * Override this function to provide the customized module
+   */
   public customization(): KobpCustomization {
     return {
       onInit: async () => {
       },
       middlewares: (app) => {
-        app.use(bodyParser({
-          enableTypes: this.allowedBodyTypes,
-          // TODO: Enhance this to use Function instead.
-          jsonLimit: '5mb',
-          textLimit: '5mb',
-          xmlLimit: '5mb',
-          formLimit: '5mb',
-        }))
+        app.use(bodyParser(this.bodyParserOptions))
         // automatically create the required instances.
         app.use((ctx, next) => RequestRoomProvider.shared.createAsync(<any>ctx, next))
         // withJson will have no access to Loggy!
