@@ -33,7 +33,7 @@ export class Loggy extends Tracer implements Logger {
 
   private _printLn: PrintFn 
 
-  constructor(ctx: KobpServiceContext) {
+  constructor(ctx: KobpServiceContext, printFn?: PrintFn) {
     super(ctx)
     this._printLn = Loggy.customPrintLn ?? (Loggy.format === 'JSN'
       ? (c) => console.log(JSON.stringify(c))

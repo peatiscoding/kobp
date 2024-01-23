@@ -1,5 +1,5 @@
 import type { KobpCustomization } from '../bootstrap'
-import type { KobpModule } from '..'
+import type { KobpModule, PrintFn } from '..'
 
 import bodyParser from 'koa-bodyparser'
 import { withJson } from '../middlewares'
@@ -8,6 +8,10 @@ import {
   Lang as _,      // Lang to force module registrations
   RequestRoomProvider,
 } from '../utils'
+
+export interface BootstrapModuleOption {
+  loggyPrintFn?: PrintFn 
+}
 
 export class BootstrapModule implements KobpModule {
 
