@@ -1,4 +1,4 @@
-import { KobpServiceContext, Lang } from 'kobp'
+import { KobpServiceContext, Lang, Loggy } from 'kobp'
 import { Route, BaseRoutedController } from 'kobp'
 import { repeat } from 'lodash'
 
@@ -19,6 +19,7 @@ export class HelloController extends BaseRoutedController {
 
   @Route()
   async index(_ctx: KobpServiceContext) {
+    Loggy.log('Say hello to the world')
     return {
       hello: 'world'
     }

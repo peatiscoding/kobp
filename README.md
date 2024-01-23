@@ -120,6 +120,30 @@ curl -XPOST http://localhost:9000/hello/echo -H 'content-type: application/json'
 
 See other [Example](./examples/) for more info.
 
+## Using with Lambda
+
+```ts
+import {
+  BootstrapModule,
+  KobpRouter,
+} from 'kobp'
+
+import { makeLambdaHandler } from 'kobp-lambda'
+import { HelloController } from '@controllers/hello.controller'
+
+const router = new KobpRouter()
+new HelloController().register('/hello', router)
+
+export default makeLambdaHandler(router, {
+  customizer: (loader) => {
+    loader.addModule(new BootstrapModule(['json']))
+  },
+  binary: true, // Enable return as binary!
+})
+```
+
+Note that most of the time AWS's Lambda doesn't support return the Response with Binary content. To make it so please make sure you enabled `binary` mode as per example above.
+
 ## Enabled Debug Mode
 
 Sometime we need to understand what's going on under the hood of our custom made feature such as RequestContext. Attach the message logging by declare

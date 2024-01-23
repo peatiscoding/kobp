@@ -4,7 +4,7 @@ import type { KobpModule, PrintFn } from '..'
 import bodyParser from 'koa-bodyparser'
 import { withJson } from '../middlewares'
 import {
-  Loggy,          // Loggy
+  Loggy as _l,    // Loggy to force module registrations
   Lang as _,      // Lang to force module registrations
   RequestRoomProvider,
 } from '../utils'
@@ -15,30 +15,43 @@ export interface BootstrapModuleOption {
 
 export class BootstrapModule implements KobpModule {
 
-  private allowedBodyTypes: string[]
-  private options: BootstrapModuleOption = {}
+  private bodyParserOptions: bodyParser.Options
 
-  constructor(allowedBodyTypes?: string[], options?: BootstrapModuleOption) {
-    this.options = options
-    this.allowedBodyTypes = ((): string[] => {
-    if (allowedBodyTypes) {
-        return allowedBodyTypes
+  public constructor(opts?: string[] | (() => bodyParser.Options)) {
+    if (opts && typeof opts === 'function') {
+      this.bodyParserOptions = opts()
+    } else {
+      const resolveAllowedBodyTypes = ((): string[] => {
+        if (opts && Array.isArray(opts)) {
+          return opts
+        }
+        return `${(process.env.KOBP_ALLOWED_BODY_TYPES || 'json,form')}`.trim().split(',').filter(Boolean)
+      })
+
+      this.bodyParserOptions = {
+        enableTypes: resolveAllowedBodyTypes(),
+        // Enhance this to use Function instead.
+        jsonLimit: '10mb',
+        textLimit: '10mb',
+        xmlLimit: '10mb',
+        formLimit: '10mb',
       }
-      return `${(process.env.KOBP_ALLOWED_BODY_TYPES || 'json,form')}`.trim().split(',').filter(Boolean)
-    })()
+    }
   }
 
+  /**
+   * Override this function to provide the customized module
+   */
   public customization(): KobpCustomization {
     return {
       onInit: async () => {
       },
       middlewares: (app) => {
-        app.use(Loggy.autoCreate('_loggy', this.options?.loggyPrintFn))
-        app.use(bodyParser({
-          enableTypes: this.allowedBodyTypes,
-        }))
-        app.use(withJson('_loggy'))
+        app.use(bodyParser(this.bodyParserOptions))
+        // automatically create the required instances.
         app.use((ctx, next) => RequestRoomProvider.shared.createAsync(<any>ctx, next))
+        // withJson will have no access to Loggy!
+        app.use(withJson())
       },
       onSignalReceived: async (_signal, _app) => {
         // gracefully shutting this down. 

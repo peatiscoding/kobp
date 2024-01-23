@@ -40,6 +40,7 @@ export class KobpRequestRoom {
 
   public readonly id = KobpRequestRoom.counter++
 
+  // FIXME: Enhance this to a lazy context using ProxyObject.
   private data: Map<string, any> = new Map()
 
   public constructor(context: KobpServiceContext) {
@@ -62,7 +63,7 @@ export class KobpRequestRoom {
 
   set<T>(key: string, data: T) {
     if (isDebug) {
-      console.log(`RCTX KobpRequestRoom #${this.id} has been set with ${key}.`)
+      console.log(`RCTX KobpRequestRoom #${this.id} has been set with ${key}. ${data}`)
     }
     this.data[key] = data
   }
@@ -103,7 +104,7 @@ export class RequestRoomProvider {
 
   public current(): KobpRequestRoom | undefined  {
     if (isDebug) {
-      console.log(`RCTX RoomProvider.current().`)
+      console.log(`RCTX RoomProvider.current(). _storage.getStore()`, _storage.getStore())
     }
     return _storage.getStore()
   }
