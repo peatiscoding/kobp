@@ -32,9 +32,9 @@
   },
   "author": "Kittiphat S.",
   "dependencies": {
-    "@mikro-orm/core": "^5.6.10",
-    "@mikro-orm/migrations": "^5.6.10",
-    "@mikro-orm/postgresql": "^5.6.10",
+    "@mikro-orm/core": "^6.1.3",
+    "@mikro-orm/migrations": "^6.1.3",
+    "@mikro-orm/postgresql": "^6.1.3",
     "koa": "^2.13.1",
     "koa-bodyparser": "^4.3.0",
     "koa-router": "^9.4.0",
@@ -43,7 +43,7 @@
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@mikro-orm/cli": "^5.6.10",
+    "@mikro-orm/cli": "^6.1.3",
     "@types/jest": "^26.0.23",
     "@types/koa": "^2.11.6",
     "@types/koa-bodyparser": "^4.3.0",
@@ -57,6 +57,6 @@
     "ts-jest": "^27.0.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.0.0",
-    "typescript": "^4"
+    "typescript": "^5"
   }
 }

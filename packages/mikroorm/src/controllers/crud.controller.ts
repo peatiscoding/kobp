@@ -683,7 +683,7 @@ export class CrudController<E> extends BaseRoutedController {
    */
   protected get paramsToColumnNamePairs(): { columnName: string; paramName: string, pattern: string }[] {
     const matchedPaths = this.resolvedResourcePath.match(/:(\w+)(\([^)]*\))?(<\w+>)?/g)
-    return (matchedPaths || []).reduce<{ columnName: string; paramName: string, pattern: string }[]>((c, str) => {
+    return [...matchedPaths].reduce((c, str) => {
       const r = str.match(/:(\w+)(\([^)]*\))?(<(\w+)>)?/)
       if (!r) throw CrudError.coded('RES-005 BAD_CONTROLLER_CONFIGURATION', this.resourceName, 'failed to parse/convert columnNamePairs. Check your controller\'s request path pattern.' )
       c.push({
@@ -692,7 +692,7 @@ export class CrudController<E> extends BaseRoutedController {
         pattern: r[2] || '([A-Za-z0-9_]{0,})'
       })
       return c
-    }, [])
+    }, [] as { columnName: string; paramName: string, pattern: string }[])
   }
 
   private _forKeyPath(context: KobpServiceContext): Partial<{ [key in keyof E]: any }> {

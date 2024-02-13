@@ -26,7 +26,7 @@ export class MikroormModule implements KobpModule {
         createDI(orm)
       },
       middlewares: async (app) => {
-        app.use((ctx, next) => RequestContext.createAsync(DI.orm.em, next))
+        app.use((ctx, next) => RequestContext.create(DI.orm.em, next))
       },
     }
   }
