@@ -1,6 +1,13 @@
 import 'reflect-metadata'
 
-import type { OpenApiBuilder, OpenAPIObject, PathItemObject, ServerObject, TagObject } from 'openapi3-ts/oas31'
+import type {
+  OpenApiBuilder,
+  OpenAPIObject,
+  OperationObject,
+  PathItemObject,
+  ServerObject,
+  TagObject,
+} from 'openapi3-ts/oas31'
 import { KobpRouter, KobpServiceContext, METADATA_DOC_KEY } from '..'
 
 interface SwaggerUIConfig {
@@ -166,21 +173,22 @@ export class SwaggerController {
           continue
         }
         // Extract document data
+        let opDoc: OperationObject = {}
         layer.stack
           .filter((v) => {
             return Reflect.getMetadataKeys(v).indexOf(METADATA_DOC_KEY) >= 0
           })
           .map((stack) => {
             const metadata = Reflect.getMetadata(METADATA_DOC_KEY, stack)
-            pathItem = {
-              ...pathItem,
+            opDoc = {
+              ...opDoc,
               ...metadata,
             }
           })
         pathItem = {
           [method.toLowerCase()]: {
-            ...pathItem,
             responses: [],
+            ...opDoc,
           },
         }
       }

@@ -1,4 +1,4 @@
-import { KobpServiceContext, Lang, Loggy, withDocument } from 'kobp'
+import { KobpServiceContext, Lang, Loggy, withDocument, withDocumentBuilder } from 'kobp'
 import { Route, BaseRoutedController } from 'kobp'
 import { repeat } from 'lodash'
 import { withLabel } from 'src/middlewares/label'
@@ -29,14 +29,20 @@ export class HelloController extends BaseRoutedController {
     path: '/',
     middlewares: [
       withLabel('doodle'),
-      withDocument({
-        description: 'Say hello to the world!',
-        responses: {
-          200: {
-            description: 'Say hello to the world!',
+      withDocumentBuilder()
+        .summary('Say hello to the world')
+        .onSuccess({
+          // OpenAPI scheme document
+          schema: {
+            properties: {
+              hello: {
+                type: 'string',
+                example: 'world',
+              },
+            },
           },
-        },
-      }),
+        })
+        .build(),
     ],
   })
   async index(_ctx: KobpServiceContext) {
