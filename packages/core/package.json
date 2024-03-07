@@ -30,6 +30,11 @@
     "lodash": "^4.17.21",
     "openapi3-ts": "^4.2.2"
   },
+  "peerDependenciesMeta": {
+    "openapi3-ts": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@types/koa": "^2.11.6",
     "@types/koa-bodyparser": "^4.3.0",

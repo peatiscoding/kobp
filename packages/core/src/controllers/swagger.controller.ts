@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 
-import { OpenApiBuilder, OpenAPIObject, PathItemObject, ServerObject, TagObject } from 'openapi3-ts/oas31'
-import { KobpRouter, KobpServiceContext, METADATA_DOC_KEY } from '..'
+import type { OpenApiBuilder, OpenAPIObject, PathItemObject, ServerObject, TagObject } from 'openapi3-ts/oas31'
+import { KobpRouter, KobpServiceContext, Loggy, METADATA_DOC_KEY } from '..'
 
 interface SwaggerUIConfig {
   url?: string
@@ -83,11 +83,18 @@ export interface SwaggerControllerOption {
 // Plain controller for using SwaggerUI Dist package
 export class SwaggerController {
   protected options: SwaggerControllerOption
+  protected builder: () => OpenApiBuilder
 
   constructor(
     public readonly title: string,
     options: Partial<SwaggerControllerOption>,
   ) {
+    const mod = require('openapi3-ts/oas31')
+    const _builder_ = mod.OpenApiBuilder
+    if (!_builder_) {
+      throw new Error('Cannot use SwaggerController without "openapi3-ts" package. Please install the module first.')
+    }
+    this.builder = () => new mod.OpenApiBuilder()
     this.options = {
       skipMethods: ['HEAD'],
       skipPaths: ['swagger'],
@@ -135,7 +142,7 @@ export class SwaggerController {
             return false
           }
 
-    const builder = new OpenApiBuilder()
+    const builder = this.builder()
     builder.addInfo({
       title: this.title,
       version: this.options.version,
