@@ -1,6 +1,6 @@
 {
   "name": "kobp-mikroorm",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "ORM + CRUD Controller for Kobp",
   "main": "lib/cjs/src/index.js",
   "module": "lib/esm/src/index.js",
