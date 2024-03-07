@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 
 import type { OpenApiBuilder, OpenAPIObject, PathItemObject, ServerObject, TagObject } from 'openapi3-ts/oas31'
-import { KobpRouter, KobpServiceContext, Loggy, METADATA_DOC_KEY } from '..'
+import { KobpRouter, KobpServiceContext, METADATA_DOC_KEY } from '..'
 
 interface SwaggerUIConfig {
   url?: string
