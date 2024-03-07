@@ -6,6 +6,7 @@
     "packages/core",
     "packages/lambda",
     "packages/mikroorm",
+    "packages/swagger",
     "examples/*"
   ],
   "scripts": {
