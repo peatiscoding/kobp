@@ -2,7 +2,7 @@ import type { KobpServiceContext, KobpServiceState } from '../context'
 import type { Context, Middleware } from 'koa'
 import Router from 'koa-router'
 
-export type HttpMethod = 'post'|'get'|'delete'|'put'|'patch'
+export type HttpMethod = 'post' | 'get' | 'delete' | 'put' | 'patch'
 
 export interface RouteMapMeta {
   /**
@@ -27,17 +27,14 @@ export interface RouteMap {
   [key: string]: RouteMapMeta
 }
 
-export class KobpRouter extends Router<KobpServiceState, KobpServiceContext> {
-}
+export class KobpRouter extends Router<KobpServiceState, KobpServiceContext> {}
 
 export class BaseRoutedController {
-
-  constructor(protected allRoutesMiddlewares: Middleware[] = []) {
-  }
+  constructor(protected allRoutesMiddlewares: Middleware[] = []) {}
 
   getRouteMaps(): RouteMap {
     return {
-      ...((<any>this).__drm || {}), /* will be injected from decorators package */
+      ...((<any>this).__drm || {}) /* will be injected from decorators package */,
     }
   }
 
@@ -45,27 +42,31 @@ export class BaseRoutedController {
     ctx.status = 200
     ctx.body = {
       success: true,
-      data
+      data,
     }
   }
 
   /**
    * Counter path of getRouter(). Use this method to register the controller to given router.
-   * 
-   * @param path 
-   * @param koaRouter 
+   *
+   * @param path
+   * @param koaRouter
    */
-  public register(path: string, koaRouter: KobpRouter, ...middlewares: Router.IMiddleware<KobpServiceState, KobpServiceContext>[]) {
+  public register(
+    path: string,
+    koaRouter: KobpRouter,
+    ...middlewares: Router.IMiddleware<KobpServiceState, KobpServiceContext>[]
+  ) {
     const r = this.getRouter()
     // clean the path - path may ended with extra slashes that we don't need.
     const cleanPath = path.trim().replace(/\/*$/, '')
-    koaRouter.use(cleanPath , ...middlewares, r.routes(), r.allowedMethods())
+    koaRouter.use(cleanPath, ...middlewares, r.routes(), r.allowedMethods())
   }
 
   public getRouter(): KobpRouter {
     const router = new KobpRouter()
     const map = this.getRouteMaps()
-    for(const fname in map) {
+    for (const fname in map) {
       let { method, path, doNotHandleSuccess } = map[fname]
       const autoHandleSuccess = !Boolean(doNotHandleSuccess)
       const { middlewares } = map[fname]
@@ -73,17 +74,21 @@ export class BaseRoutedController {
       if (typeof method === 'string') {
         method = [method]
       }
-      for(const _m of method) {
-        const allMiddlewares = [...this.allRoutesMiddlewares, ...(middlewares || []), async (ctx, _next): Promise<void> => {
-          try {
-            const out = await this[fname || 'index'](ctx)
-            if (autoHandleSuccess) {
-              await this.handleSuccess(ctx, out)
+      for (const _m of method) {
+        const allMiddlewares = [
+          ...this.allRoutesMiddlewares,
+          ...(middlewares || []),
+          async (ctx, _next): Promise<void> => {
+            try {
+              const out = await this[fname || 'index'](ctx)
+              if (autoHandleSuccess) {
+                await this.handleSuccess(ctx, out)
+              }
+            } catch (error) {
+              ctx.throw(error)
             }
-          } catch(error) {
-            ctx.throw(error)
-          }
-        }]
+          },
+        ]
         router[_m](path, ...allMiddlewares)
       }
     }
@@ -105,7 +110,7 @@ export class BaseRoutedController {
    * ```
    */
   protected setDoNotHandleSuccess(context: KobpServiceContext | Context) {
-    (context.response as any).doNotHandleSuccess = true
+    ;(context.response as any).doNotHandleSuccess = true
   }
 
   public getMiddlewares(): Router.IMiddleware<KobpServiceState, KobpServiceContext>[] {

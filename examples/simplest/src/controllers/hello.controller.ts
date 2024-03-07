@@ -1,10 +1,16 @@
-import { KobpServiceContext, Lang, Loggy } from 'kobp'
+import { KobpServiceContext, Lang, Loggy, withDocument } from 'kobp'
 import { Route, BaseRoutedController } from 'kobp'
 import { repeat } from 'lodash'
 import { withLabel } from 'src/middlewares/label'
 
 export class HelloController extends BaseRoutedController {
-
+  constructor() {
+    super([
+      withDocument({
+        tags: ['hello'],
+      }),
+    ])
+  }
   @Route('post', '/echo')
   async migrate(context: KobpServiceContext) {
     return context.request.body
@@ -23,12 +29,20 @@ export class HelloController extends BaseRoutedController {
     path: '/',
     middlewares: [
       withLabel('doodle'),
+      withDocument({
+        description: 'Say hello to the world!',
+        responses: {
+          200: {
+            description: 'Say hello to the world!',
+          },
+        },
+      }),
     ],
   })
   async index(_ctx: KobpServiceContext) {
     Loggy.log('Say hello to the world')
     return {
-      hello: 'world'
+      hello: 'world',
     }
   }
 
@@ -53,6 +67,5 @@ export class HelloController extends BaseRoutedController {
     path: '/upload',
     middlewares: [],
   })
-  async upload(_ctx: KobpServiceContext) {
-  }
+  async upload(_ctx: KobpServiceContext) {}
 }
