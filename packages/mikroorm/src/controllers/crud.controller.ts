@@ -299,6 +299,11 @@ export interface CrudControllerOption<E> {
    * All route middlewares
    */
   middlewares: Middleware[]
+
+  /**
+   * Use document middleware
+   */
+  useDocumentMiddleware: boolean
 }
 
 export class CrudController<E> extends BaseRoutedController {
@@ -331,6 +336,7 @@ export class CrudController<E> extends BaseRoutedController {
       postDelete: [],
       replaceUnderscrollWithEmptyKeyPath: false,
       defaultPopulate: () => [],
+      useDocumentMiddleware: false,
       ...options,
       resourceKeyPath: this.resolvedResourcePath.replace(/<\w+>/g, ''), // removed <columnName> component
     }
@@ -345,43 +351,43 @@ export class CrudController<E> extends BaseRoutedController {
   }
 
   public getRouteMaps(): RouteMap {
+    const doc = this.options.useDocumentMiddleware
+      ? (documentMiddleware: Middleware[]): Middleware[] => documentMiddleware
+      : (_documentMiddleware: Middleware[]): Middleware[] => []
+    const resourcePaths = this.paramsToColumnNamePairs.map(({ paramName }) => `\`${paramName}\``).join(', ')
     return {
       ...super.getRouteMaps(),
       index: {
         method: 'get',
         path: '/',
-        middlewares: [withDocument({ description: `List all ${this.resourceName} with pagination` })],
+        middlewares: doc([withDocument({ description: `List all ${this.resourceName} with pagination` })]),
       },
       createOne: {
         method: 'post',
         path: '/',
-        middlewares: [withDocument({ description: `Create ${this.resourceName}` })],
+        middlewares: doc([withDocument({ description: `Create ${this.resourceName}` })]),
       },
       distinct: {
         method: 'get',
         path: '/_lov/:fieldName',
-        middlewares: [withDocument({ description: `List distinct value of \`fieldName\` for ${this.resourceName}` })],
+        middlewares: doc([
+          withDocument({ description: `List distinct value of \`fieldName\` for ${this.resourceName}` }),
+        ]),
       },
       getOne: {
         method: 'get',
         path: this.options.resourceKeyPath,
-        middlewares: [
-          withDocument({ description: `Retreive single ${this.resourceName} by ${this.options.resourceKeyPath}` }),
-        ],
+        middlewares: doc([withDocument({ description: `Retreive single ${this.resourceName} by ${resourcePaths}` })]),
       },
       updateOne: {
         method: 'post',
         path: this.options.resourceKeyPath,
-        middlewares: [
-          withDocument({ description: `Update single ${this.resourceName} by ${this.options.resourceKeyPath}` }),
-        ],
+        middlewares: doc([withDocument({ description: `Update single ${this.resourceName} by ${resourcePaths}` })]),
       },
       deleteOne: {
         method: 'delete',
         path: this.options.resourceKeyPath,
-        middlewares: [
-          withDocument({ description: `Delete single ${this.resourceName} by ${this.options.resourceKeyPath}` }),
-        ],
+        middlewares: doc([withDocument({ description: `Delete single ${this.resourceName} by ${resourcePaths}` })]),
       },
     }
   }
