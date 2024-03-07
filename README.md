@@ -142,6 +142,35 @@ export default makeLambdaHandler(router, {
 })
 ```
 
+## Using Swagger
+
+Make sure you have this only dependencies
+
+```bash
+npm install openapi3-ts
+```
+Here is the example to use it.
+
+```ts
+import type { KobpServiceContext } from 'kobp'
+import { Route, BaseRoutedController } from 'kobp'
+
+export class HelloController extends BaseRoutedController {
+
+  @Route('post', '/echo', withDocument({ tags: ['hello'], description: 'run migration script' }))
+  async migrate(context: KobpServiceContext) {
+    return context.request.body
+  }
+
+  @Route()
+  async index(context: KobpServiceContext) {
+    return {
+      hello: 'world'
+    }
+  }
+}
+```
+
 Note that most of the time AWS's Lambda doesn't support return the Response with Binary content. To make it so please make sure you enabled `binary` mode as per example above.
 
 ## Enabled Debug Mode
@@ -159,5 +188,6 @@ ENV: `KOBP_DEBUG` to `Yes` or `True` or `1` to let the framework emit debugging 
 [/] Mikroorm module
 [/] Publish with microbundle instead.
 [/] Lambda Handler
+[/] Swagger Support
 [ ] SNS/SQS Handler
 ```
