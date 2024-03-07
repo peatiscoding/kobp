@@ -16,6 +16,9 @@ export class OperationDocumentBuilder {
     return this
   }
 
+  /**
+   * Server successfully processed the request
+   */
   onSuccess(content?: MediaTypeObject): this {
     return this.onResponse(
       200,
@@ -26,6 +29,23 @@ export class OperationDocumentBuilder {
     )
   }
 
+  /**
+   * Server accepted the request, payload is still being processed
+   */
+  onSuccessAccepted(): this {
+    return this.onResponse(202, { description: 'Accepted' })
+  }
+
+  /**
+   * Server successfully processed the request and is not returning any content
+   */
+  onSuccessNoContent(): this {
+    return this.onResponse(204, { description: 'Successful without content' })
+  }
+
+  /**
+   * Server rejected the request due to invalid user's input
+   */
   onBadRequest(content?: MediaTypeObject): this {
     return this.onResponse(400, { description: 'Bad Request' }, content)
   }
@@ -35,7 +55,8 @@ export class OperationDocumentBuilder {
     this.doc.responses[status] = { ...doc }
     if (content) {
       this.doc.responses[status].content = {
-        'application/json': content,
+        'application/json': content, // TODO: add wrapper?
+        // TODO: Add other response types (Workaround, use withDocument)
       }
     }
     return this
@@ -46,7 +67,7 @@ export class OperationDocumentBuilder {
   }
 }
 
-export const withDocumentBuilder = (baseDoc: OperationObject): OperationDocumentBuilder => {
+export const withDocumentBuilder = (baseDoc?: OperationObject): OperationDocumentBuilder => {
   return new OperationDocumentBuilder(baseDoc)
 }
 
