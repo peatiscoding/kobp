@@ -24,7 +24,7 @@
   "author": "Kittiphat S.",
   "license": "ISC",
   "peerDependencies": {
-    "kobp": "^2.0.4"
+    "kobp": "^3.0.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.56",
