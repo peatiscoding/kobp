@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "description": "Kobp example - simplest one",
   "scripts": {
-    "example": "export LOGGY_FORMAT=TXT && node-dev src/server.ts",
-    "example:debug": "export LOGGY_FORMAT=TXT && export KOBP_DEBUG=TRUE && node-dev src/server.ts",
+    "example": "node-dev src/server.ts",
+    "example:debug": "KOBP_DEBUG=TRUE node-dev src/server.ts",
     "build": "tsc --build"
   },
   "author": "Kittiphat S.",
@@ -15,12 +15,9 @@
     "kobp": "*"
   },
   "devDependencies": {
-    "@types/koa": "^2.11.6",
-    "@types/koa-bodyparser": "^4.3.0",
-    "@types/koa-router": "^7.4.1",
     "node-dev": "^7.4.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.0.0",
-    "typescript": "^4"
+    "typescript": "^5"
   }
 }

@@ -9,8 +9,9 @@ import { makeRoutes } from "./routes"
 const CUSTOM_CORRELATION_ID_HEADER_KEY = 'x-correlation-id'
 
 // override configurations
+// This will ignore the env LOGGY_FORMAT
 Loggy.customPrintLn = (content) => {
-  console.log(`custom: ${JSON.stringify(content)}`)
+  console.log(`custom: ${content.message}`)
 }
 
 // override Tracer's cofiguration

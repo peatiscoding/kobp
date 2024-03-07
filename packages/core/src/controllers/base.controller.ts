@@ -5,9 +5,22 @@ import Router from 'koa-router'
 export type HttpMethod = 'post'|'get'|'delete'|'put'|'patch'
 
 export interface RouteMapMeta {
+  /**
+   * The HTTP Method supported in this function
+   */
   method: HttpMethod | HttpMethod[]
+  /**
+   * the route string
+   */
   path?: string
+  /**
+   * All middlewares attached to this path
+   */
   middlewares?: Middleware[]
+  /**
+   * Instruct the system NOT to handle success result as JSON payload
+   */
+  doNotHandleSuccess?: boolean
 }
 
 export interface RouteMap {
@@ -53,28 +66,25 @@ export class BaseRoutedController {
     const router = new KobpRouter()
     const map = this.getRouteMaps()
     for(const fname in map) {
-      let { method, path } = map[fname]
+      let { method, path, doNotHandleSuccess } = map[fname]
+      const autoHandleSuccess = !Boolean(doNotHandleSuccess)
       const { middlewares } = map[fname]
       path = path || `/${fname}`
       if (typeof method === 'string') {
         method = [method]
       }
       for(const _m of method) {
-        const mw = [...this.allRoutesMiddlewares, ...(middlewares || [])]
-        for(let i = 0; i < mw.length; i += 1) {
-          router[_m](path, mw[i])
-        }
-        router[_m](path, async (ctx, _next): Promise<void> => {
+        const allMiddlewares = [...this.allRoutesMiddlewares, ...(middlewares || []), async (ctx, _next): Promise<void> => {
           try {
             const out = await this[fname || 'index'](ctx)
-            const res = ctx.response
-            if (!(res as any).doNotHandleSuccess) {
+            if (autoHandleSuccess) {
               await this.handleSuccess(ctx, out)
             }
           } catch(error) {
             ctx.throw(error)
           }
-        })
+        }]
+        router[_m](path, ...allMiddlewares)
       }
     }
     return router

@@ -1,6 +1,7 @@
 import { KobpServiceContext, Lang, Loggy } from 'kobp'
 import { Route, BaseRoutedController } from 'kobp'
 import { repeat } from 'lodash'
+import { withLabel } from 'src/middlewares/label'
 
 export class HelloController extends BaseRoutedController {
 
@@ -17,7 +18,13 @@ export class HelloController extends BaseRoutedController {
     return `${Lang.current()}`
   }
 
-  @Route()
+  @Route({
+    method: 'get',
+    path: '/',
+    middlewares: [
+      withLabel('doodle'),
+    ],
+  })
   async index(_ctx: KobpServiceContext) {
     Loggy.log('Say hello to the world')
     return {
