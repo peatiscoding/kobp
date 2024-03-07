@@ -21,7 +21,7 @@ Loggy._config = {
 
 // Finally
 async function init () {
-  const PORT = +(process.env.PORT || 9000)
+  const PORT = +(process.env.PORT || 9005)
 
   const loader = new BootstrapLoader()
   const app = await loader

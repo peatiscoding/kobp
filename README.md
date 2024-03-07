@@ -102,7 +102,7 @@ const run = async () => {
     .addModule(new BootstrapModule(['json'])) // type of input body it should support.
     .build(makeRoutes(), {}) // returns Koa App
   
-  app.listen(9000, '0.0.0.0')
+  app.listen(9005, '0.0.0.0')
 }
 
 run()
@@ -111,11 +111,11 @@ run()
 By the example above. You will be able to:
 
 ```bash
-curl http://localhost:9000/hello/
+curl http://localhost:9005/hello/
 
 # OR
 
-curl -XPOST http://localhost:9000/hello/echo -H 'content-type: application/json' -d '{"some":"key","json":"value"}'
+curl -XPOST http://localhost:9005/hello/echo -H 'content-type: application/json' -d '{"some":"key","json":"value"}'
 ```
 
 See other [Example](./examples/) for more info.
