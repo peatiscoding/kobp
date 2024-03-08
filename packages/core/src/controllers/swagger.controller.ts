@@ -62,8 +62,11 @@ export interface SwaggerControllerOption {
   version: string
   /**
    * Description of this API
+   *
+   * this can be a string or a function
+   * the string can be written in markdown
    */
-  description: string
+  description: string | ((defaultText: string) => string)
   /**
    * Skip methods
    */
@@ -107,7 +110,7 @@ export class SwaggerController {
       skipPaths: ['swagger'],
       version: '1.0.0',
       basePath: '',
-      description: '',
+      description: (desc: string) => desc,
       servers: [],
       availableTags: [],
       ...options,
@@ -134,8 +137,12 @@ export class SwaggerController {
     const skipPaths = this.options.skipPaths
     const skipMethods = new Set<string>(this.options.skipMethods)
     const cleanPath = this.options.basePath
-      ? (path: string): string => path.replace(this.options.basePath, '').replace(/^\/*/, '/')
-      : (path: string) => path.replace(/^\/*/, '/') // make sure there is only one path
+      ? (path: string): string =>
+          path
+            .replace(this.options.basePath, '')
+            .replace(/^\/*/, '/')
+            .replace(/:(\w+)/g, '{$1}')
+      : (path: string) => path.replace(/^\/*/, '/').replace(/:(\w+)/g, '{$1}') // make sure there is only one path
     const skipPathPredicate: SkipPathPredicate =
       typeof skipPaths === 'function'
         ? skipPaths
@@ -150,10 +157,14 @@ export class SwaggerController {
           }
 
     const builder = this.builder()
+    const description = this.options.description
     builder.addInfo({
       title: this.title,
       version: this.options.version,
-      description: this.options.description,
+      description:
+        typeof description === 'function'
+          ? description("**NOTE**: The OpenAPI's specification is also available at [spec.json](./spec.json)")
+          : description,
     })
 
     for (const tag of this.options.availableTags) {
@@ -179,7 +190,11 @@ export class SwaggerController {
             return Reflect.getMetadataKeys(v).indexOf(METADATA_DOC_KEY) >= 0
           })
           .map((stack) => {
-            const metadata = Reflect.getMetadata(METADATA_DOC_KEY, stack)
+            const metadataFn = Reflect.getMetadata(METADATA_DOC_KEY, stack)
+            let metadata = {}
+            if (typeof metadataFn === 'function') {
+              metadata = metadataFn()
+            }
             opDoc = {
               ...opDoc,
               ...metadata,

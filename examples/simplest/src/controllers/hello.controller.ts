@@ -29,6 +29,7 @@ export class HelloController extends BaseRoutedController {
     path: '/',
     middlewares: [
       withLabel('doodle'),
+      // Add document via builder!
       withDocumentBuilder()
         .summary('Say hello to the world')
         .onSuccess({
@@ -54,7 +55,7 @@ export class HelloController extends BaseRoutedController {
 
   @Route({
     method: 'post',
-    path: '/load',
+    path: '/load/:count',
     middlewares: [],
   })
   async load(_ctx: KobpServiceContext) {
@@ -70,7 +71,7 @@ export class HelloController extends BaseRoutedController {
 
   @Route({
     method: 'post',
-    path: '/upload',
+    path: '/upload/:type',
     middlewares: [],
   })
   async upload(_ctx: KobpServiceContext) {}
