@@ -149,7 +149,14 @@ Make sure you have this only dependencies
 ```bash
 npm install openapi3-ts
 ```
+
 Here is the example to use it.
+
+The `withDocument` or `withDecoratorBuilder` decorator is tiny middleware that create the document on first run only which relies on Reflect-metadata to pass the data through.
+
+the document will the be available by adding `SwaggerController` to your routers.
+
+Please see example/simplest for more example.
 
 ```ts
 import type { KobpServiceContext } from 'kobp'

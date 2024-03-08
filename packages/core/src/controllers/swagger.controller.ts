@@ -191,7 +191,7 @@ export class SwaggerController {
           })
           .map((stack) => {
             const metadataFn = Reflect.getMetadata(METADATA_DOC_KEY, stack)
-            let metadata = {}
+            let metadata = metadataFn
             if (typeof metadataFn === 'function') {
               metadata = metadataFn()
             }
