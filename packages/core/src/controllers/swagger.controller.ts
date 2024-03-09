@@ -221,16 +221,21 @@ export class SwaggerController {
               if (validationSpecBuffer.parameters) {
                 const shape = validationSpecBuffer.parameters
                 for (const key of Object.keys(shape.properties)) {
+                  const { description } = shape.properties[key]
                   builder.addParameter('path', key, {
                     schema: shape.properties[key],
+                    description,
+                    required: true,
                   })
                 }
               }
               if (validationSpecBuffer.query) {
                 const shape = validationSpecBuffer.query
                 for (const key of Object.keys(shape.properties)) {
+                  const { description } = shape.properties[key] as any
                   builder.addParameter('query', key, {
                     schema: shape.properties[key],
+                    description,
                   })
                 }
               }

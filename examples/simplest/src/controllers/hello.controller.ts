@@ -84,7 +84,7 @@ export class HelloController extends BaseRoutedController {
       withValidation({
         params: z.object({
           repeatText: z.string().max(30).describe('the text to repeat 100k times'),
-        }),
+        }).required(),
       }),
       withDocument
         .builder()

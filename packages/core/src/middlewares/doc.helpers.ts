@@ -191,8 +191,10 @@ export class OperationDocumentBuilder {
     return this
   }
 
+  // used by swagger controller
   addParameter(location: ParameterLocation, name: string, doc: BaseParameterObject): this {
     const params = this.doc.parameters || []
+    console.log('param', location, name, doc)
     params.push({ ...doc, in: location, name })
     this.doc.parameters = params
     return this
