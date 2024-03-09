@@ -218,13 +218,29 @@ export class SwaggerController {
                   },
                 })
               }
+              if (validationSpecBuffer.parameters) {
+                const shape = validationSpecBuffer.parameters
+                for (const key of Object.keys(shape.properties)) {
+                  builder.addParameter('path', key, {
+                    schema: shape.properties[key],
+                  })
+                }
+              }
+              if (validationSpecBuffer.query) {
+                const shape = validationSpecBuffer.query
+                for (const key of Object.keys(shape.properties)) {
+                  builder.addParameter('query', key, {
+                    schema: shape.properties[key],
+                  })
+                }
+              }
               opDoc = builder.build()
             } else if (key === METADATA_KEYS.DOC_BODY_SHAPE_KEY) {
               validationSpecBuffer.body = Reflect.getMetadata(METADATA_KEYS.DOC_BODY_SHAPE_KEY, stack)
             } else if (key === METADATA_KEYS.DOC_PARAMS_SHAPE_KEY) {
-              validationSpecBuffer.body = Reflect.getMetadata(METADATA_KEYS.DOC_PARAMS_SHAPE_KEY, stack)
+              validationSpecBuffer.parameters = Reflect.getMetadata(METADATA_KEYS.DOC_PARAMS_SHAPE_KEY, stack)
             } else if (key === METADATA_KEYS.DOC_QUERY_SHAPE_KEY) {
-              validationSpecBuffer.body = Reflect.getMetadata(METADATA_KEYS.DOC_QUERY_SHAPE_KEY, stack)
+              validationSpecBuffer.query = Reflect.getMetadata(METADATA_KEYS.DOC_QUERY_SHAPE_KEY, stack)
             }
           }
         })

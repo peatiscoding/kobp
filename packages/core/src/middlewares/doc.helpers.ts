@@ -191,14 +191,15 @@ export class OperationDocumentBuilder {
     return this
   }
 
-  useBody(requestBody: Partial<RequestBodyObject>, content?: MediaTypeObject): this {
+  addParameter(location: ParameterLocation, name: string, doc: BaseParameterObject): this {
+    const params = this.doc.parameters || []
+    params.push({ ...doc, in: location, name })
+    this.doc.parameters = params
+    return this
+  }
+
+  useBody(requestBody: RequestBodyObject): this {
     this.doc.requestBody = requestBody
-    if (content) {
-      this.doc.requestBody.content = {
-        ...this.doc.requestBody.content,
-        'application/json': content,
-      }
-    }
     return this
   }
 

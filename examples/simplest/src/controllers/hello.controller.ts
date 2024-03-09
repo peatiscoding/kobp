@@ -18,9 +18,9 @@ export class HelloController extends BaseRoutedController {
     'post',
     '/echo',
     withValidation({
-      body: s
+      body: z
         .object({
-          message: s.string().min(2).max(5),
+          message: z.string().min(2).max(5),
         })
         .required(),
     }),
@@ -42,19 +42,18 @@ export class HelloController extends BaseRoutedController {
     method: 'get',
     path: '/hi',
     middlewares: [
+      withValidation({
+        query: s
+          .object({
+            name: s.string().min(2).default('world').describe('the name to say hello'),
+          })
+          .required(),
+      }),
       withLabel('doodle'),
       // Add document via builder!
       withDocument
         .builder()
         .summary('Say hello to the world')
-        .useQuery('name', {
-          example: 'kobp',
-          schema: {
-            type: 'string',
-            default: 'world',
-          },
-          required: false,
-        })
         .responses((r) =>
           r.onOk({
             // OpenAPI scheme document
@@ -84,20 +83,12 @@ export class HelloController extends BaseRoutedController {
     middlewares: [
       withValidation({
         params: z.object({
-          repeatText: z.string().max(30),
+          repeatText: z.string().max(30).describe('the text to repeat 100k times'),
         }),
       }),
       withDocument
         .builder()
         .summary('Try calling heavy loads!')
-        .usePath('repeatText', {
-          example: 'REPEAT_ME',
-          schema: {
-            type: 'string',
-            description: 'the text to repeat for 100,000 times',
-          },
-          required: true,
-        })
         .responses((r) =>
           r
             .onOk({

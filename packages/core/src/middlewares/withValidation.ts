@@ -35,15 +35,15 @@ const z2js: typeof zodToJsonSchema = require('zod-to-json-schema')?.zodToJsonSch
 const isZod = (o: any) => o?._def?.typeName === 'ZodObject'
 const isAjv = (o: any) => Boolean(o?._ajv)
 
-const extractSchema = <T>(spec: KobpParsable<T>): any => {
+const extractSchema = <T>(spec: KobpParsable<T>): ['zod' | 'ajv', any] => {
   if (z2js && isZod(spec)) {
     const forDocuments = z2js(spec as any, {
       target: 'openApi3',
     })
-    return forDocuments
+    return ['zod', forDocuments]
   }
   if (isAjv(spec) && spec.schema) {
-    return spec.schema
+    return ['ajv', spec.schema]
   }
   return undefined
 }
@@ -75,8 +75,8 @@ export const withValidation = <
   for (const key of ['params', 'query', 'body']) {
     const spec: any = schemaSpec[key]
     if (!spec) continue
-    const schema = extractSchema(spec)
-    console.log(`defining ${key} schema::`, schema)
+    const [source, schema] = extractSchema(spec)
+    console.log(`defining ${key} schema::`, source, schema)
     // save this to internal storage against its function.
     Reflect.defineMetadata(METADATA_KEYS[`DOC_${key.toUpperCase()}_SHAPE_KEY`], schema, fn)
   }
