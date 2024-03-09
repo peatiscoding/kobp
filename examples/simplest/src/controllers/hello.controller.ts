@@ -41,8 +41,8 @@ export class HelloController extends BaseRoutedController {
           },
           required: false,
         })
-        .responses((b) =>
-          b.onOk({
+        .responses((r) =>
+          r.onOk({
             // OpenAPI scheme document
             schema: {
               properties: {
@@ -57,10 +57,10 @@ export class HelloController extends BaseRoutedController {
         .build(),
     ],
   })
-  async index(_ctx: KobpServiceContext) {
+  async index(ctx: KobpServiceContext) {
     Loggy.log('Say hello to the world')
     return {
-      hello: _ctx.query.name || 'world',
+      hello: ctx.query.name || 'world',
     }
   }
 
@@ -79,8 +79,8 @@ export class HelloController extends BaseRoutedController {
           },
           required: true,
         })
-        .responses((b) =>
-          b
+        .responses((r) =>
+          r
             .onOk({
               // OpenAPI scheme document
               schema: {
