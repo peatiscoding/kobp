@@ -3,6 +3,7 @@ import { Route, BaseRoutedController } from 'kobp'
 import { repeat } from 'lodash'
 import { withLabel } from 'src/middlewares/label'
 import { z } from 'zod'
+import { s } from 'ajv-ts'
 
 export class HelloController extends BaseRoutedController {
   constructor() {
@@ -17,10 +18,10 @@ export class HelloController extends BaseRoutedController {
     'post',
     '/echo',
     withValidation(
-      z.object({
-        body: z
+      s.object({
+        body: s
           .object({
-            message: z.string().min(2),
+            message: s.string().min(2),
           })
           .required(),
       }),

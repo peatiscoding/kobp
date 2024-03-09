@@ -9,6 +9,7 @@
   },
   "author": "Kittiphat S.",
   "dependencies": {
+    "ajv-ts": "^0.6.3",
     "koa": "^2.13.1",
     "koa-bodyparser": "^4.3.0",
     "koa-router": "^9.4.0",
