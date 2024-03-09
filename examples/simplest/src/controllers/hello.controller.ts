@@ -1,7 +1,8 @@
-import { ClientErrorCode, KobpError, KobpServiceContext, Lang, Loggy, withDocument } from 'kobp'
+import { ClientErrorCode, KobpError, KobpServiceContext, Lang, Loggy, withDocument, withValidation } from 'kobp'
 import { Route, BaseRoutedController } from 'kobp'
 import { repeat } from 'lodash'
 import { withLabel } from 'src/middlewares/label'
+import { z } from 'zod'
 
 export class HelloController extends BaseRoutedController {
   constructor() {
@@ -11,7 +12,40 @@ export class HelloController extends BaseRoutedController {
       }),
     ])
   }
-  @Route('post', '/echo')
+
+  @Route(
+    'post',
+    '/echo',
+    withValidation(
+      z.object({
+        body: z
+          .object({
+            message: z.string().min(2),
+          })
+          .required(),
+      }),
+    ),
+    withDocument
+      .builder()
+      .summary('echo back the body')
+      .requestBody({
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                message: {
+                  type: 'string',
+                  minLength: 2,
+                },
+              },
+            },
+          },
+        },
+      })
+      .build(),
+  )
   async migrate(context: KobpServiceContext) {
     return context.request.body
   }
@@ -68,6 +102,13 @@ export class HelloController extends BaseRoutedController {
     method: 'post',
     path: '/load/:repeatText',
     middlewares: [
+      withValidation(
+        z.object({
+          params: z.object({
+            repeatText: z.string().max(30),
+          }),
+        }),
+      ),
       withDocument
         .builder()
         .summary('Try calling heavy loads!')
@@ -104,9 +145,6 @@ export class HelloController extends BaseRoutedController {
   })
   async load(ctx: KobpServiceContext) {
     const inputRepeatText = ctx.params.repeatText
-    if (inputRepeatText.length > 30) {
-      throw KobpError.fromUserInput(ClientErrorCode.badRequest, 'Input too long!')
-    }
     const repeatText = repeat(`${inputRepeatText}`, 100_000)
     const arr = repeat('SomeArray', 100_000)
     const data = repeat('Data', 100_000)

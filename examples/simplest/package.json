@@ -12,7 +12,8 @@
     "koa": "^2.13.1",
     "koa-bodyparser": "^4.3.0",
     "koa-router": "^9.4.0",
-    "kobp": "*"
+    "kobp": "*",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "node-dev": "^7.4.3",
