@@ -204,7 +204,7 @@ export class OperationDocumentBuilder {
   }
 }
 
-export const withDocumentBuilder = (baseDoc?: OperationObject): OperationDocumentBuilder => {
+const withDocumentBuilder = (baseDoc?: OperationObject): OperationDocumentBuilder => {
   return new OperationDocumentBuilder(baseDoc)
 }
 
@@ -219,3 +219,5 @@ export const withDocument = (doc: OperationObject): Middleware => {
   Reflect.defineMetadata(METADATA_DOC_KEY, doc, fn)
   return fn
 }
+
+withDocument.builder = withDocumentBuilder

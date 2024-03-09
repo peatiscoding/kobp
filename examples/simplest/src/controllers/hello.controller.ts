@@ -1,4 +1,4 @@
-import { ClientErrorCode, KobpError, KobpServiceContext, Lang, Loggy, withDocument, withDocumentBuilder } from 'kobp'
+import { ClientErrorCode, KobpError, KobpServiceContext, Lang, Loggy, withDocument } from 'kobp'
 import { Route, BaseRoutedController } from 'kobp'
 import { repeat } from 'lodash'
 import { withLabel } from 'src/middlewares/label'
@@ -30,7 +30,8 @@ export class HelloController extends BaseRoutedController {
     middlewares: [
       withLabel('doodle'),
       // Add document via builder!
-      withDocumentBuilder()
+      withDocument
+        .builder()
         .summary('Say hello to the world')
         .useQuery('name', {
           example: 'kobp',
@@ -67,7 +68,8 @@ export class HelloController extends BaseRoutedController {
     method: 'post',
     path: '/load/:repeatText',
     middlewares: [
-      withDocumentBuilder()
+      withDocument
+        .builder()
         .summary('Try calling heavy loads!')
         .usePath('repeatText', {
           example: 'REPEAT_ME',
