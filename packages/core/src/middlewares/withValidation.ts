@@ -1,6 +1,8 @@
 import type { KobpServiceContext, Middleware } from '../context'
 import type { zodToJsonSchema } from 'zod-to-json-schema'
 import { ClientErrorCode, KobpError } from '../utils'
+import { METADATA_KEYS } from './doc.helpers'
+import { Next } from 'koa'
 
 /**
  * The general interface that fits `zod`, `ajv-ts`, +other for further support.
@@ -55,14 +57,7 @@ export const withValidation = <
   params?: KobpParsable<P>
   body?: KobpParsable<B>
 }): Middleware => {
-  for (const key of ['params', 'query', 'body']) {
-    const spec: any = schemaSpec[key]
-    if (!spec) continue
-    const schema = extractSchema(spec)
-    console.log(`${key} schema`, schema)
-  }
-
-  return async (context: KobpServiceContext, next) => {
+  const fn = async (context: KobpServiceContext, next: Next) => {
     const query = context.query
     const params = context.params
     const body = context.request.body
@@ -76,4 +71,14 @@ export const withValidation = <
     }
     await next()
   }
+
+  for (const key of ['params', 'query', 'body']) {
+    const spec: any = schemaSpec[key]
+    if (!spec) continue
+    const schema = extractSchema(spec)
+    console.log(`defining ${key} schema::`, schema)
+    // save this to internal storage against its function.
+    Reflect.defineMetadata(METADATA_KEYS[`DOC_${key.toUpperCase()}_SHAPE_KEY`], schema, fn)
+  }
+  return fn
 }

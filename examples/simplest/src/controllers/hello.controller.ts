@@ -20,30 +20,11 @@ export class HelloController extends BaseRoutedController {
     withValidation({
       body: s
         .object({
-          message: s.string().min(2),
+          message: s.string().min(2).max(5),
         })
         .required(),
     }),
-    withDocument
-      .builder()
-      .summary('echo back the body')
-      .useBody({
-        required: true,
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              properties: {
-                message: {
-                  type: 'string',
-                  minLength: 2,
-                },
-              },
-            },
-          },
-        },
-      })
-      .build(),
+    withDocument.builder().summary('echo back the body').middleware(),
   )
   async migrate(context: KobpServiceContext) {
     return context.request.body
@@ -87,7 +68,7 @@ export class HelloController extends BaseRoutedController {
             },
           }),
         )
-        .build(),
+        .middleware(),
     ],
   })
   async index(ctx: KobpServiceContext) {
@@ -137,7 +118,7 @@ export class HelloController extends BaseRoutedController {
             })
             .onErrorBadRequest('Input too long!'),
         )
-        .build(),
+        .middleware(),
     ],
   })
   async load(ctx: KobpServiceContext) {

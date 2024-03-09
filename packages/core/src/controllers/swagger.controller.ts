@@ -5,10 +5,19 @@ import type {
   OpenAPIObject,
   OperationObject,
   PathItemObject,
+  SchemaObject,
   ServerObject,
   TagObject,
 } from 'openapi3-ts/oas31'
-import { KobpRouter, KobpServiceContext, METADATA_DOC_KEY } from '..'
+import { KobpRouter, KobpServiceContext, METADATA_KEYS, ALL_METADATA_KEYS, OperationDocumentBuilder } from '..'
+
+export interface ValidatableShape {
+  query?: SchemaObject
+  body?: SchemaObject
+  parameters?: SchemaObject
+}
+
+export type OperationBuilder = (validatableShape: ValidatableShape) => OperationObject
 
 interface SwaggerUIConfig {
   url?: string
@@ -185,21 +194,40 @@ export class SwaggerController {
         }
         // Extract document data
         let opDoc: OperationObject = {}
-        layer.stack
-          .filter((v) => {
-            return Reflect.getMetadataKeys(v).indexOf(METADATA_DOC_KEY) >= 0
-          })
-          .map((stack) => {
-            const metadataFn = Reflect.getMetadata(METADATA_DOC_KEY, stack)
-            let metadata = metadataFn
-            if (typeof metadataFn === 'function') {
-              metadata = metadataFn()
+        let validationSpecBuffer: {
+          query?: SchemaObject
+          body?: SchemaObject
+          parameters?: SchemaObject
+        } = {}
+        layer.stack.map((stack) => {
+          const keys = Reflect.getMetadataKeys(stack).filter((k) => ALL_METADATA_KEYS.has(k))
+          for (const key of keys) {
+            // Found a meta of documentation node!
+            if (key === METADATA_KEYS.DOC_KEY) {
+              const opSpec = Reflect.getMetadata(METADATA_KEYS.DOC_KEY, stack) as OperationObject
+              const builder = new OperationDocumentBuilder({ ...opDoc, ...opSpec })
+              // merge?
+              if (validationSpecBuffer.body) {
+                // inject body
+                builder.useBody({
+                  required: true,
+                  content: {
+                    'application/json': {
+                      schema: validationSpecBuffer.body,
+                    },
+                  },
+                })
+              }
+              opDoc = builder.build()
+            } else if (key === METADATA_KEYS.DOC_BODY_SHAPE_KEY) {
+              validationSpecBuffer.body = Reflect.getMetadata(METADATA_KEYS.DOC_BODY_SHAPE_KEY, stack)
+            } else if (key === METADATA_KEYS.DOC_PARAMS_SHAPE_KEY) {
+              validationSpecBuffer.body = Reflect.getMetadata(METADATA_KEYS.DOC_PARAMS_SHAPE_KEY, stack)
+            } else if (key === METADATA_KEYS.DOC_QUERY_SHAPE_KEY) {
+              validationSpecBuffer.body = Reflect.getMetadata(METADATA_KEYS.DOC_QUERY_SHAPE_KEY, stack)
             }
-            opDoc = {
-              ...opDoc,
-              ...metadata,
-            }
-          })
+          }
+        })
         pathItem = {
           [method.toLowerCase()]: {
             responses: [],
