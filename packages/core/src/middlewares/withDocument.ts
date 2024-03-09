@@ -133,6 +133,7 @@ export class OperationResponsesDocumentBuilder {
 export class OperationDocumentBuilder {
   private doc: OperationObject
   constructor(baseDoc?: OperationObject) {
+    // try extract documents from other sources
     this.doc = { ...(baseDoc || {}) }
   }
 
@@ -182,7 +183,7 @@ export class OperationDocumentBuilder {
     return this
   }
 
-  requestBody(requestBody: RequestBodyObject, content?: MediaTypeObject): this {
+  useBody(requestBody: RequestBodyObject, content?: MediaTypeObject): this {
     this.doc.requestBody = requestBody
     if (content) {
       this.doc.requestBody.content = {

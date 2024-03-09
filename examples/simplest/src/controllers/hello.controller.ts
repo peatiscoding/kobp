@@ -1,4 +1,4 @@
-import { ClientErrorCode, KobpError, KobpServiceContext, Lang, Loggy, withDocument, withValidation } from 'kobp'
+import { KobpServiceContext, Lang, Loggy, withDocument, withValidation } from 'kobp'
 import { Route, BaseRoutedController } from 'kobp'
 import { repeat } from 'lodash'
 import { withLabel } from 'src/middlewares/label'
@@ -17,19 +17,17 @@ export class HelloController extends BaseRoutedController {
   @Route(
     'post',
     '/echo',
-    withValidation(
-      s.object({
-        body: s
-          .object({
-            message: s.string().min(2),
-          })
-          .required(),
-      }),
-    ),
+    withValidation({
+      body: s
+        .object({
+          message: s.string().min(2),
+        })
+        .required(),
+    }),
     withDocument
       .builder()
       .summary('echo back the body')
-      .requestBody({
+      .useBody({
         required: true,
         content: {
           'application/json': {
@@ -103,13 +101,11 @@ export class HelloController extends BaseRoutedController {
     method: 'post',
     path: '/load/:repeatText',
     middlewares: [
-      withValidation(
-        z.object({
-          params: z.object({
-            repeatText: z.string().max(30),
-          }),
+      withValidation({
+        params: z.object({
+          repeatText: z.string().max(30),
         }),
-      ),
+      }),
       withDocument
         .builder()
         .summary('Try calling heavy loads!')
