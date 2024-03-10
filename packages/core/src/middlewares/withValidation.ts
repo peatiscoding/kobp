@@ -1,27 +1,7 @@
 import type { KobpServiceContext, Middleware } from '../context'
-import type { zodToJsonSchema } from 'zod-to-json-schema'
 import { ClientErrorCode, KobpError } from '../utils'
-import { METADATA_KEYS, KobpParsable } from './doc.helpers'
+import { METADATA_KEYS, KobpParsable, extractSchema } from './doc.helpers'
 import { Next } from 'koa'
-
-// Check if zod-to-json-schema is installed
-const z2js: typeof zodToJsonSchema = require('zod-to-json-schema')?.zodToJsonSchema
-// schema extraction utils
-const isZod = (o: any) => o?._def?.typeName === 'ZodObject'
-const isAjv = (o: any) => Boolean(o?._ajv)
-
-const extractSchema = <T>(spec: KobpParsable<T>): ['zod' | 'ajv', any] => {
-  if (z2js && isZod(spec)) {
-    const forDocuments = z2js(spec as any, {
-      target: 'openApi3',
-    })
-    return ['zod', forDocuments]
-  }
-  if (isAjv(spec) && spec.schema) {
-    return ['ajv', spec.schema]
-  }
-  return undefined
-}
 
 export const withValidation = <
   Q extends Record<string, any>,

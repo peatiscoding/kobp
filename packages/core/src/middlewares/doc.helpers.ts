@@ -4,11 +4,12 @@ import type {
   MediaTypeObject,
   OperationObject,
   ParameterLocation,
+  SchemaObject,
   RequestBodyObject,
   ResponseObject,
 } from 'openapi3-ts/oas31'
 
-import { Middleware, withDocument } from '..'
+import { Middleware, withDocument, KobpError, ServerErrorCode } from '..'
 
 export const METADATA_KEYS = {
   // compiled documents
@@ -34,7 +35,10 @@ const isAjv = (o: any) => Boolean(o?._ajv)
  *
  * NOTE: we are over simplify here as we believe that .schema would returns `OpenAPI31.SchemaObject` (or its compatible ones)
  */
-export const extractSchema = <T>(spec: KobpParsable<T> | SchemaObject): ['zod' | 'ajv', SchemaObject] => {
+export const extractSchema = (
+  spec: SchemableObject,
+  required: boolean = false,
+): ['zod' | 'ajv' | 'literal', SchemaObject] => {
   if (z2js && isZod(spec)) {
     const forDocuments: any = z2js(spec as any, {
       target: 'openApi3',
@@ -43,6 +47,15 @@ export const extractSchema = <T>(spec: KobpParsable<T> | SchemaObject): ['zod' |
   }
   if (isAjv(spec) && spec.schema) {
     return ['ajv', spec.schema]
+  }
+  if (spec.schema) {
+    return ['literal', spec.schema]
+  }
+  if (required) {
+    throw KobpError.fromServer(
+      ServerErrorCode.notImplemented,
+      'You are using invalid schema provider. If you are using Zod, please install zod-to-json-schema (https://www.npmjs.com/package/zod-to-json-schema). If your are using other interface please make sure it has `schema` property that provides OpenAPI3.1 Schema compatible object!',
+    )
   }
   return undefined
 }
@@ -53,14 +66,14 @@ export const extractSchema = <T>(spec: KobpParsable<T> | SchemaObject): ['zod' |
  *
  * We got zod to comply with this via the optional dependency (zod-to-json-schema)
  */
-export interface SchemaObject {
-  schema: any
+export interface SchemableObject {
+  schema?: any
 }
 
 /**
  * The general interface that fits `zod`, `ajv-ts`, +other for further support.
  */
-export interface KobpParsable<T> {
+export interface KobpParsable<T> extends SchemableObject {
   /**
    * A pure synchronus function that handles parsing
    * and ensure the given input object matches the required T Type
@@ -75,11 +88,6 @@ export interface KobpParsable<T> {
    * @throws {Error} the message of the error will then be wrapped with KobpError
    */
   parse(object: any): T
-
-  /**
-   * Optionally it may be able to spit out schema here
-   */
-  schema?: any
 }
 
 export class OperationDocumentBuilder {
@@ -156,17 +164,18 @@ export class OperationDocumentBuilder {
   /**
    * Server successfully processed the request
    */
-  onOk(content?: MediaTypeObject | SchemaObject): this {
+  onOk(schema?: any, rest?: Omit<MediaTypeObject, 'schema'>): this {
     return this.onResponse(
       200,
       {
         description: 'Successful',
       },
-      content.schema
+      Boolean(schema)
         ? {
-            schema: content.schema,
+            schema: extractSchema(schema, true)[1],
+            ...rest,
           }
-        : (content as any),
+        : rest,
     )
   }
 
