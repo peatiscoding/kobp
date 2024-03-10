@@ -104,6 +104,18 @@ export class OperationDocumentBuilder {
     return this
   }
 
+  /**
+   * Given authorization scheme MUST matched those defined in
+   * the Swagger's controller (or Module's)
+   *
+   * @param {string} schemeName - name of the security handling example: 'bearer' | 'api-key' | 'basic'
+   * @param {string[]} detail - detail of the security object
+   */
+  authorizeWith(schemeName: string, detail: string[] = []): this {
+    this.doc.security = [{ [schemeName]: detail }]
+    return this
+  }
+
   useHeader(map: Record<string, BaseParameterObject>): this
   useHeader(name: string, doc: BaseParameterObject): this
   useHeader(nameOrMap: string | Record<string, BaseParameterObject>, doc?: BaseParameterObject): this {

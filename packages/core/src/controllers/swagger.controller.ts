@@ -6,6 +6,8 @@ import type {
   OperationObject,
   PathItemObject,
   SchemaObject,
+  SecurityRequirementObject,
+  SecuritySchemeObject,
   ServerObject,
   TagObject,
 } from 'openapi3-ts/oas31'
@@ -97,6 +99,16 @@ export interface SwaggerControllerOption {
    * Available tags of the whole system
    */
   availableTags: TagObject[]
+
+  /**
+   * Security requirement that will be applied on all path
+   */
+  securityOnAllOperations: SecurityRequirementObject[]
+
+  /**
+   * Define security scheme for this API document. The list can be used by security requirement objects.
+   */
+  securitySchemes: Record<string, SecuritySchemeObject>
 }
 
 // Plain controller for using SwaggerUI Dist package
@@ -122,6 +134,8 @@ export class SwaggerController {
       description: (desc: string) => desc,
       servers: [],
       availableTags: [],
+      securitySchemes: {},
+      securityOnAllOperations: [],
       ...options,
     }
   }
@@ -182,6 +196,10 @@ export class SwaggerController {
     for (const server of this.options.servers) {
       builder.addServer(server)
     }
+    for (const schemeName of Object.keys(this.options.securitySchemes)) {
+      builder.addSecurityScheme(schemeName, this.options.securitySchemes[schemeName])
+    }
+
     for (const layer of router.stack) {
       if (skipPathPredicate(layer.path)) {
         continue
@@ -194,6 +212,10 @@ export class SwaggerController {
         }
         // Extract document data
         let opDoc: OperationObject = {}
+        // initialize operation document with default security
+        if (this.options.securityOnAllOperations) {
+          opDoc.security = this.options.securityOnAllOperations || []
+        }
         let validationSpecBuffer: {
           query?: SchemaObject
           body?: SchemaObject

@@ -10,6 +10,7 @@ export class HelloController extends BaseRoutedController {
     super([
       withDocument({
         tags: ['hello'],
+        security: [{ bearerAuth: [] }],
       }),
     ])
   }
@@ -77,15 +78,15 @@ export class HelloController extends BaseRoutedController {
     middlewares: [
       withValidation({
         params: z.object({
-          // FIXME: this is not intuitive at all, it should be numeric as well
+          // the possible shape of params is strings. only
           repeatText: z.string().max(30).describe('the text to repeat {query.size} times'),
         }),
         query: z.object({
-          // FIXME: this is not intuitive at all, it should be numeric as well
+          // the possible shape of params is strings. only
           size: z.string().default('100000').describe('the size of the array'),
         }),
         body: z.object({
-          data: z.string().default('Data').describe('the data to repeat {query.size} times'),
+          data: z.number().default(3).describe('the value to multiply {query.size} times'),
         }),
       }),
       withDocument
@@ -102,7 +103,7 @@ export class HelloController extends BaseRoutedController {
                 type: 'string',
               },
               data: {
-                type: 'string',
+                type: 'number',
               },
             },
           },
@@ -115,10 +116,10 @@ export class HelloController extends BaseRoutedController {
     // Just access no need to validate
     const inputRepeatText = ctx.params.repeatText
     const inputSize = +(ctx.query.size || 100_000)
-    const inputData = ctx.request.body.data || 'Data'
+    const inputData = +(ctx.request.body.data || 3)
     const repeatText = repeat(`${inputRepeatText}`, inputSize)
     const arr = repeat('SomeArray', inputSize)
-    const data = repeat(inputData, inputSize)
+    const data = inputData ** inputSize
     return {
       repeatText,
       arr,

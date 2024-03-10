@@ -4,8 +4,8 @@ import { METADATA_KEYS, KobpParsable, extractSchema } from './doc.helpers'
 import { Next } from 'koa'
 
 export const withValidation = <
-  Q extends Record<string, any>,
-  P extends Record<string, string | number>,
+  Q extends Record<string, string>,
+  P extends Record<string, string>,
   B = any,
 >(schemaSpec: {
   query?: KobpParsable<Q>
@@ -16,13 +16,23 @@ export const withValidation = <
     const query = context.query
     const params = context.params
     const body = context.request.body
-    try {
-      // validate them one-by-one [Params => Query => Body]
-      schemaSpec.params?.parse(params)
-      schemaSpec.query?.parse(query)
-      schemaSpec.body?.parse(body)
-    } catch (err) {
-      throw KobpError.fromUserInput(ClientErrorCode.badRequest, (err as Error).message)
+    // validate them one-by-one [Params => Query => Body]
+    const inputs = [query, params, body]
+    const keys = ['query', 'params', 'body'] as const
+    for (let i = 0; i < inputs.length; i++) {
+      const key = keys[i]
+      const input = inputs[i]
+      try {
+        schemaSpec[key]?.parse(input)
+      } catch (err) {
+        console.error(`Input Validation error!`, err)
+        // try construct the useful message
+        let errorMessage = `${(err && err.message) || err}`
+        if (err.path) {
+          errorMessage = `Input error on: ${err.path} ${errorMessage}`
+        }
+        throw KobpError.fromUserInput(ClientErrorCode.badRequest, (err as Error).message)
+      }
     }
     await next()
   }
