@@ -220,6 +220,7 @@ export class SwaggerController {
           query?: SchemaObject
           body?: SchemaObject
           parameters?: SchemaObject
+          headers?: SchemaObject
         } = {}
         layer.stack.map((stack) => {
           const keys = Reflect.getMetadataKeys(stack).filter((k) => ALL_METADATA_KEYS.has(k))
@@ -251,6 +252,16 @@ export class SwaggerController {
                   })
                 }
               }
+              if (validationSpecBuffer.headers) {
+                const shape = validationSpecBuffer.headers
+                for (const key of Object.keys(shape.properties)) {
+                  const { description } = shape.properties[key]
+                  builder.useParameter('header', key, {
+                    schema: shape.properties[key],
+                    description,
+                  })
+                }
+              }
               if (validationSpecBuffer.query) {
                 const shape = validationSpecBuffer.query
                 for (const key of Object.keys(shape.properties)) {
@@ -264,6 +275,8 @@ export class SwaggerController {
               opDoc = builder.build()
             } else if (key === METADATA_KEYS.DOC_BODY_SHAPE_VALIDATION_KEY) {
               validationSpecBuffer.body = Reflect.getMetadata(METADATA_KEYS.DOC_BODY_SHAPE_VALIDATION_KEY, stack)
+            } else if (key === METADATA_KEYS.DOC_HEADERS_SHAPE_VALIDATION_KEY) {
+              validationSpecBuffer.headers = Reflect.getMetadata(METADATA_KEYS.DOC_HEADERS_SHAPE_VALIDATION_KEY, stack)
             } else if (key === METADATA_KEYS.DOC_PARAMS_SHAPE_VALIDATION_KEY) {
               validationSpecBuffer.parameters = Reflect.getMetadata(
                 METADATA_KEYS.DOC_PARAMS_SHAPE_VALIDATION_KEY,

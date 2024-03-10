@@ -6,19 +6,22 @@ import { Next } from 'koa'
 export const withValidation = <
   Q extends Record<string, string>,
   P extends Record<string, string>,
+  H extends Record<string, string>,
   B = any,
 >(schemaSpec: {
   query?: KobpParsable<Q>
   params?: KobpParsable<P>
   body?: KobpParsable<B>
+  headers?: KobpParsable<H>
 }): Middleware => {
   const fn = async (context: KobpServiceContext, next: Next) => {
     const query = context.query
     const params = context.params
     const body = context.request.body
+    const headers = context.request.headers
     // validate them one-by-one [Params => Query => Body]
-    const inputs = [query, params, body]
-    const keys = ['query', 'params', 'body'] as const
+    const inputs = [headers, query, params, body]
+    const keys = ['headers', 'query', 'params', 'body'] as const
     for (let i = 0; i < inputs.length; i++) {
       const key = keys[i]
       const input = inputs[i]
@@ -37,7 +40,7 @@ export const withValidation = <
     await next()
   }
 
-  for (const key of ['params', 'query', 'body']) {
+  for (const key of ['headers', 'params', 'query', 'body']) {
     const spec: any = schemaSpec[key]
     if (!spec) continue
     const [source, schema] = extractSchema(spec)

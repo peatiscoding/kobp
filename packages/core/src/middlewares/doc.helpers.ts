@@ -15,6 +15,8 @@ export const METADATA_KEYS = {
   // compiled documents
   DOC_KEY: 'document',
   // - compiled query shape
+  DOC_HEADERS_SHAPE_VALIDATION_KEY: 'document:validate:headers',
+  // - compiled query shape
   DOC_QUERY_SHAPE_VALIDATION_KEY: 'document:validate:query',
   // - compiled body shape
   DOC_BODY_SHAPE_VALIDATION_KEY: 'document:validate:body',

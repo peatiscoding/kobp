@@ -51,6 +51,9 @@ export class HelloController extends BaseRoutedController {
         query: s.object({
           name: s.string().min(2).default('world').describe('the name to say hello'),
         }),
+        headers: s.object({
+          'x-title': s.string().max(5).default('Mr.').describe('the title of the the name to say hello to'),
+        }),
       }),
       withLabel('doodle'),
       // Add document via builder!
@@ -67,8 +70,9 @@ export class HelloController extends BaseRoutedController {
   })
   async index(ctx: KobpServiceContext) {
     Loggy.log('Say hello to the world')
+    const fullName = `${ctx.header['x-title'] || ''} ${ctx.query.name || 'world'}`
     return {
-      hello: ctx.query.name || 'world',
+      hello: fullName,
     }
   }
 
