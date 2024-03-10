@@ -43,28 +43,20 @@ export class HelloController extends BaseRoutedController {
     path: '/hi',
     middlewares: [
       withValidation({
-        query: s
-          .object({
-            name: s.string().min(2).default('world').describe('the name to say hello'),
-          })
-          .required(),
+        query: s.object({
+          name: s.string().min(2).default('world').describe('the name to say hello'),
+        }),
       }),
       withLabel('doodle'),
       // Add document via builder!
       withDocument
         .builder()
         .summary('Say hello to the world')
-        .onOk({
-          // OpenAPI scheme document
-          schema: {
-            properties: {
-              hello: {
-                type: 'string',
-                example: 'world',
-              },
-            },
-          },
-        })
+        .onOk(
+          s.object({
+            hello: s.string().describe('the name to say hello'),
+          }),
+        )
         .middleware(),
     ],
   })

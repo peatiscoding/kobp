@@ -222,7 +222,7 @@ export class SwaggerController {
                 const shape = validationSpecBuffer.parameters
                 for (const key of Object.keys(shape.properties)) {
                   const { description } = shape.properties[key]
-                  builder.addParameter('path', key, {
+                  builder.useParameter('path', key, {
                     schema: shape.properties[key],
                     description,
                     required: true,
@@ -233,19 +233,22 @@ export class SwaggerController {
                 const shape = validationSpecBuffer.query
                 for (const key of Object.keys(shape.properties)) {
                   const { description } = shape.properties[key] as any
-                  builder.addParameter('query', key, {
+                  builder.useParameter('query', key, {
                     schema: shape.properties[key],
                     description,
                   })
                 }
               }
               opDoc = builder.build()
-            } else if (key === METADATA_KEYS.DOC_BODY_SHAPE_KEY) {
-              validationSpecBuffer.body = Reflect.getMetadata(METADATA_KEYS.DOC_BODY_SHAPE_KEY, stack)
-            } else if (key === METADATA_KEYS.DOC_PARAMS_SHAPE_KEY) {
-              validationSpecBuffer.parameters = Reflect.getMetadata(METADATA_KEYS.DOC_PARAMS_SHAPE_KEY, stack)
-            } else if (key === METADATA_KEYS.DOC_QUERY_SHAPE_KEY) {
-              validationSpecBuffer.query = Reflect.getMetadata(METADATA_KEYS.DOC_QUERY_SHAPE_KEY, stack)
+            } else if (key === METADATA_KEYS.DOC_BODY_SHAPE_VALIDATION_KEY) {
+              validationSpecBuffer.body = Reflect.getMetadata(METADATA_KEYS.DOC_BODY_SHAPE_VALIDATION_KEY, stack)
+            } else if (key === METADATA_KEYS.DOC_PARAMS_SHAPE_VALIDATION_KEY) {
+              validationSpecBuffer.parameters = Reflect.getMetadata(
+                METADATA_KEYS.DOC_PARAMS_SHAPE_VALIDATION_KEY,
+                stack,
+              )
+            } else if (key === METADATA_KEYS.DOC_QUERY_SHAPE_VALIDATION_KEY) {
+              validationSpecBuffer.query = Reflect.getMetadata(METADATA_KEYS.DOC_QUERY_SHAPE_VALIDATION_KEY, stack)
             }
           }
         })

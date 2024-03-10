@@ -1,4 +1,5 @@
-import {
+import type { zodToJsonSchema } from 'zod-to-json-schema'
+import type {
   BaseParameterObject,
   MediaTypeObject,
   OperationObject,
@@ -6,20 +7,80 @@ import {
   RequestBodyObject,
   ResponseObject,
 } from 'openapi3-ts/oas31'
+
 import { Middleware, withDocument } from '..'
 
 export const METADATA_KEYS = {
   // compiled documents
   DOC_KEY: 'document',
   // - compiled query shape
-  DOC_QUERY_SHAPE_KEY: 'document:query',
+  DOC_QUERY_SHAPE_VALIDATION_KEY: 'document:validate:query',
   // - compiled body shape
-  DOC_BODY_SHAPE_KEY: 'document:body',
+  DOC_BODY_SHAPE_VALIDATION_KEY: 'document:validate:body',
   // - compiled param shape
-  DOC_PARAMS_SHAPE_KEY: 'document:param',
+  DOC_PARAMS_SHAPE_VALIDATION_KEY: 'document:validate:param',
 } as const
 
 export const ALL_METADATA_KEYS = new Set(Object.values(METADATA_KEYS))
+
+// Check if zod-to-json-schema is installed
+const z2js: typeof zodToJsonSchema = require('zod-to-json-schema')?.zodToJsonSchema
+// schema extraction utils
+const isZod = (o: any) => o?._def?.typeName === 'ZodObject'
+const isAjv = (o: any) => Boolean(o?._ajv)
+
+/**
+ * Attempt to extract schema from the SchemaObject | KobpParsable object
+ *
+ * NOTE: we are over simplify here as we believe that .schema would returns `OpenAPI31.SchemaObject` (or its compatible ones)
+ */
+export const extractSchema = <T>(spec: KobpParsable<T> | SchemaObject): ['zod' | 'ajv', SchemaObject] => {
+  if (z2js && isZod(spec)) {
+    const forDocuments: any = z2js(spec as any, {
+      target: 'openApi3',
+    })
+    return ['zod', forDocuments]
+  }
+  if (isAjv(spec) && spec.schema) {
+    return ['ajv', spec.schema]
+  }
+  return undefined
+}
+
+/**
+ * The general interface that fits `ajv-ts` which allow us to use
+ * its' schema injection for documentation purpose.
+ *
+ * We got zod to comply with this via the optional dependency (zod-to-json-schema)
+ */
+export interface SchemaObject {
+  schema: any
+}
+
+/**
+ * The general interface that fits `zod`, `ajv-ts`, +other for further support.
+ */
+export interface KobpParsable<T> {
+  /**
+   * A pure synchronus function that handles parsing
+   * and ensure the given input object matches the required T Type
+   * otherwise throws Error
+   *
+   * This function will ensure that;
+   *
+   * [1] context.query matches the T.query spec.
+   * [2] context.body matches the T.body spec.
+   * [3] context.params matches the T.params spec.
+   *
+   * @throws {Error} the message of the error will then be wrapped with KobpError
+   */
+  parse(object: any): T
+
+  /**
+   * Optionally it may be able to spit out schema here
+   */
+  schema?: any
+}
 
 export class OperationDocumentBuilder {
   private doc: OperationObject
@@ -38,28 +99,28 @@ export class OperationDocumentBuilder {
   useHeader(map: Record<string, BaseParameterObject>): this
   useHeader(name: string, doc: BaseParameterObject): this
   useHeader(nameOrMap: string | Record<string, BaseParameterObject>, doc?: BaseParameterObject): this {
-    return this.useParameter('header', nameOrMap, doc)
+    return this.useParameters('header', nameOrMap, doc)
   }
 
   usePath(map: Record<string, BaseParameterObject>): this
   usePath(name: string, doc: BaseParameterObject): this
   usePath(nameOrMap: string | Record<string, BaseParameterObject>, doc?: BaseParameterObject): this {
-    return this.useParameter('path', nameOrMap, doc)
+    return this.useParameters('path', nameOrMap, doc)
   }
 
   useQuery(map: Record<string, BaseParameterObject>): this
   useQuery(name: string, doc: BaseParameterObject): this
   useQuery(nameOrMap: string | Record<string, BaseParameterObject>, doc?: BaseParameterObject): this {
-    return this.useParameter('query', nameOrMap, doc)
+    return this.useParameters('query', nameOrMap, doc)
   }
 
   useCookie(map: Record<string, BaseParameterObject>): this
   useCookie(name: string, doc: BaseParameterObject): this
   useCookie(nameOrMap: string | Record<string, BaseParameterObject>, doc?: BaseParameterObject): this {
-    return this.useParameter('cookie', nameOrMap, doc)
+    return this.useParameters('cookie', nameOrMap, doc)
   }
 
-  useParameter(
+  useParameters(
     location: ParameterLocation,
     nameOrMap: string | Record<string, BaseParameterObject>,
     doc?: BaseParameterObject,
@@ -77,14 +138,16 @@ export class OperationDocumentBuilder {
   }
 
   // used by swagger controller
-  addParameter(location: ParameterLocation, name: string, doc: BaseParameterObject): this {
+  useParameter(location: ParameterLocation, name: string, doc: BaseParameterObject): this {
     const params = this.doc.parameters || []
-    console.log('param', location, name, doc)
     params.push({ ...doc, in: location, name })
     this.doc.parameters = params
     return this
   }
 
+  /**
+   * This method will override the validation body's middleware injection if used.
+   */
   useBody(requestBody: RequestBodyObject): this {
     this.doc.requestBody = requestBody
     return this
@@ -93,13 +156,17 @@ export class OperationDocumentBuilder {
   /**
    * Server successfully processed the request
    */
-  onOk(content?: MediaTypeObject): this {
+  onOk(content?: MediaTypeObject | SchemaObject): this {
     return this.onResponse(
       200,
       {
         description: 'Successful',
       },
-      content,
+      content.schema
+        ? {
+            schema: content.schema,
+          }
+        : (content as any),
     )
   }
 
@@ -148,6 +215,7 @@ export class OperationDocumentBuilder {
     if (content) {
       if (this.wrapJsonResult && content.schema) {
         if (status >= 200 && status < 400) {
+          // Success case
           content = {
             ...content,
             schema: {
@@ -162,6 +230,7 @@ export class OperationDocumentBuilder {
             },
           }
         } else {
+          // Error case
           content = {
             ...content,
             schema: {
@@ -193,6 +262,11 @@ export class OperationDocumentBuilder {
     return this
   }
 
+  /**
+   * useful for swagger controller to access the output document directly
+   *
+   * @returns {OperationObject} OpenAPI operation object
+   */
   build(): OperationObject {
     return this.doc
   }

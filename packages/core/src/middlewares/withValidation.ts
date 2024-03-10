@@ -1,33 +1,8 @@
 import type { KobpServiceContext, Middleware } from '../context'
 import type { zodToJsonSchema } from 'zod-to-json-schema'
 import { ClientErrorCode, KobpError } from '../utils'
-import { METADATA_KEYS } from './doc.helpers'
+import { METADATA_KEYS, KobpParsable } from './doc.helpers'
 import { Next } from 'koa'
-
-/**
- * The general interface that fits `zod`, `ajv-ts`, +other for further support.
- */
-export interface KobpParsable<T> {
-  /**
-   * A pure synchronus function that handles parsing
-   * and ensure the given input object matches the required T Type
-   * otherwise throws Error
-   *
-   * This function will ensure that;
-   *
-   * [1] context.query matches the T.query spec.
-   * [2] context.body matches the T.body spec.
-   * [3] context.params matches the T.params spec.
-   *
-   * @throws {Error} the message of the error will then be wrapped with KobpError
-   */
-  parse(object: any): T
-
-  /**
-   * Optionally it may be able to spit out schema here
-   */
-  schema?: any
-}
 
 // Check if zod-to-json-schema is installed
 const z2js: typeof zodToJsonSchema = require('zod-to-json-schema')?.zodToJsonSchema
@@ -78,7 +53,7 @@ export const withValidation = <
     const [source, schema] = extractSchema(spec)
     console.log(`defining ${key} schema::`, source, schema)
     // save this to internal storage against its function.
-    Reflect.defineMetadata(METADATA_KEYS[`DOC_${key.toUpperCase()}_SHAPE_KEY`], schema, fn)
+    Reflect.defineMetadata(METADATA_KEYS[`DOC_${key.toUpperCase()}_SHAPE_VALIDATION_KEY`], schema, fn)
   }
   return fn
 }
