@@ -24,7 +24,11 @@ export class HelloController extends BaseRoutedController {
         })
         .required(),
     }),
-    withDocument.builder().summary('echo back the body').middleware(),
+    withDocument
+      .builder()
+      .summary('echo back the body')
+      .onOk(z.object({ message: z.string() }))
+      .middleware(),
   )
   async migrate(context: KobpServiceContext) {
     return context.request.body
@@ -72,11 +76,17 @@ export class HelloController extends BaseRoutedController {
     path: '/load/:repeatText',
     middlewares: [
       withValidation({
-        params: z
-          .object({
-            repeatText: z.string().max(30).describe('the text to repeat 100k times'),
-          })
-          .required(),
+        params: z.object({
+          // FIXME: this is not intuitive at all, it should be numeric as well
+          repeatText: z.string().max(30).describe('the text to repeat {query.size} times'),
+        }),
+        query: z.object({
+          // FIXME: this is not intuitive at all, it should be numeric as well
+          size: z.string().default('100000').describe('the size of the array'),
+        }),
+        body: z.object({
+          data: z.string().default('Data').describe('the data to repeat {query.size} times'),
+        }),
       }),
       withDocument
         .builder()
@@ -102,10 +112,13 @@ export class HelloController extends BaseRoutedController {
     ],
   })
   async load(ctx: KobpServiceContext) {
+    // Just access no need to validate
     const inputRepeatText = ctx.params.repeatText
-    const repeatText = repeat(`${inputRepeatText}`, 100_000)
-    const arr = repeat('SomeArray', 100_000)
-    const data = repeat('Data', 100_000)
+    const inputSize = +(ctx.query.size || 100_000)
+    const inputData = ctx.request.body.data || 'Data'
+    const repeatText = repeat(`${inputRepeatText}`, inputSize)
+    const arr = repeat('SomeArray', inputSize)
+    const data = repeat(inputData, inputSize)
     return {
       repeatText,
       arr,
