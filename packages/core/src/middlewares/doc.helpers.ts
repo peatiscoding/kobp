@@ -5,7 +5,6 @@ import {
   ParameterLocation,
   RequestBodyObject,
   ResponseObject,
-  ResponsesObject,
 } from 'openapi3-ts/oas31'
 import { Middleware, withDocument } from '..'
 
@@ -22,124 +21,10 @@ export const METADATA_KEYS = {
 
 export const ALL_METADATA_KEYS = new Set(Object.values(METADATA_KEYS))
 
-export class OperationResponsesDocumentBuilder {
-  private doc: ResponsesObject
-
-  constructor(
-    baseDoc?: ResponsesObject,
-    protected wrapJsonResult: boolean = true,
-  ) {
-    this.doc = baseDoc || {}
-  }
-
-  /**
-   * Server successfully processed the request
-   */
-  onOk(content?: MediaTypeObject): this {
-    return this.onResponse(
-      200,
-      {
-        description: 'Successful',
-      },
-      content,
-    )
-  }
-
-  /**
-   * Server accepted the request, payload is still being processed
-   */
-  onOkAccepted(): this {
-    return this.onResponse(202, { description: 'Accepted' })
-  }
-
-  /**
-   * Server successfully processed the request and is not returning any content
-   */
-  onOkNoContent(): this {
-    return this.onResponse(204, { description: 'Successful without content' })
-  }
-
-  /**
-   * Server rejected the request due to invalid user's input
-   * TODO: Add other additional cases!, so that this method can call repeatedly and aggregates
-   */
-  onErrorBadRequest(contentOrMessage?: string | MediaTypeObject): this {
-    if (typeof contentOrMessage === 'string') {
-      return this.onResponse(
-        400,
-        { description: 'Bad request' },
-        {
-          schema: {
-            type: 'object',
-            properties: {
-              error: {
-                type: 'string',
-                default: contentOrMessage,
-              },
-            },
-          },
-        },
-      )
-    }
-    return this.onResponse(400, { description: 'Bad Request' }, contentOrMessage)
-  }
-
-  onResponse(status: number, doc: ResponseObject, content?: MediaTypeObject): this {
-    this.doc[status] = { ...doc }
-    if (content) {
-      if (this.wrapJsonResult && content.schema) {
-        if (status >= 200 && status < 400) {
-          content = {
-            ...content,
-            schema: {
-              type: 'object',
-              properties: {
-                success: {
-                  type: 'boolean',
-                  default: true,
-                },
-                data: content.schema,
-              },
-            },
-          }
-        } else {
-          content = {
-            ...content,
-            schema: {
-              allOf: [
-                {
-                  type: 'object',
-                  properties: {
-                    success: {
-                      type: 'boolean',
-                      default: false,
-                    },
-                    type: {
-                      type: 'string',
-                      default: 'kobp',
-                    },
-                  },
-                },
-                content.schema,
-              ],
-            },
-          }
-        }
-      }
-      this.doc[status].content = {
-        'application/json': content, // TODO: add wrapper?
-        // TODO: Add other response types (Workaround, use withDocument)
-      }
-    }
-    return this
-  }
-
-  build(): ResponsesObject {
-    return this.doc
-  }
-}
 export class OperationDocumentBuilder {
   private doc: OperationObject
+  protected wrapJsonResult: boolean = true
+
   constructor(baseDoc?: OperationObject) {
     // try extract documents from other sources
     this.doc = { ...(baseDoc || {}) }
@@ -205,9 +90,106 @@ export class OperationDocumentBuilder {
     return this
   }
 
-  responses(buildFn: (bulider: OperationResponsesDocumentBuilder) => OperationResponsesDocumentBuilder): this {
-    const doc = buildFn(new OperationResponsesDocumentBuilder()).build()
-    this.doc.responses = doc
+  /**
+   * Server successfully processed the request
+   */
+  onOk(content?: MediaTypeObject): this {
+    return this.onResponse(
+      200,
+      {
+        description: 'Successful',
+      },
+      content,
+    )
+  }
+
+  /**
+   * Server accepted the request, payload is still being processed
+   */
+  onOkAccepted(): this {
+    return this.onResponse(202, { description: 'Accepted' })
+  }
+
+  /**
+   * Server successfully processed the request and is not returning any content
+   */
+  onOkNoContent(): this {
+    return this.onResponse(204, { description: 'Successful without content' })
+  }
+
+  /**
+   * Server rejected the request due to invalid user's input
+   * TODO: Add other additional cases!, so that this method can call repeatedly and aggregates
+   */
+  onErrorBadRequest(contentOrMessage?: string | MediaTypeObject): this {
+    if (typeof contentOrMessage === 'string') {
+      return this.onResponse(
+        400,
+        { description: 'Bad request' },
+        {
+          schema: {
+            type: 'object',
+            properties: {
+              error: {
+                type: 'string',
+                default: contentOrMessage,
+              },
+            },
+          },
+        },
+      )
+    }
+    return this.onResponse(400, { description: 'Bad Request' }, contentOrMessage)
+  }
+
+  onResponse(status: number, doc: ResponseObject, content?: MediaTypeObject): this {
+    this.doc.responses = this.doc.responses || {}
+    this.doc.responses[status] = { ...doc }
+    if (content) {
+      if (this.wrapJsonResult && content.schema) {
+        if (status >= 200 && status < 400) {
+          content = {
+            ...content,
+            schema: {
+              type: 'object',
+              properties: {
+                success: {
+                  type: 'boolean',
+                  default: true,
+                },
+                data: content.schema,
+              },
+            },
+          }
+        } else {
+          content = {
+            ...content,
+            schema: {
+              allOf: [
+                {
+                  type: 'object',
+                  properties: {
+                    success: {
+                      type: 'boolean',
+                      default: false,
+                    },
+                    type: {
+                      type: 'string',
+                      default: 'kobp',
+                    },
+                  },
+                },
+                content.schema,
+              ],
+            },
+          }
+        }
+      }
+      this.doc.responses[status].content = {
+        'application/json': content, // TODO: add wrapper?
+        // TODO: Add other response types (Workaround, use withDocument)
+      }
+    }
     return this
   }
 

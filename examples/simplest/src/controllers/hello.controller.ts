@@ -54,19 +54,17 @@ export class HelloController extends BaseRoutedController {
       withDocument
         .builder()
         .summary('Say hello to the world')
-        .responses((r) =>
-          r.onOk({
-            // OpenAPI scheme document
-            schema: {
-              properties: {
-                hello: {
-                  type: 'string',
-                  example: 'world',
-                },
+        .onOk({
+          // OpenAPI scheme document
+          schema: {
+            properties: {
+              hello: {
+                type: 'string',
+                example: 'world',
               },
             },
-          }),
-        )
+          },
+        })
         .middleware(),
     ],
   })
@@ -82,33 +80,32 @@ export class HelloController extends BaseRoutedController {
     path: '/load/:repeatText',
     middlewares: [
       withValidation({
-        params: z.object({
-          repeatText: z.string().max(30).describe('the text to repeat 100k times'),
-        }).required(),
+        params: z
+          .object({
+            repeatText: z.string().max(30).describe('the text to repeat 100k times'),
+          })
+          .required(),
       }),
       withDocument
         .builder()
         .summary('Try calling heavy loads!')
-        .responses((r) =>
-          r
-            .onOk({
-              // OpenAPI scheme document
-              schema: {
-                properties: {
-                  repeatText: {
-                    type: 'string',
-                  },
-                  arr: {
-                    type: 'string',
-                  },
-                  data: {
-                    type: 'string',
-                  },
-                },
+        .onOk({
+          // OpenAPI scheme document
+          schema: {
+            properties: {
+              repeatText: {
+                type: 'string',
               },
-            })
-            .onErrorBadRequest('Input too long!'),
-        )
+              arr: {
+                type: 'string',
+              },
+              data: {
+                type: 'string',
+              },
+            },
+          },
+        })
+        .onErrorBadRequest('Input too long!')
         .middleware(),
     ],
   })
