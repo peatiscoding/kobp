@@ -23,18 +23,30 @@ export const withValidation = <
     const inputs = [headers, query, params, body]
     const keys = ['headers', 'query', 'params', 'body'] as const
     for (let i = 0; i < inputs.length; i++) {
-      const key = keys[i]
+      const locationKey = keys[i]
       const input = inputs[i]
       try {
-        schemaSpec[key]?.parse(input)
+        schemaSpec[locationKey]?.parse(input)
       } catch (err) {
         console.error(`Input Validation error!`, err)
         // try construct the useful message
-        let errorMessage = `${(err && err.message) || err}`
-        if (err.path) {
-          errorMessage = `Input error on: ${err.path} ${errorMessage}`
+        let errorMessage = `${err?.errorMessage || err?.message || err}`
+        // Identify the path based on 2 libraries (ajv-ts, zod)
+        // ZodError
+        const zodIssues: { path: string[]; message: string }[] = err.issues
+        // AJV-ts error
+        const ajvErrorPath = err.cause?.error?.instancePath || null
+        if (zodIssues) {
+          errorMessage = zodIssues
+            .map((issue) => {
+              return `${issue.path.join('.')} ${issue.message}`
+            })
+            .join(', ')
+        } else if (ajvErrorPath) {
+          // TODO:Format the path
+          errorMessage = `Input error on: ${ajvErrorPath} ${errorMessage}`
         }
-        throw KobpError.fromUserInput(ClientErrorCode.badRequest, (err as Error).message)
+        throw KobpError.fromUserInput(ClientErrorCode.badRequest, errorMessage)
       }
     }
     await next()

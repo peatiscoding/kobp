@@ -48,8 +48,8 @@ export class HelloController extends BaseRoutedController {
     path: '/hi',
     middlewares: [
       withValidation({
-        query: s.object({
-          name: s.string().min(2).default('world').describe('the name to say hello'),
+        query: z.object({
+          name: z.string().min(2).default('world').describe('the name to say hello'),
         }),
         headers: s.object({
           'x-title': s.string().max(5).default('Mr.').describe('the title of the the name to say hello to'),
