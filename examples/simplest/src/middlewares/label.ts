@@ -1,4 +1,4 @@
-import { Loggy, Middleware } from "kobp";
+import { Loggy, type Middleware } from 'kobp'
 
 export const withLabel = (label: string): Middleware => {
   return async (context, next) => {

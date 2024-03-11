@@ -68,7 +68,7 @@ export class BaseRoutedController {
     const map = this.getRouteMaps()
     for (const fname in map) {
       let { method, path, doNotHandleSuccess } = map[fname]
-      const autoHandleSuccess = !Boolean(doNotHandleSuccess)
+      const autoHandleSuccess = !doNotHandleSuccess
       const { middlewares } = map[fname]
       path = path || `/${fname}`
       if (typeof method === 'string') {

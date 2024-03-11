@@ -1,7 +1,6 @@
-import { KobpServiceContext, Lang, Loggy, withDocument, withValidation } from 'kobp'
-import { Route, BaseRoutedController } from 'kobp'
+import { KobpServiceContext, Lang, Loggy, withDocument, withValidation, Route, BaseRoutedController } from 'kobp'
 import { repeat } from 'lodash'
-import { withLabel } from 'src/middlewares/label'
+import { withLabel } from '../middlewares/label'
 import { z } from 'zod'
 import { s } from 'ajv-ts'
 
@@ -119,7 +118,7 @@ export class HelloController extends BaseRoutedController {
         .middleware(),
     ],
   })
-  async load(ctx: KobpServiceContext) {
+  load(ctx: KobpServiceContext) {
     // Just access no need to validate
     const inputRepeatText = ctx.params.repeatText
     const inputSize = +(ctx.query.size || 100_000)
@@ -139,5 +138,7 @@ export class HelloController extends BaseRoutedController {
     path: '/upload/:type',
     middlewares: [],
   })
-  async upload(_ctx: KobpServiceContext) {}
+  upload(_ctx: KobpServiceContext) {
+    // FIXME: Add upload example
+  }
 }
