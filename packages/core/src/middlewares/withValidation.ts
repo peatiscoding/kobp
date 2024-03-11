@@ -1,5 +1,5 @@
 import type { KobpServiceContext, Middleware } from '../context'
-import { ClientErrorCode, KobpError } from '../utils'
+import { ClientErrorCode, KobpError, Loggy } from '../utils'
 import { METADATA_KEYS, KobpParsable, extractSchema } from './doc.helpers'
 import { Next } from 'koa'
 
@@ -28,7 +28,7 @@ export const withValidation = <
       try {
         schemaSpec[locationKey]?.parse(input)
       } catch (err) {
-        console.error(`Input Validation error!`, err)
+        Loggy.error(`Validation error: "${err}"`, err)
         // try construct the useful message
         let errorMessage = `${err?.errorMessage || err?.message || err}`
         // Identify the path based on 2 libraries (ajv-ts, zod)
@@ -36,17 +36,20 @@ export const withValidation = <
         const zodIssues: { path: string[]; message: string }[] = err.issues
         // AJV-ts error
         const ajvErrorPath = err.cause?.error?.instancePath || null
+        let orgSchemaValidationData = {}
         if (zodIssues) {
           errorMessage = zodIssues
             .map((issue) => {
-              return `${issue.path.join('.')} ${issue.message}`
+              return `${[locationKey, ...issue.path].join('.')} ${issue.message}`
             })
             .join(', ')
+          orgSchemaValidationData = zodIssues
         } else if (ajvErrorPath) {
-          // TODO:Format the path
-          errorMessage = `Input error on: ${ajvErrorPath} ${errorMessage}`
+          const path = ajvErrorPath.replace(/^\//, `${locationKey}.`).replaceAll('/', '.')
+          errorMessage = `Input error on: ${path} ${errorMessage}`
+          orgSchemaValidationData = err.cause || {}
         }
-        throw KobpError.fromUserInput(ClientErrorCode.badRequest, errorMessage)
+        throw KobpError.fromUserInput(ClientErrorCode.badRequest, errorMessage, orgSchemaValidationData)
       }
     }
     await next()

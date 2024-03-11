@@ -22,6 +22,9 @@ export class HelloController extends BaseRoutedController {
       body: z
         .object({
           message: z.string().min(2).max(5),
+          extraPayload: z.object({
+            num: z.number().min(500),
+          }),
         })
         .required(),
     }),
@@ -48,8 +51,8 @@ export class HelloController extends BaseRoutedController {
     path: '/hi',
     middlewares: [
       withValidation({
-        query: z.object({
-          name: z.string().min(2).default('world').describe('the name to say hello'),
+        query: s.object({
+          name: s.string().min(2).default('world').describe('the name to say hello'),
         }),
         headers: s.object({
           'x-title': s.string().max(5).default('Mr.').describe('the title of the the name to say hello to'),
