@@ -58,8 +58,8 @@ export const withValidation = <
   for (const key of ['headers', 'params', 'query', 'body']) {
     const spec: any = schemaSpec[key]
     if (!spec) continue
-    const [source, schema] = extractSchema(spec)
-    console.log(`defining ${key} schema::`, source, schema)
+    const [_source, schema] = extractSchema(spec)
+    // console.log(`defining ${key} schema::`, source, schema)
     // save this to internal storage against its function.
     Reflect.defineMetadata(METADATA_KEYS[`DOC_${key.toUpperCase()}_SHAPE_VALIDATION_KEY`], schema, fn)
   }

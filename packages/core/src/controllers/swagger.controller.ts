@@ -27,6 +27,15 @@ interface SwaggerUIConfig {
   dom_id: string
 }
 
+const _helpers = {
+  removeTrailingSlashes(str: string) {
+    if (str.endsWith('/')) {
+      return _helpers.removeTrailingSlashes(str.slice(0, -1))
+    }
+    return str
+  }
+}
+
 const generateSwaggerHtml = (
   title: string,
   specContentOrUrl: Record<string, any> | string = 'https://petstore3.swagger.io/api/v3/openapi.json',
@@ -141,7 +150,7 @@ export class SwaggerController {
   }
 
   public register(onPath: string, router: KobpRouter) {
-    const safePath = onPath.replace(/\/+$/, '')
+    const safePath = _helpers.removeTrailingSlashes(onPath)
     router.get(safePath, (context) => this.getSwagger(context, router))
     router.get(safePath + '/index.html', (context) => this.getSwagger(context, router))
     router.get(safePath + '/spec.json', (context) => this.getSpecJsonUrl(context, router))
