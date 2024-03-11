@@ -160,13 +160,43 @@ Please see example/simplest for more example.
 
 ```ts
 import type { KobpServiceContext } from 'kobp'
-import { Route, BaseRoutedController } from 'kobp'
+import { Route, BaseRoutedController, withDocument, withValidation } from 'kobp'
+// Choose your own validation engine 
+import { z } from 'zod'
+// Both are parsable by withValidation middleware. 
+import { s } from 'ajv-ts'
 
 export class HelloController extends BaseRoutedController {
 
-  @Route('post', '/echo', withDocument({ tags: ['hello'], description: 'run migration script' }))
-  async migrate(context: KobpServiceContext) {
-    return context.request.body
+  @Route({
+    method: 'post',
+    path: '/echo',
+    middlewares: [
+      withValidation({
+        // Validate header, query, parameters, body with unified schema validation
+        query: s.object({
+          foo: s.string().describe('Foo!'),
+          bar: s.string().describe('Bar!'),
+        }),
+        // If you don't care about keeping thing simple. You can use zod here, ajv-ts on other object!
+        body: z.object({
+          message: z.string().describe('Message to say hi to!'),
+          data: z.object({
+            work: z.number().describe('numeric value describe amount of work you need for this say hi!')
+          }),
+        })
+      }),
+      withDocument({ tags: ['hello'], description: 'run migration script' }),
+    ])
+  async echoFn(context: KobpServiceContext) {
+    // These objects are validated!
+    const query = context.query
+    const body = context.request.body
+    // echo back only body!
+    return {
+      message: `hi ${query.foo}`,
+      body: body,
+    }
   }
 
   @Route()
