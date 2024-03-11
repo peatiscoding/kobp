@@ -192,7 +192,7 @@ export class HelloController extends BaseRoutedController {
     // These objects are validated!
     const query = context.query
     const body = context.request.body
-    // echo back only body!
+    // These response body can also be documented! Please see examples/simplest for more info!
     return {
       message: `hi ${query.foo}`,
       body: body,
