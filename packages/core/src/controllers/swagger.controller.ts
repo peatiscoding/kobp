@@ -33,7 +33,7 @@ const _helpers = {
       return _helpers.removeTrailingSlashes(str.slice(0, -1))
     }
     return str
-  }
+  },
 }
 
 const generateSwaggerHtml = (
@@ -68,9 +68,7 @@ const generateSwaggerHtml = (
 
 export type SwaggerMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'HEAD' | 'OPTIONS'
 
-interface SkipPathPredicate {
-  (path: string): boolean
-}
+type SkipPathPredicate = (path: string) => boolean
 
 /**
  * Simplified swagger information

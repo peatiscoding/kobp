@@ -110,7 +110,8 @@ export class BaseRoutedController {
    * ```
    */
   protected setDoNotHandleSuccess(context: KobpServiceContext | Context) {
-    ;(context.response as any).doNotHandleSuccess = true
+    let resp: any = context.response
+    resp.doNotHandleSuccess = true
   }
 
   public getMiddlewares(): Router.IMiddleware<KobpServiceState, KobpServiceContext>[] {

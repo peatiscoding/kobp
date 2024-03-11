@@ -463,7 +463,7 @@ export class CrudController<E> extends BaseRoutedController {
     let r: E | undefined = undefined
     r = (await em.findOne(this.cnstr, where, {
       // filters,
-      populate: hasPopulate ? <any>populatedByQuery : this.options.defaultPopulate(context, false),
+      populate: hasPopulate ? populatedByQuery : this.options.defaultPopulate(context, false),
     })) as E
 
     if (!r) {

@@ -184,7 +184,7 @@ export class OperationDocumentBuilder {
       {
         description: 'Successful',
       },
-      Boolean(schema)
+      schema
         ? {
             schema: extractSchema(schema, true)[1],
             ...rest,
