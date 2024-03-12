@@ -231,6 +231,27 @@ export class OperationDocumentBuilder {
     return this.onResponse(400, { description: 'Bad Request' }, contentOrMessage)
   }
 
+  onErrorNotFound(contentOrMessage?: string | MediaTypeObject): this {
+    if (typeof contentOrMessage === 'string') {
+      return this.onResponse(
+        404,
+        { description: 'Resource not found' },
+        {
+          schema: {
+            type: 'object',
+            properties: {
+              error: {
+                type: 'string',
+                default: contentOrMessage,
+              },
+            },
+          },
+        },
+      )
+    }
+    return this.onResponse(404, { description: 'Resource not found' }, contentOrMessage)
+  }
+
   onResponse(status: number, doc: ResponseObject, content?: MediaTypeObject): this {
     this.doc.responses = this.doc.responses || {}
     this.doc.responses[status] = { ...doc }
