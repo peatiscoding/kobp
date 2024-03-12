@@ -95,8 +95,6 @@ export class BootstrapLoader {
     // Actual Bootstraping
     const app = new Koa()
 
-    console.log('OPTS', opts)
-
     this._launchKoa(serviceRoutes, app, opts)
 
     return app
