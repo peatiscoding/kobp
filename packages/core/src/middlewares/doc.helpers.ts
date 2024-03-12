@@ -208,34 +208,32 @@ export class OperationDocumentBuilder {
 
   /**
    * Server rejected the request due to invalid user's input
-   * TODO: Add other additional cases!, so that this method can call repeatedly and aggregates
    */
   onErrorBadRequest(contentOrMessage?: string | MediaTypeObject): this {
-    if (typeof contentOrMessage === 'string') {
-      return this.onResponse(
-        400,
-        { description: 'Bad request' },
-        {
-          schema: {
-            type: 'object',
-            properties: {
-              error: {
-                type: 'string',
-                default: contentOrMessage,
-              },
-            },
-          },
-        },
-      )
-    }
-    return this.onResponse(400, { description: 'Bad Request' }, contentOrMessage)
+    return this.onErrorResponse(400, 'Bad request', contentOrMessage)
+  }
+
+  onErrorUnauthorized(contentOrMessage?: string | MediaTypeObject): this {
+    return this.onErrorResponse(401, 'Unauthorized', contentOrMessage)
+  }
+
+  onErrorForbidden(contentOrMessage?: string | MediaTypeObject): this {
+    return this.onErrorResponse(403, 'Forbidden', contentOrMessage)
   }
 
   onErrorNotFound(contentOrMessage?: string | MediaTypeObject): this {
+    return this.onErrorResponse(404, 'Resource not found', contentOrMessage)
+  }
+
+  onErrorInternal(contentOrMessage?: string | MediaTypeObject): this {
+    return this.onErrorResponse(500, 'Internal server error', contentOrMessage)
+  }
+
+  onErrorResponse(status: number, defaultMessage: string, contentOrMessage?: string | MediaTypeObject): this {
     if (typeof contentOrMessage === 'string') {
       return this.onResponse(
-        404,
-        { description: 'Resource not found' },
+        status,
+        { description: defaultMessage },
         {
           schema: {
             type: 'object',
@@ -249,7 +247,7 @@ export class OperationDocumentBuilder {
         },
       )
     }
-    return this.onResponse(404, { description: 'Resource not found' }, contentOrMessage)
+    return this.onResponse(status, { description: defaultMessage }, contentOrMessage)
   }
 
   onResponse(status: number, doc: ResponseObject, content?: MediaTypeObject): this {
