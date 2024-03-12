@@ -1,32 +1,32 @@
-import { KobpServiceContext, Route } from "kobp";
-import { CrudController, DI } from "kobp-mikroorm";
-import { repeat } from "lodash";
-import { BookEntity, BookTagEntity } from "../entities";
+import { KobpServiceContext, Route, withDocument } from 'kobp'
+import { CrudController, DI } from 'kobp-mikroorm'
+import { repeat } from 'lodash'
+import { BookEntity, BookTagEntity } from '../entities'
 
 export class BooksController extends CrudController<BookEntity> {
-
   constructor() {
     super(BookEntity, 'books', {
       resourceKeyPath: ':isbn',
-      searchableFields: [
-        'isbn',
-      ],
-      distinctableFields: [
-        'isbn',
-      ],
+      searchableFields: ['isbn'],
+      distinctableFields: ['isbn'],
       preSave: [
         async (ctx, em, obj) => {
           await DI.em.find(BookTagEntity, {})
           return obj
-        }
-      ]
+        },
+      ],
+      middlewares: [
+        withDocument({
+          tags: ['books'],
+        }),
+      ],
     })
   }
 
   @Route({
     method: 'post',
     path: '/load',
-    middlewares: [],
+    middlewares: [withDocument((b) => b.onOk(BookEntity))],
   })
   async load(context: KobpServiceContext) {
     const arr = repeat('SomeArray', 100_000)

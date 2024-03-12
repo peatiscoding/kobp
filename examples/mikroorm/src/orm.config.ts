@@ -11,6 +11,7 @@ import {
   EvaluationRecordEntity,
 } from './entities'
 import { Migrator } from '@mikro-orm/migrations'
+import { augmentApiDoc } from 'kobp-mikroorm'
 
 const ormConfig = defineConfig({
   entities: [
@@ -38,6 +39,9 @@ const ormConfig = defineConfig({
     disableForeignKeys: false,
   },
   extensions: [Migrator],
+  discovery: {
+    onMetadata: augmentApiDoc,
+  },
 })
 
 export const makeDbConfig = () =>
