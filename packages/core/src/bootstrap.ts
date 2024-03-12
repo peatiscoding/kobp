@@ -24,33 +24,33 @@ const _compileCustomization = (options: KobpCustomization[]): KobpCustomization 
   const allOpts = options
   return {
     onInit: async () => {
-      for(const opt of allOpts) {
+      for (const opt of allOpts) {
         if (opt.onInit) {
           await opt.onInit()
         }
       }
     },
     onAppCreated: (app: Koa) => {
-      for(const opt of allOpts) {
+      for (const opt of allOpts) {
         if (opt.onAppCreated) {
           opt.onAppCreated(app)
         }
       }
     },
     middlewares: (app: Koa) => {
-      for(const opt of allOpts) {
+      for (const opt of allOpts) {
         if (opt.middlewares) {
           opt.middlewares(app)
         }
       }
     },
     onSignalReceived: async (signal: NodeJS.Signals, app: Koa): Promise<void> => {
-      for(const opt of allOpts) {
+      for (const opt of allOpts) {
         if (opt.onSignalReceived) {
           await opt.onSignalReceived(signal, app)
         }
       }
-    }
+    },
   }
 }
 
@@ -59,7 +59,6 @@ export interface KobpModule {
 }
 
 export class BootstrapLoader {
-
   private modules: KobpModule[] = []
 
   public addModule(module: KobpModule): this {
@@ -67,15 +66,15 @@ export class BootstrapLoader {
     return this
   }
 
+  /**
+   * Builds Koa application.
+   */
   public buildSync(serviceRoutes: Router, appCustomization: KobpCustomization): Koa {
-    const opts = _compileCustomization([
-      ...(this.modules.map((o) => o.customization())),
-      appCustomization,
-    ])
+    const opts = _compileCustomization([...this.modules.map((o) => o.customization()), appCustomization])
 
     // Actual Bootstraping
     const app = new Koa()
-    
+
     // Fork
     let initPromise = opts.onInit()
     app.use(async (context, next) => {
@@ -89,15 +88,14 @@ export class BootstrapLoader {
   }
 
   public async build(serviceRoutes: Router, appCustomization: KobpCustomization): Promise<Koa> {
-    const opts = _compileCustomization([
-      ...(this.modules.map((o) => o.customization())),
-      appCustomization,
-    ])
+    const opts = _compileCustomization([...this.modules.map((o) => o.customization()), appCustomization])
 
     await opts.onInit()
 
     // Actual Bootstraping
     const app = new Koa()
+
+    console.log('OPTS', opts)
 
     this._launchKoa(serviceRoutes, app, opts)
 
@@ -117,13 +115,14 @@ export class BootstrapLoader {
     if (opts.onSignalReceived) {
       // register onSignalReceived handler.
       process.on('SIGTERM', (signal) => {
-        opts.onSignalReceived(signal, koa)
-        .then(() => {
-          process.exit(0)
-        })
-        .catch((e) => {
-          process.exit(1)
-        })
+        opts
+          .onSignalReceived(signal, koa)
+          .then(() => {
+            process.exit(0)
+          })
+          .catch((e) => {
+            process.exit(1)
+          })
       })
     }
   }
