@@ -27,11 +27,7 @@ export class HelloController extends BaseRoutedController {
         })
         .required(),
     }),
-    withDocument
-      .builder()
-      .summary('echo back the body')
-      .onOk(z.object({ message: z.string() }))
-      .middleware(),
+    withDocument((b) => b.summary('echo back the body').onOk(z.object({ message: z.string() }))),
   )
   async migrate(context: KobpServiceContext) {
     return context.request.body
@@ -59,15 +55,13 @@ export class HelloController extends BaseRoutedController {
       }),
       withLabel('doodle'),
       // Add document via builder!
-      withDocument
-        .builder()
-        .summary('Say hello to the world')
-        .onOk(
+      withDocument((b) =>
+        b.summary('Say hello to the world').onOk(
           s.object({
             hello: s.string().describe('the name to say hello'),
           }),
-        )
-        .middleware(),
+        ),
+      ),
     ],
   })
   async index(ctx: KobpServiceContext) {
@@ -95,27 +89,27 @@ export class HelloController extends BaseRoutedController {
           data: z.number().default(3).describe('the value to multiply {query.size} times'),
         }),
       }),
-      withDocument
-        .builder()
-        .summary('Try calling heavy loads!')
-        .onOk({
-          // OpenAPI scheme document
-          schema: {
-            properties: {
-              repeatText: {
-                type: 'string',
-              },
-              arr: {
-                type: 'string',
-              },
-              data: {
-                type: 'number',
+      withDocument((b) =>
+        b
+          .summary('Try calling heavy loads!')
+          .onOk({
+            // OpenAPI scheme document
+            schema: {
+              properties: {
+                repeatText: {
+                  type: 'string',
+                },
+                arr: {
+                  type: 'string',
+                },
+                data: {
+                  type: 'number',
+                },
               },
             },
-          },
-        })
-        .onErrorBadRequest('Input too long!')
-        .middleware(),
+          })
+          .onErrorBadRequest('Input too long!'),
+      ),
     ],
   })
   load(ctx: KobpServiceContext) {

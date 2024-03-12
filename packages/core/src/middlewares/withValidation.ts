@@ -1,7 +1,7 @@
 import type { KobpServiceContext, Middleware } from '../context'
+import type { Next } from 'koa'
 import { ClientErrorCode, KobpError, Loggy } from '../utils'
 import { METADATA_KEYS, KobpParsable, extractSchema } from './doc.helpers'
-import { Next } from 'koa'
 
 export const withValidation = <
   Q extends Record<string, string>,

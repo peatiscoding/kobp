@@ -234,8 +234,8 @@ export class SwaggerController {
           for (const key of keys) {
             // Found a meta of documentation node!
             if (key === METADATA_KEYS.DOC_KEY) {
-              const opSpec = Reflect.getMetadata(METADATA_KEYS.DOC_KEY, stack) as OperationObject
-              const builder = new OperationDocumentBuilder({ ...opDoc, ...opSpec })
+              const opSpecFn = Reflect.getMetadata(METADATA_KEYS.DOC_KEY, stack) as () => OperationObject
+              const builder = new OperationDocumentBuilder({ ...opDoc, ...opSpecFn() })
               // merge?
               if (validationSpecBuffer.body) {
                 // inject body
