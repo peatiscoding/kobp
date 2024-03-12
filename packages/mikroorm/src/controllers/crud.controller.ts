@@ -48,8 +48,7 @@ export const helpers = {
       const primaryKeysForCollectionElement = relationshipForThisKey?.targetMeta?.primaryKeys
       if (
         payload[key] instanceof Array &&
-        parentEntity[key] &&
-        parentEntity[key].loadItems &&
+        parentEntity[key]?.loadItems &&
         relationshipForThisKey &&
         primaryKeysForCollectionElement
       ) {

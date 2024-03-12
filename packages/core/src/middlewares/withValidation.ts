@@ -55,11 +55,12 @@ export const withValidation = <
     await next()
   }
 
+  // This should print only once.
   for (const key of ['headers', 'params', 'query', 'body']) {
     const spec: any = schemaSpec[key]
     if (!spec) continue
     const [_source, schema] = extractSchema(spec)
-    // console.log(`defining ${key} schema::`, source, schema)
+    // console.log(`defined ${key} schema::`, source, schema)
     // save this to internal storage against its function.
     Reflect.defineMetadata(METADATA_KEYS[`DOC_${key.toUpperCase()}_SHAPE_VALIDATION_KEY`], schema, fn)
   }

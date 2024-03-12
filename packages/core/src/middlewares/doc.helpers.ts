@@ -1,4 +1,3 @@
-import type { zodToJsonSchema } from 'zod-to-json-schema'
 import type {
   BaseParameterObject,
   MediaTypeObject,
@@ -27,7 +26,7 @@ export const METADATA_KEYS = {
 export const ALL_METADATA_KEYS = new Set(Object.values(METADATA_KEYS))
 
 // Check if zod-to-json-schema is installed
-const z2js: typeof zodToJsonSchema = require('zod-to-json-schema')?.zodToJsonSchema
+const z2js = require('zod-to-json-schema')?.zodToJsonSchema
 // schema extraction utils
 const isZod = (o: any) => o?._def?.typeName === 'ZodObject'
 const isAjv = (o: any) => Boolean(o?._ajv)
