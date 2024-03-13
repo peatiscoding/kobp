@@ -19,6 +19,6 @@ export class BookTagEntity {
     nullable: false,
     onUpdate: () => new Date(),
   })
-  @ApiDoc({ schema: s.string().format('date-time').describe('Last update time of the tag') })
+  @ApiDoc({ schema: s.string().format('date-time').describe('Last update time of the tag'), readonly: true })
   updatedAt?: Date = new Date()
 }
