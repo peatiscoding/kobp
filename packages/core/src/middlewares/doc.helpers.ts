@@ -39,6 +39,7 @@ const isAjv = (o: any) => Boolean(o?._ajv)
 export const extractSchema = (
   spec: SchemableObject,
   required: boolean = false,
+  mode: 'read' | 'write' = 'read',
 ): ['zod' | 'ajv' | 'literal', SchemaObject] => {
   if (z2js && isZod(spec)) {
     const forDocuments: any = z2js(spec as any, {
@@ -48,6 +49,9 @@ export const extractSchema = (
   }
   if (isAjv(spec) && spec.schema) {
     return ['ajv', spec.schema]
+  }
+  if (mode === 'read' && spec.readonlySchema) {
+    return ['literal', spec.readonlySchema]
   }
   if (spec.schema) {
     return ['literal', spec.schema]
@@ -69,6 +73,11 @@ export const extractSchema = (
  */
 export interface SchemableObject {
   schema?: any
+  /**
+   * The alternative scheme that is used in readonly mode
+   * useful when automatically generate an API document that emits readonly version
+   */
+  readonlySchema?: any
 }
 
 /**
@@ -98,6 +107,24 @@ export class OperationDocumentBuilder {
   constructor(baseDoc?: OperationObject) {
     // try extract documents from other sources
     this.doc = { ...(baseDoc || {}) }
+  }
+
+  /**
+   * replace the current document
+   */
+  from(baseDoc: OperationObject): this {
+    this.doc = { ...(baseDoc || {}) }
+    return this
+  }
+
+  deprecated(deprecated: boolean): this {
+    this.doc.deprecated = deprecated
+    return this
+  }
+
+  describe(description: string): this {
+    this.doc.description = description
+    return this
   }
 
   summary(summary: string): this {

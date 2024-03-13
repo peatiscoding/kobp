@@ -1,6 +1,6 @@
 import type { AutoPath } from '@mikro-orm/core/typings'
 import type { SqlEntityManager as EntityManager } from '@mikro-orm/knex'
-import type { KobpServiceContext, RouteMap } from 'kobp'
+import { KobpServiceContext, RouteMap, SchemableObject, extractSchema } from 'kobp'
 
 import { Collection, QueryOperator, QueryOrderMap, Utils, wrap } from '@mikro-orm/core'
 
@@ -302,7 +302,28 @@ export interface CrudControllerOption<E> {
   /**
    * Use document middleware
    */
-  useDocumentMiddleware: boolean
+  useDocumentMiddleware?: {
+    /**
+     * used in returning payload
+     *
+     * @default to this.cnstr (constructor) which relies on ApiDoc decorator to decorate all properties
+     */
+    resourceScheme?: SchemableObject
+
+    /**
+     * used in updating request
+     *
+     * @default to rootScheme
+     */
+    updateScheme?: SchemableObject
+
+    /**
+     * used in creation request
+     *
+     * @default to rootScheme
+     */
+    createScheme?: SchemableObject
+  }
 }
 
 export class CrudController<E> extends BaseRoutedController {
@@ -335,7 +356,7 @@ export class CrudController<E> extends BaseRoutedController {
       postDelete: [],
       replaceUnderscrollWithEmptyKeyPath: false,
       defaultPopulate: () => [],
-      useDocumentMiddleware: false,
+      useDocumentMiddleware: undefined,
       ...options,
       resourceKeyPath: this.resolvedResourcePath.replace(/<\w+>/g, ''), // removed <columnName> component
     }
@@ -354,41 +375,85 @@ export class CrudController<E> extends BaseRoutedController {
       ? (documentMiddleware: Middleware[]): Middleware[] => documentMiddleware
       : (_documentMiddleware: Middleware[]): Middleware[] => []
     const resourcePaths = this.paramsToColumnNamePairs.map(({ paramName }) => `\`${paramName}\``).join(', ')
-    return {
+    // Scheme to be used in the operation documents
+    const _sch: Record<'read' | 'update' | 'create', SchemableObject> = {
+      read: this.options.useDocumentMiddleware?.resourceScheme || (this.cnstr as any),
+      update:
+        this.options.useDocumentMiddleware?.updateScheme ||
+        this.options.useDocumentMiddleware?.resourceScheme ||
+        (this.cnstr as any),
+      create:
+        this.options.useDocumentMiddleware?.createScheme ||
+        this.options.useDocumentMiddleware?.resourceScheme ||
+        (this.cnstr as any),
+    }
+    const routeMap: RouteMap = {
       ...super.getRouteMaps(),
       index: {
         method: 'get',
         path: '/',
-        middlewares: doc([withDocument({ description: `List all ${this.resourceName} with pagination` })]),
+        middlewares: doc(),
       },
       createOne: {
         method: 'post',
         path: '/',
-        middlewares: doc([withDocument({ description: `Create ${this.resourceName}` })]),
+        middlewares: doc([
+          withDocument((b) =>
+            b
+              .summary('Create a single resource')
+              .describe(`Create a resource of type ${this.resourceName}`)
+              .useBody({
+                required: true,
+                content: {
+                  'application/json': {
+                    schema: extractSchema(_sch.create, true, 'write')[1],
+                  },
+                },
+              })
+              .onOk(_sch.root),
+          ),
+        ]),
       },
       distinct: {
         method: 'get',
         path: '/_lov/:fieldName',
         middlewares: doc([
-          withDocument({ description: `List distinct value of \`fieldName\` for ${this.resourceName}` }),
+          withDocument((b) =>
+            b
+              .summary(`List distinct values`)
+              .describe(`List distinct value of \`fieldName\` for ${this.resourceName}`)
+              .onErrorBadRequest(`Invalid \`fieldName\` for '${this.resourceName}'`)
+              .onOk({
+                schema: {
+                  type: 'array',
+                  items: {
+                    type: 'string',
+                  },
+                },
+              }),
+          ),
         ]),
       },
       getOne: {
         method: 'get',
         path: this.options.resourceKeyPath,
-        middlewares: doc([withDocument({ description: `Retreive single ${this.resourceName} by ${resourcePaths}` })]),
+        middlewares: doc([withDocument((b) => b.summary(`Retreive single ${this.resourceName} by ${resourcePaths}`))]),
       },
       updateOne: {
         method: 'post',
         path: this.options.resourceKeyPath,
-        middlewares: doc([withDocument({ description: `Update single ${this.resourceName} by ${resourcePaths}` })]),
+        middlewares: doc([withDocument((b) => b.summary(`Update single ${this.resourceName} by ${resourcePaths}`))]),
       },
       deleteOne: {
         method: 'delete',
         path: this.options.resourceKeyPath,
-        middlewares: doc([withDocument({ description: `Delete single ${this.resourceName} by ${resourcePaths}` })]),
+        middlewares: doc([withDocument((b) => b.summary(`Delete single ${this.resourceName} by ${resourcePaths}`))]),
       },
     }
+    if (this.options.distinctableFields.length <= 0) {
+      delete routeMap['distinct']
+    }
+    return routeMap
   }
 
   /**

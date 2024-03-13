@@ -8,11 +8,13 @@ export interface SchemaDocInfo {
   schema?: SchemableObject
   isArray?: boolean
   description?: string
+  readonly?: boolean
 }
 
 const _helpers = {
-  META_PROP_KEY: (propertyName: string) => `apidoc:${propertyName}`,
+  META_PROP_KEY: (propertyName: string) => `apidoc:prop:${propertyName}`,
   META_PROP_SCHEMA_CACHE: `apidoc:schema:cached`,
+  META_PROP_READONLY_SCHEMA_CACHE: `apidoc:readonly_schema:cached`,
 
   resolveMikroSchelaTypeToJsonSchema: (propMeta: EntityProperty<any>): SchemableObject => {
     // TODO: Add more support types here
@@ -22,10 +24,14 @@ const _helpers = {
       },
     }
   },
-  loadJsonSchema: (metadata: EntityMetadata, target: Function) => {
+  loadJsonSchema: (metadata: EntityMetadata, target: Function, mode: 'read' | 'write') => {
     const metaKeys = Reflect.getMetadataKeys(target)
     const properties = {}
     for (const metaKey of metaKeys) {
+      console.log('METAKEY', metaKey)
+      if (!metaKey.startsWith('apidoc:prop:')) {
+        continue
+      }
       const [propertyName, docInfo] = Reflect.getMetadata(metaKey, target) as [string, SchemaDocInfo]
       if (!docInfo.schema) {
         // try finding information from MetadataStorage
@@ -42,7 +48,7 @@ const _helpers = {
         continue
       }
       const schemable = docInfo.schema as SchemableObject
-      const s = extractSchema(schemable)[1]
+      const s = extractSchema(schemable, false, mode)[1]
       if (docInfo.isArray) {
         properties[propertyName] = {
           type: 'array',
@@ -78,8 +84,18 @@ export const augmentApiDoc = (metadata: EntityMetadata) => {
     get: () => {
       let gend = Reflect.getMetadata(_helpers.META_PROP_SCHEMA_CACHE, target)
       if (!gend) {
-        gend = _helpers.loadJsonSchema(metadata, target)
+        gend = _helpers.loadJsonSchema(metadata, target, 'write')
         Reflect.defineMetadata(_helpers.META_PROP_SCHEMA_CACHE, gend, target)
+      }
+      return gend
+    },
+  })
+  Object.defineProperty(target, 'readonlySchema', {
+    get: () => {
+      let gend = Reflect.getMetadata(_helpers.META_PROP_READONLY_SCHEMA_CACHE, target)
+      if (!gend) {
+        gend = _helpers.loadJsonSchema(metadata, target, 'read')
+        Reflect.defineMetadata(_helpers.META_PROP_READONLY_SCHEMA_CACHE, gend, target)
       }
       return gend
     },

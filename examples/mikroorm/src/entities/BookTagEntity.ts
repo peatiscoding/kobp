@@ -22,4 +22,3 @@ export class BookTagEntity {
   @ApiDoc({ schema: s.string().format('date-time').describe('Last update time of the tag') })
   updatedAt?: Date = new Date()
 }
-

@@ -208,9 +208,12 @@ export class SwaggerController {
     }
 
     for (const layer of router.stack) {
+      // Skip the path
       if (skipPathPredicate(layer.path)) {
         continue
       }
+      // String array of path parameter keys
+      const pathParameterKeys = [...layer.path.matchAll(/:(\w+)/g)].map((d) => d[1])
       const methods = layer.methods
       let pathItem: PathItemObject = {}
       for (const method of methods) {
@@ -230,12 +233,14 @@ export class SwaggerController {
           headers?: SchemaObject
         } = {}
         layer.stack.map((stack) => {
+          // try to access the metadata defined within the stack
           const keys = Reflect.getMetadataKeys(stack).filter((k) => ALL_METADATA_KEYS.has(k))
           for (const key of keys) {
             // Found a meta of documentation node!
             if (key === METADATA_KEYS.DOC_KEY) {
               const opSpecFn = Reflect.getMetadata(METADATA_KEYS.DOC_KEY, stack) as () => OperationObject
               const builder = new OperationDocumentBuilder({ ...opDoc, ...opSpecFn() })
+              // FIXME: Handle the path definition
               // merge?
               if (validationSpecBuffer.body) {
                 // inject body
@@ -248,13 +253,26 @@ export class SwaggerController {
                   },
                 })
               }
+              // Add default doc first
+              const undocumentedParams = new Set<string>(pathParameterKeys)
               if (validationSpecBuffer.parameters) {
                 const shape = validationSpecBuffer.parameters
                 for (const key of Object.keys(shape.properties)) {
                   const { description } = shape.properties[key]
+                  undocumentedParams.add(key)
                   builder.useParameter('path', key, {
                     schema: shape.properties[key],
                     description,
+                    required: true,
+                  })
+                }
+              }
+              if (undocumentedParams.size > 0) {
+                for (const key of undocumentedParams) {
+                  builder.useParameter('path', key, {
+                    schema: {
+                      type: 'string',
+                    },
                     required: true,
                   })
                 }
