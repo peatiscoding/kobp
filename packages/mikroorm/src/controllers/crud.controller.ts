@@ -456,6 +456,13 @@ export class CrudController<E> extends BaseRoutedController {
               .summary(`List distinct values`)
               .describe(`List distinct value of \`fieldName\` for ${this.resourceName}`)
               .onErrorBadRequest(`Invalid \`fieldName\` for '${this.resourceName}'`)
+              .usePath('fieldName', {
+                schema: {
+                  type: 'string',
+                  enum: this.options.distinctableFields,
+                  description: 'list of distinctable fields for this resource',
+                },
+              })
               .onOk({
                 schema: {
                   type: 'array',

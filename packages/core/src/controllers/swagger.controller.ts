@@ -259,7 +259,7 @@ export class SwaggerController {
                 const shape = validationSpecBuffer.parameters
                 for (const key of Object.keys(shape.properties)) {
                   const { description } = shape.properties[key]
-                  undocumentedParams.add(key)
+                  undocumentedParams.delete(key)
                   builder.useParameter('path', key, {
                     schema: shape.properties[key],
                     description,

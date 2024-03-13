@@ -6,6 +6,7 @@ import type {
   SchemaObject,
   RequestBodyObject,
   ResponseObject,
+  ParameterObject,
 } from 'openapi3-ts/oas31'
 
 import { Middleware, withDocument, KobpError, ServerErrorCode, Loggy } from '..'
@@ -189,7 +190,11 @@ export class OperationDocumentBuilder {
 
   // used by swagger controller
   useParameter(location: ParameterLocation, name: string, doc: BaseParameterObject): this {
-    const params = this.doc.parameters || []
+    const params = (this.doc.parameters || []) as ParameterObject[]
+    // safe push
+    if (params.findIndex((p) => p.name === name && p.in === location) >= 0) {
+      return this
+    }
     params.push({ ...doc, in: location, name })
     this.doc.parameters = params
     return this
