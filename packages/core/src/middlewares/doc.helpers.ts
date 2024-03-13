@@ -8,7 +8,7 @@ import type {
   ResponseObject,
 } from 'openapi3-ts/oas31'
 
-import { Middleware, withDocument, KobpError, ServerErrorCode } from '..'
+import { Middleware, withDocument, KobpError, ServerErrorCode, Loggy } from '..'
 
 export const METADATA_KEYS = {
   // compiled documents
@@ -57,6 +57,8 @@ export const extractSchema = (
     return ['literal', spec.schema]
   }
   if (required) {
+    // Given
+    Loggy.error('Failed to extract schema from', JSON.stringify(spec))
     throw KobpError.fromServer(
       ServerErrorCode.notImplemented,
       'You are using invalid schema provider. If you are using Zod, please install zod-to-json-schema (https://www.npmjs.com/package/zod-to-json-schema). If your are using other interface please make sure it has `schema` property that provides OpenAPI3.1 Schema compatible object!',

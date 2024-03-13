@@ -1,6 +1,6 @@
 import type { AutoPath } from '@mikro-orm/core/typings'
 import type { SqlEntityManager as EntityManager } from '@mikro-orm/knex'
-import { KobpServiceContext, RouteMap, SchemableObject, extractSchema } from 'kobp'
+import { KobpServiceContext, OperationDocumentBuilder, RouteMap, SchemableObject, extractSchema } from 'kobp'
 
 import { Collection, QueryOperator, QueryOrderMap, Utils, wrap } from '@mikro-orm/core'
 
@@ -392,7 +392,31 @@ export class CrudController<E> extends BaseRoutedController {
       index: {
         method: 'get',
         path: '/',
-        middlewares: doc(),
+        middlewares: doc([
+          withDocument((b) =>
+            b
+              .summary('List all resources')
+              .describe(`List all ${this.resourceName}s`)
+              .onOk({
+                schema: {
+                  type: 'object',
+                  properties: {
+                    count: {
+                      type: 'integer',
+                      description: 'number of all items matched the criteria',
+                    },
+                    items: {
+                      type: 'array',
+                      items: {
+                        ...extractSchema(_sch.read, true, 'read')[1],
+                      },
+                      description: 'items fetched in this request',
+                    },
+                  },
+                },
+              }),
+          ),
+        ]),
       },
       createOne: {
         method: 'post',
@@ -410,7 +434,7 @@ export class CrudController<E> extends BaseRoutedController {
                   },
                 },
               })
-              .onOk(_sch.root),
+              .onOk(_sch.read),
           ),
         ]),
       },
@@ -437,17 +461,50 @@ export class CrudController<E> extends BaseRoutedController {
       getOne: {
         method: 'get',
         path: this.options.resourceKeyPath,
-        middlewares: doc([withDocument((b) => b.summary(`Retreive single ${this.resourceName} by ${resourcePaths}`))]),
+        middlewares: doc([
+          withDocument((b) =>
+            b
+              .summary(`Retrieve a single resource of type ${this.resourceName}`)
+              .describe(`Retreive single ${this.resourceName} by ${resourcePaths}`)
+              .onOk(_sch.read),
+          ),
+        ]),
       },
       updateOne: {
         method: 'post',
         path: this.options.resourceKeyPath,
-        middlewares: doc([withDocument((b) => b.summary(`Update single ${this.resourceName} by ${resourcePaths}`))]),
+        middlewares: doc([
+          withDocument((b) =>
+            b
+              .describe(`Update single resource of type ${this.resourceName} by primary identifier`)
+              .summary(`Update single ${this.resourceName} by ${resourcePaths}`)
+              .useBody({
+                required: true,
+                content: {
+                  'application/json': {
+                    schema: extractSchema(_sch.update, true, 'write')[1],
+                  },
+                },
+              })
+              .onOk(_sch.read),
+          ),
+        ]),
       },
       deleteOne: {
         method: 'delete',
         path: this.options.resourceKeyPath,
-        middlewares: doc([withDocument((b) => b.summary(`Delete single ${this.resourceName} by ${resourcePaths}`))]),
+        middlewares: doc([
+          withDocument((b) =>
+            b
+              .summary(`Delete single resource of type ${this.resourceName} by primary identifier`)
+              .describe(`Delete single ${this.resourceName} by ${resourcePaths}`)
+              .onOk({
+                schema: {
+                  type: 'number',
+                },
+              }),
+          ),
+        ]),
       },
     }
     if (this.options.distinctableFields.length <= 0) {

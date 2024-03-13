@@ -28,8 +28,8 @@ const _helpers = {
     const metaKeys = Reflect.getMetadataKeys(target)
     const properties = {}
     for (const metaKey of metaKeys) {
-      console.log('METAKEY', metaKey)
-      if (!metaKey.startsWith('apidoc:prop:')) {
+      // Filter out unwanted keys
+      if (!metaKey.startsWith(_helpers.META_PROP_KEY(''))) {
         continue
       }
       const [propertyName, docInfo] = Reflect.getMetadata(metaKey, target) as [string, SchemaDocInfo]

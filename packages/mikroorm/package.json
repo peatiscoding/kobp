@@ -1,6 +1,6 @@
 {
   "name": "kobp-mikroorm",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "ORM + CRUD Controller for Kobp",
   "main": "lib/cjs/src/index.js",
   "module": "lib/esm/src/index.js",
@@ -22,7 +22,7 @@
     "@mikro-orm/core": "^6.1.9",
     "@mikro-orm/knex": "^6.1.9",
     "lodash": "^4.17.21",
-    "kobp": "^3.0.3"
+    "kobp": "^3.0.4"
   },
   "devDependencies": {
     "@mikro-orm/core": "^6.1.9",
