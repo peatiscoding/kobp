@@ -1,6 +1,5 @@
 import { BookTagEntity } from '.'
-import { t } from '@mikro-orm/core'
-import { Collection, Entity, ManyToMany, Property } from '@mikro-orm/core'
+import { Collection, Entity, ManyToMany, Property, t } from '@mikro-orm/core'
 import { s } from 'ajv-ts'
 import { ApiDoc } from 'kobp-mikroorm'
 

@@ -1,5 +1,5 @@
 import { BootstrapLoader, BootstrapModule, KobpError, Loggy, ServerErrorCode, withJsonConfig } from 'kobp'
-import { DI, MikroormModule } from 'kobp-mikroorm'
+import { MikroormModule } from 'kobp-mikroorm'
 
 import { makeDbConfig } from './orm.config'
 import { makeRoutes } from './routes'
