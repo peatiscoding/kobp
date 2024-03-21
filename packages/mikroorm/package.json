@@ -22,7 +22,7 @@
     "@mikro-orm/core": "^6.1.9",
     "@mikro-orm/knex": "^6.1.9",
     "lodash": "^4.17.21",
-    "kobp": "^3.0.4"
+    "kobp": "^3.0.5"
   },
   "devDependencies": {
     "@mikro-orm/core": "^6.1.9",
