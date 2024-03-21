@@ -25,6 +25,14 @@ export class BookEntity {
   @ApiDoc({ schema: s.string().describe('Title of the book') })
   title: string
 
+  @Property({
+    columnType: 'integer',
+    type: t.integer,
+    nullable: true,
+  })
+  @ApiDoc({ schema: s.number().describe('Number of pages') })
+  numberOfPages: number | null = null
+
   @ManyToMany({
     entity: 'BookTagEntity',
     type: t.datetime,

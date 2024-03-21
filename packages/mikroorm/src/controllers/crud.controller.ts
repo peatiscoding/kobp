@@ -10,6 +10,7 @@ import {
   RouteMap,
   SchemableObject,
   extractSchema,
+  HttpMethod,
 } from 'kobp'
 
 import { Collection, QueryOperator, QueryOrderMap, Utils, wrap } from '@mikro-orm/core'
@@ -306,7 +307,7 @@ export interface CrudControllerOption<E> {
   /**
    * All route middlewares
    */
-  middlewares: Middleware[]
+  middlewares: Middleware[] | ((path: string, method: HttpMethod) => Middleware[])
 
   /**
    * Use document middleware
@@ -369,7 +370,7 @@ export class CrudController<E> extends BaseRoutedController {
       ...options,
       resourceKeyPath: this.resolvedResourcePath.replace(/<\w+>/g, ''), // removed <columnName> component
     }
-    this.allRoutesMiddlewares = this.options.middlewares
+    this.setAllRouteMiddlewares(this.options.middlewares)
   }
 
   protected getEntityManager(context: KobpServiceContext): EntityManager {

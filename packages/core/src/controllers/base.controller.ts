@@ -30,7 +30,11 @@ export interface RouteMap {
 export class KobpRouter extends Router<KobpServiceState, KobpServiceContext> {}
 
 export class BaseRoutedController {
-  constructor(protected allRoutesMiddlewares: Middleware[] = []) {}
+  protected allRoutesMiddlewares: (path: string, method: HttpMethod) => Middleware[]
+
+  constructor(allRoutesMiddlewares: Middleware[] | ((path: string, method: HttpMethod) => Middleware[]) = []) {
+    this.setAllRouteMiddlewares(allRoutesMiddlewares)
+  }
 
   getRouteMaps(): RouteMap {
     return {
@@ -76,7 +80,7 @@ export class BaseRoutedController {
       }
       for (const _m of method) {
         const allMiddlewares = [
-          ...this.allRoutesMiddlewares,
+          ...this.allRoutesMiddlewares(path, _m),
           ...(middlewares || []),
           async (ctx, _next): Promise<void> => {
             try {
@@ -93,6 +97,18 @@ export class BaseRoutedController {
       }
     }
     return router
+  }
+
+  /**
+   * Configure middlewares per Route by using the Callback mechanic
+   *
+   * @param allRoutesMiddlewares array of middlewares or callback that returns array of middlewares
+   */
+  protected setAllRouteMiddlewares(
+    allRoutesMiddlewares: Middleware[] | ((path: string, method: HttpMethod) => Middleware[]),
+  ): void {
+    this.allRoutesMiddlewares =
+      typeof allRoutesMiddlewares === 'function' ? allRoutesMiddlewares : () => allRoutesMiddlewares
   }
 
   /**

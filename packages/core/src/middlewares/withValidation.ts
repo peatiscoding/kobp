@@ -3,6 +3,13 @@ import type { Next } from 'koa'
 import { ClientErrorCode, KobpError, Loggy } from '../utils'
 import { METADATA_KEYS, KobpParsable, extractSchema } from './doc.helpers'
 
+/**
+ * This will mutates the inputs
+ * `query` will mutates context.query
+ * `params` will mutates context.params
+ * `body` will mutates context.body
+ * `headers` will mutates context.headers
+ */
 export const withValidation = <
   Q extends Record<string, string>,
   P extends Record<string, string>,
@@ -15,18 +22,28 @@ export const withValidation = <
   headers?: KobpParsable<H>
 }): Middleware => {
   const fn = async (context: KobpServiceContext, next: Next) => {
-    const query = context.query
-    const params = context.params
-    const body = context.request.body
-    const headers = context.request.headers
     // validate them one-by-one [Params => Query => Body]
-    const inputs = [headers, query, params, body]
     const keys = ['headers', 'query', 'params', 'body'] as const
-    for (let i = 0; i < inputs.length; i++) {
-      const locationKey = keys[i]
-      const input = inputs[i]
+    for (const locationKey of keys) {
+      const spec = schemaSpec[locationKey]
+      if (!spec) {
+        continue
+      }
       try {
-        schemaSpec[locationKey]?.parse(input)
+        switch (locationKey) {
+          case 'query':
+            context.query = spec.parse(context.query) as any
+            break
+          case 'params':
+            context.params = spec.parse(context.params) as any
+            break
+          case 'body':
+            context.request.body = spec.parse(context.request.body) as any
+            break
+          case 'headers':
+            context.request.headers = spec.parse(context.request.headers) as any
+            break
+        }
       } catch (err) {
         Loggy.error(`Validation error: "${err}"`, err)
         // try construct the useful message

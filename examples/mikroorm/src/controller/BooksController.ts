@@ -1,7 +1,9 @@
-import { KobpServiceContext, Route, withDocument } from 'kobp'
+import { Middleware } from 'koa'
+import { KobpServiceContext, Route, withDocument, withValidation } from 'kobp'
 import { CrudController, DI } from 'kobp-mikroorm'
 import { repeat } from 'lodash'
 import { BookEntity, BookTagEntity } from '../entities'
+import { s } from 'ajv-ts'
 
 export class BooksController extends CrudController<BookEntity> {
   constructor() {
@@ -9,18 +11,33 @@ export class BooksController extends CrudController<BookEntity> {
       resourceKeyPath: ':isbn',
       searchableFields: ['isbn'],
       distinctableFields: ['isbn'],
-      useDocumentMiddleware: true,
+      useDocumentMiddleware: {},
       preSave: [
         async (ctx, em, obj) => {
           await DI.em.find(BookTagEntity, {})
           return obj
         },
       ],
-      middlewares: [
-        withDocument({
-          tags: ['books'],
-        }),
-      ],
+      middlewares: (_path, method) => {
+        const allRoutes: Middleware[] = []
+        if (method === 'post' || method === 'put') {
+          allRoutes.push(
+            withValidation({
+              body: s.object({
+                isbn: s.string().describe('ISBN of the book'),
+                title: s.string().describe('Title of the book'),
+                numberOfPages: s.number().default(1).describe('Number of pages'),
+              }),
+            }),
+          )
+        }
+        allRoutes.push(
+          withDocument({
+            tags: ['books'],
+          }),
+        )
+        return allRoutes
+      },
     })
   }
 
