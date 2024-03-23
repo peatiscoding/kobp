@@ -1,4 +1,5 @@
 import {
+    Cascade,
   Entity,
   ManyToOne,
   PrimaryKey,
@@ -18,7 +19,7 @@ export class EvaluationDetailEntity {
   // Parent Entity.
   @ManyToOne({
     entity: 'EvaluationRecordEntity',
-    onDelete: 'cascade',
+    cascade: [Cascade.REMOVE],
   })
   evaluation!: EvaluationRecordEntity
 

@@ -1,7 +1,5 @@
-import {
-  MikroORM,
-  MikroORMOptions
-} from '@mikro-orm/core'
+import { MikroORM, defineConfig } from '@mikro-orm/core'
+import { PostgreSqlDriver } from '@mikro-orm/postgresql'
 import {
   BookEntity,
   LibraryEntity,
@@ -12,8 +10,10 @@ import {
   EvaluationDetailEntity,
   EvaluationRecordEntity,
 } from './entities'
+import { Migrator } from '@mikro-orm/migrations'
+import { augmentApiDoc } from 'kobp-mikroorm'
 
-const ormConfig = <Partial<MikroORMOptions>>{
+const ormConfig = defineConfig({
   entities: [
     BookEntity,
     BookTagEntity,
@@ -27,27 +27,27 @@ const ormConfig = <Partial<MikroORMOptions>>{
   forceUtcTimezone: true,
   dbName: process.env.ORM_DBNAME || 'test_db',
   host: process.env.ORM_HOST || 'localhost',
-  port: process.env.ORM_PORT || 54322,
+  port: +(process.env.ORM_PORT || 54322),
   user: process.env.ORM_USER || 'tester',
   password: process.env.ORM_PASSWORD || 'password',
-  type: 'postgresql', // one of `mongo` | `mysql` | `mariadb` | `postgresql` | `sqlite`
+  driver: PostgreSqlDriver,
   tsNode: true,
   migrations: {
     snapshot: false,
-    path:
-      process.cwd() +
-      `/${
-        process.env.NODE_ENVIRONMENT === 'production' ? 'dist' : 'src'
-      }/migrations/`,
-    pattern: /^[\w-]+\d+\.[jt]s$/,
+    path: process.cwd() + `/${process.env.NODE_ENVIRONMENT === 'production' ? 'dist' : 'src'}/migrations/`,
     allOrNothing: true,
     disableForeignKeys: false,
   },
-}
-
-export const makeDbConfig = () => MikroORM.init({
-  ...ormConfig,
-  debug: true,
+  extensions: [Migrator],
+  discovery: {
+    onMetadata: augmentApiDoc,
+  },
 })
+
+export const makeDbConfig = () =>
+  MikroORM.init({
+    ...ormConfig,
+    debug: true,
+  })
 
 export default ormConfig

@@ -1,6 +1,6 @@
 {
   "name": "kobp-lambda",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "lambda capability for Kobp",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -24,7 +24,7 @@
   "author": "Kittiphat S.",
   "license": "ISC",
   "peerDependencies": {
-    "kobp": "^2.0.4"
+    "kobp": "^3.0.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.56",
