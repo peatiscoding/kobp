@@ -59,7 +59,7 @@ export class Loggy extends Tracer implements Logger {
         ? (c) => console.log(JSON.stringify(c))
         : (c) =>
             console.log(
-              `${c.requestId} [${c.verdict} ${c.statusCode}] ${c.method} ${c.path}`,
+              `${c.requestId} [${c.verdict} ${c.statusCode}] ${c.user} ${c.method} ${c.path}`,
               [c.message, c.error].filter(Boolean).join(' '),
             ))
     this._getUser = Loggy.getUserFn ?? ((ctx) => get(ctx, Loggy.userContextKeyPath || 'user.id'))
