@@ -7,8 +7,8 @@ import { METADATA_KEYS, KobpParsable, extractSchema } from './doc.helpers'
  * This will mutates the inputs
  * `query` will mutates context.query
  * `params` will mutates context.params
- * `body` will mutates context.body
- * `headers` will mutates context.headers
+ * `body` will mutates context.request.body
+ * `headers` will mutates context.request.headers
  */
 export const withValidation = <
   Q extends Record<string, string>,
