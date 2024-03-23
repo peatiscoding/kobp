@@ -9,7 +9,7 @@ const _stringify = (o: any) => (typeof o === 'string' || typeof o === 'number' ?
 
 export interface PrintContent {
   requestId: string
-  user: any
+  user: string | 'no-user'
   ip: string[]
   path: string
   version: string
@@ -96,14 +96,14 @@ export class Loggy extends Tracer implements Logger {
     const ip = [...(ctx.ips || []), ctx.ip].filter(Boolean)
     const path = ctx.request?.url
     const method = ctx.request?.method
-    const user = this._getUser(ctx) || ''
+    const user = this._getUser(ctx) || 'no-user'
     const statusCode = ctx.res.statusCode
     const version = `${headers['x-version'] || ''}`
     const app = `${headers['x-app'] || ''}`
     const platform = `${headers['x-platform'] || ''}`
     const payload: PrintContent = {
       requestId: this.traceId,
-      user: user || null,
+      user,
       app,
       version,
       platform,
