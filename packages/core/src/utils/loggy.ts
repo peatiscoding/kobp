@@ -35,8 +35,20 @@ export class Loggy extends Tracer implements Logger {
   public static customPrintLn?: PrintFn = undefined
   public static getUserFn?: GetUserFn = undefined
 
+  /**
+   * Configurable via:
+   *
+   * 1. Static Function of `Loggy.customPrintLn`
+   * 1. Otherwise, it will use the environment `LOGGY_FORMAT` to decided the format.
+   */
   private _printLn: PrintFn
 
+  /**
+   * Configurable via:
+   *
+   * 1. Static function of `Loggy.getUserFn` (get user's key from context)
+   * 1. Otherwise, it will use the environment `LOGGY_USER_CONTEXT_KEY_PATH` which is the lodash's "get" argument key paths.
+   */
   private _getUser: GetUserFn
 
   constructor(ctx: KobpServiceContext) {
