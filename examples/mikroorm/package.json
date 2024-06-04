@@ -8,6 +8,7 @@
     "migrate:create": "mikro-orm migration:create",
     "migrate:up": "mikro-orm migration:up",
     "migrate:down": "mikro-orm migration:down",
+    "swagger:json": "ts-node src/extract-swagger-json.ts",
     "infra:up": "docker-compose up -d",
     "infra:down": "docker-compose down",
     "example": "export LOGGY_FORMAT=TXT && docker-compose up -d && node-dev src/server.ts",
