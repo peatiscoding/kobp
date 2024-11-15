@@ -1,27 +1,18 @@
-import type {
-  LibraryEntity,
-  BookEntity,
-} from "."
-import {
-  Collection,
-  Entity,
-  ManyToMany,
-  ManyToOne,
-  PrimaryKeyType,
-  Property,
-} from "@mikro-orm/core"
+import { ApiDoc } from 'kobp-mikroorm'
+import type { LibraryEntity, BookEntity } from '.'
+import { Cascade, Collection, Entity, ManyToMany, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core'
+import { s } from 'ajv-ts'
 
 @Entity({
-  tableName: 'library_shelf'
+  tableName: 'library_shelf',
 })
 export class LibraryShelfEntity {
-
-  [PrimaryKeyType]: [string, string]
+  [PrimaryKeyProp]: [string, string]
 
   @ManyToOne({
     entity: 'LibraryEntity',
     primary: true,
-    onDelete: 'cascade',
+    cascade: [Cascade.REMOVE],
   })
   library: LibraryEntity
 
@@ -30,19 +21,22 @@ export class LibraryShelfEntity {
     nullable: false,
     primary: true,
   })
-  slug: string = ""
+  @ApiDoc({})
+  slug: string = ''
 
   @Property({
     columnType: 'VARCHAR(250)',
     nullable: false,
   })
-  title: string = ""
+  @ApiDoc({})
+  title: string = ''
 
   @Property({
     columnType: 'timestamp',
     nullable: false,
     onUpdate: () => new Date(),
   })
+  @ApiDoc({ schema: s.string().format('date-time').describe('Last update time of the shelf'), readonly: true })
   updatedAt = new Date()
 
   @ManyToMany({
@@ -50,5 +44,7 @@ export class LibraryShelfEntity {
     owner: true,
     eager: true,
   })
+  @ApiDoc({ description: 'Books on this shelf' })
   books: Collection<BookEntity> = new Collection<BookEntity>(this)
 }
+
