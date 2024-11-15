@@ -29,7 +29,7 @@ export const ALL_METADATA_KEYS = new Set(Object.values(METADATA_KEYS))
 // Check if zod-to-json-schema is installed
 const z2js = require('zod-to-json-schema')?.zodToJsonSchema
 // schema extraction utils
-const isZod = (o: any) => o?._def?.typeName === 'ZodObject'
+const isZod = (o: any) => /^Zod/.test(`${o?._def?.typeName}`)
 const isAjv = (o: any) => Boolean(o?._ajv)
 
 /**
