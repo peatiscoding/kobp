@@ -1,23 +1,26 @@
-import type { LibraryShelfEntity } from "."
-import { Cascade, Collection, Entity, OneToMany, Property } from "@mikro-orm/core"
+import { ApiDoc } from 'kobp-mikroorm'
+import { LibraryShelfEntity } from '.'
+import { Cascade, Collection, Entity, OneToMany, Property } from '@mikro-orm/core'
+import { s } from 'ajv-ts'
 
 @Entity({
-  tableName: 'library'
+  tableName: 'library',
 })
 export class LibraryEntity {
-
   @Property({
     columnType: 'VARCHAR(250)',
     nullable: false,
     primary: true,
   })
-  slug: string = ""
+  @ApiDoc({ schema: s.string().describe('Primary Slug of the library') })
+  slug: string = ''
 
   @Property({
     columnType: 'VARCHAR(250)',
     nullable: false,
   })
-  title: string = ""
+  @ApiDoc({ schema: s.string().describe('Title of the library') })
+  title: string = ''
 
   @OneToMany({
     entity: 'LibraryShelfEntity',
@@ -25,6 +28,7 @@ export class LibraryEntity {
     orphanRemoval: true,
     mappedBy: (shelf: LibraryShelfEntity) => shelf.library,
   })
+  @ApiDoc({ description: 'Shelves within this library'})
   shelves = new Collection<LibraryShelfEntity>(this)
 
   @Property({
@@ -32,5 +36,7 @@ export class LibraryEntity {
     nullable: false,
     onUpdate: () => new Date(),
   })
+  @ApiDoc({ schema: s.string().format('date-time').describe('Last update time of the library'), readonly: true })
   updatedAt = new Date()
 }
+

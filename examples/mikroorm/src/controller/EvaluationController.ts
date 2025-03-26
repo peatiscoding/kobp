@@ -1,13 +1,13 @@
 import { ClientErrorCode, KobpError } from 'kobp'
 import { CrudController, DI } from 'kobp-mikroorm'
-import { EmployeeEntity, EvaluationRecordEntity } from "../entities"
+import { EmployeeEntity, EvaluationRecordEntity } from '../entities'
 
 export class EvaluationController extends CrudController<EvaluationRecordEntity> {
-
   public constructor() {
     super(EvaluationRecordEntity, 'eval', {
       resourceKeyPath: ':id',
       defaultPopulate: (ctx) => ['details'] as any,
+      useDocumentMiddleware: true,
       middlewares: [
         async (ctx, next) => {
           console.log('Im here')
@@ -18,7 +18,7 @@ export class EvaluationController extends CrudController<EvaluationRecordEntity>
           const employee = await DI.em.getRepository(EmployeeEntity).findOneOrFail(employeeId)
           ctx.employee = employee
           await next()
-        }
+        },
       ],
       forAllResources: (ctx) => {
         return {
@@ -33,3 +33,4 @@ export class EvaluationController extends CrudController<EvaluationRecordEntity>
     })
   }
 }
+

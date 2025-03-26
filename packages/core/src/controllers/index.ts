@@ -1,2 +1,4 @@
+export * from './decorators'
+
 export * from './base.controller'
-export * from './decorators/route'
+export * from './swagger.controller'

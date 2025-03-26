@@ -40,7 +40,6 @@ export class S3MediaClient {
     if (!this.bucket) {
       throw new Error(`Invalid state! Unable to initialize S3MediaClient with invalid bucketType: ${bucketType}. Expected a valid string. Have you defined proper process.env?`)
     }
-    console.log('BUCKET =>', this.bucket)
   }
 
   public async putObject(bucketFilePath: string, filename: string, content: Buffer | ReadableStream): Promise<string> {
